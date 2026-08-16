@@ -1,0 +1,182 @@
+# ─────────────────────────────────────────────────────────────────────────
+#  88mph-mass-appraisal — project manifest
+#
+#  This file says WHAT WE WANT (loose version ranges).
+#  uv.lock says WHAT WE GOT (exact versions) and IS committed, so every
+#  attendee ends up with byte-identical packages.
+#
+#  Setup, start to finish:
+#      uv sync
+#
+#  That one command installs Python 3.12, creates .venv/, resolves every
+#  package, and installs them. You do not need Python installed first.
+#
+#  Never run `pip install` here. Add the package to this file, re-run
+#  `uv sync`, and commit the updated uv.lock.
+# ─────────────────────────────────────────────────────────────────────────
+
+[project]
+name = "delorean"
+version = "0.1.0"
+description = "Agentic AI, LLMs, and RAG for mass appraisal — IAAO Calgary companion repo"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12"
+
+dependencies = [
+    # ── Local model runtime ──────────────────────────────────────────────
+    # Sections 2, 3, 4, 9. This is what actually runs a language model on
+    # your own GPU, with no data ever leaving the building.
+    "torch>=2.9",             # the numerical engine; CUDA build, see [tool.uv.sources]
+    "transformers>=5.2",      # >=5.2 REQUIRED: Qwen3.5 does not exist in 4.x
+    "accelerate>=1.0",        # device placement + low-memory model loading
+    "bitsandbytes>=0.50",     # >=0.50 REQUIRED: first version with CUDA 13 on Windows
+    #
+    # scikit-learn is NOT optional, despite what transformers' own metadata says.
+    # transformers 5.15.0 does `from sklearn.metrics import roc_curve` at module
+    # level in generation/candidate_generator.py, so ANY use of
+    # AutoModelForCausalLM raises a confusing error:
+    #     "Could not import module 'GenerationMixin'"
+    # sentence-transformers used to pull sklearn in transitively; 5.x no longer
+    # does. Declaring it here is what keeps `uv sync` producing a working env.
+    # Re-check on future transformers releases and drop this if they fix it.
+    "scikit-learn>=1.5",
+    #
+    # NOTE: hf-transfer is deliberately absent. huggingface-hub 1.x replaced it
+    # with Xet and warns if you enable it. Fast downloads now come from
+    # HF_XET_HIGH_PERFORMANCE=1 instead — see .env.example.
+
+    # ── Agent framework ──────────────────────────────────────────────────
+    # Sections 5-11.
+    #
+    # DELIBERATE CHOICE: LangGraph only. We do NOT use the `langchain`
+    # package or its provider wrappers (langchain-huggingface,
+    # langchain-anthropic, langchain-tavily, langchain-mcp-adapters).
+    #
+    # Why: those wrappers hide the exact thing this talk is about. When
+    # create_react_agent() builds the loop for you, the audience never sees
+    # Reason -> Act -> Observe happen. Building our own nodes on LangGraph
+    # means the graph IS the lesson, we can print it as a diagram, and an
+    # attendee can change one node without fighting an abstraction.
+    #
+    # It is also more robust: local models format tool calls differently
+    # from one another, and owning the parsing means we can support all
+    # three models in the registry instead of whichever one the wrapper
+    # happens to handle.
+    "langgraph>=1.0",         # state machine: nodes, edges, and the loop
+
+    # Model providers, called directly. Both are small, well-documented
+    # SDKs, and the call site is about ten readable lines either way.
+    "anthropic>=0.60",        # hosted API for the *_api notebook variants
+    # (local models are driven straight through `transformers`, above)
+
+    # ── Retrieval-Augmented Generation ───────────────────────────────────
+    # Section 8. Lets the agent answer from YOUR office documents instead
+    # of from whatever it memorized during training.
+    #
+    # Chroma over FAISS: Chroma stores documents, metadata, and vectors
+    # together, so retrieval is one readable call. FAISS stores vectors
+    # only and makes you maintain a parallel list of documents and map
+    # row numbers back to text — an extra concept this audience does not
+    # need. Chroma runs embedded (no server), same as FAISS.
+    "chromadb>=1.5",               # the document store + vector index
+    "sentence-transformers>=3.0",  # turns text into vectors, locally
+    "pypdf>=5.0",                  # read policy manuals and deadline PDFs
+
+    # ── Live web search (Section 6) ──────────────────────────────────────
+    "tavily-python>=0.7",     # official Tavily client; import as `tavily`
+
+    # ── Model Context Protocol ───────────────────────────────────────────
+    # Section 10. The "USB-C of AI" — connect to a data source without
+    # writing a custom tool for it. We use the protocol SDK directly:
+    # the whole point of Section 10 is that NO custom tool code is
+    # written, and an adapter layer would obscure that.
+    "mcp>=1.2",
+
+    # ── Data and statistics ──────────────────────────────────────────────
+    # Section 7. Ratio studies, COD, PRD. Parcel storage is sqlite3, which
+    # ships with Python — no dependency needed and every IT shop knows it.
+    "pandas>=2.2",
+    "numpy>=1.26",
+
+    # ── Mapping ──────────────────────────────────────────────────────────
+    # Section 7 and 11. folium renders an interactive map inline in a
+    # notebook AND inside Streamlit. Deliberately NOT geopandas: it drags
+    # in GDAL, which is a reliable way to ruin a Windows install.
+    "folium>=0.17",
+    "streamlit-folium>=0.23",
+
+    # ── The dashboard ────────────────────────────────────────────────────
+    # Section 11. Wraps everything above in something an appraiser can use
+    # without ever seeing Python.
+    "streamlit>=1.40",
+
+    # ── Notebooks ────────────────────────────────────────────────────────
+    "jupyterlab>=4.2",
+    "ipykernel>=6.29",
+    "ipywidgets>=8.1",        # progress bars and live token streaming
+
+    # ── Utilities ────────────────────────────────────────────────────────
+    "python-dotenv>=1.0",     # loads .env so keys never live in the code
+]
+
+[dependency-groups]
+# Not installed for attendees by default. `uv sync --group dev` to get them.
+dev = [
+    "ruff>=0.6",
+]
+
+
+# ─────────────────────────────────────────────────────────────────────────
+#  PyTorch comes from NVIDIA's CUDA 13 index, not from PyPI.
+#
+#  PyPI's torch is CPU-only on Windows. The wheel below bundles its own
+#  CUDA runtime, which is why you do NOT need the CUDA Toolkit or nvcc
+#  installed — only a driver new enough to support it.
+#
+#  explicit = true means ONLY torch resolves here. Everything else still
+#  comes from PyPI, which is what you want.
+#
+#  The marker falls back to plain PyPI on macOS, where NVIDIA CUDA builds
+#  do not exist.
+# ─────────────────────────────────────────────────────────────────────────
+[tool.uv]
+# Copy packages into .venv instead of hardlinking them.
+#
+# uv hardlinks by default because it is faster and saves disk space. But
+# hardlinks fail on cloud-synced folders — OneDrive, Dropbox, Google Drive —
+# and on many network shares, with "os error 396". That covers a lot of
+# county IT environments, and a repo in OneDrive\Documents\GitHub is exactly
+# where this lands for most people.
+#
+# The cost is a few hundred MB of extra disk and a slightly slower install.
+# The benefit is that `uv sync` works no matter where the repo lives.
+link-mode = "copy"
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu130", marker = "sys_platform == 'win32' or sys_platform == 'linux'" },
+]
+
+
+# ─────────────────────────────────────────────────────────────────────────
+#  Build config — makes `from delorean...` work in every notebook.
+#  uv installs this project in editable mode, so edits to src/delorean/
+#  take effect immediately without reinstalling.
+# ─────────────────────────────────────────────────────────────────────────
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/delorean"]
+
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

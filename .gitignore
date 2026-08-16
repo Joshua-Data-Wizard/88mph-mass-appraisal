@@ -1,0 +1,90 @@
+# ─────────────────────────────────────────────────────────────
+#  88mph-mass-appraisal — .gitignore
+#
+#  This is a PUBLIC repository about property records.
+#  Nothing secret and nothing real belongs in a commit.
+# ─────────────────────────────────────────────────────────────
+
+# ── Secrets ──────────────────────────────────────────────────
+# .env holds real API keys (HuggingFace, Tavily, Anthropic).
+# .env.example IS committed — it lists the variable NAMES only.
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets.toml
+.streamlit/secrets.toml
+
+# ── Python environment ───────────────────────────────────────
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+.Python
+
+# uv writes the resolved lockfile — DO commit uv.lock so every
+# attendee gets byte-identical package versions.
+# (no entry here on purpose — this comment is the documentation)
+
+# ── Jupyter ──────────────────────────────────────────────────
+# NOTE: we deliberately COMMIT notebook outputs so the repo is
+# readable on GitHub without running anything, and so a dead
+# cell can be narrated from the saved result on stage.
+# Only the checkpoint scratch files are ignored.
+.ipynb_checkpoints/
+*-checkpoint.ipynb
+
+# ── Model weights & caches ───────────────────────────────────
+# Multi-gigabyte files. Attendees download these themselves.
+*.safetensors
+*.gguf
+*.bin
+*.pt
+*.pth
+*.onnx
+models/
+.cache/
+hf_cache/
+huggingface/
+.locks/
+
+# ── RAG / vector store artifacts ─────────────────────────────
+# Rebuildable from data/ — never commit the index itself.
+*.faiss
+*.index
+chroma/
+.chroma/
+vectorstore/
+storage/
+
+# ── Real property data (NEVER commit) ────────────────────────
+# All demo data must be synthetic. Real parcels, owner names,
+# and addresses stay out of this repo permanently.
+data/real/
+data/private/
+data/**/*_real.*
+*.mdb
+*.accdb
+
+# ── OS & editor noise ────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*~
+
+# ── Logs & temp ──────────────────────────────────────────────
+*.log
+logs/
+tmp/
+temp/
+.pytest_cache/
+.ruff_cache/
