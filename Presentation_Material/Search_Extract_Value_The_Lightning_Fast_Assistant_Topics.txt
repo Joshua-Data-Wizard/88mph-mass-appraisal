@@ -1,0 +1,114 @@
+Presentation Outline: Search, Extract & Value: Powering Up to 1.21 Gigabytes 
+
+Total Time: 90 Minutes 
+Theme: Back to the Future 
+
+1. Introduction: Welcome to Hill Valley (5 Minutes) 
+
+Topic: Introduce the speakers, the IAAO context, and the 90-minute roadmap. 
+
+Theme Integration: Start by comparing manual appraisal and endless searching to being "stuck in 1985." We are going to build a time machine today to give you back hours of your day. "Where we're going, we don't need spreadsheets." 
+
+Additional Needs: None. 
+
+2. The Flux Capacitor: What is an LLM? (7 Minutes) 
+
+Topic: Demystifying the LLM. Explain self-supervised learning on a mega-corpus of text. Explain that it’s essentially an incredibly advanced "next-word prediction" engine. Mention enterprise options (ChatGPT, Claude) and emphasize budget/data-secure Open Source options (Qwen, Llama, SmolLM). 
+
+Theme Integration: The LLM is the Flux Capacitor—it’s what makes time travel (saving time) possible. But on its own, it’s just a glowing box; it needs to be steered. 
+
+Additional Needs [LIVE DEMO 1]: A Python notebook (LangChain/HuggingFace) to quickly ask a basic model a simple question. Show the token-by-token generation so they "see" the next-word prediction happening live. 
+
+3. Setting the Time Circuits: The Art of Prompting (5 Minutes) 
+
+Topic: Explaining the "System Prompt." The model has no inherent memory; it wakes up every time it is called, reads its System Prompt (its purpose in life), reads the chat history, and responds. 
+
+Theme Integration: The System Prompt is like punching the destination date into the DeLorean’s dashboard. If you type in 1885, it acts like it's in the Old West. 
+
+Additional Needs [LIVE DEMO 2]: In the same Python notebook, write a System Prompt. Change the prompt (e.g., "You are a helpful assistant" vs. "You are an angry tax payer") and show the audience how the model's exact same answer fundamentally changes. 
+
+4. Running out of Plutonium: The Blindspot of LLMs (3 Minutes) 
+
+Topic: The limitations. LLMs were trained on historical data. They don't know what is happening right now, and they don't have access to your local CAMA systems. 
+
+Theme Integration: Just like Doc Brown running out of Plutonium, the model gets stuck. If it doesn't know the answer, it might "hallucinate" (make things up to please you). 
+
+Additional Needs [LIVE DEMO 3]: Ask the model in the notebook a live question: "What is the weather outside right now?" or "What did 123 Main St sell for yesterday?" Watch it fail or hallucinate. 
+
+5. Introducing Mr. Fusion: Agents & The ReAct Framework (7 Minutes) 
+
+Topic: Agents are how we solve the blindspot. Introduce the ReAct framework (Reason + Act). The LLM can "think" about what it needs, "act" to get it, and then formulate an answer. 
+
+Theme Integration: Mr. Fusion powered the DeLorean with actual garbage (real-world inputs). Agents allow the LLM to reach out into the real world to power its answers. 
+
+Additional Needs: Conceptual slides explaining the Reason -> Act -> Observe loop. 
+
+6. The Hoverboard: What is a Tool? (10 Minutes) 
+
+Topic: A "Tool" is simply a Python function or API you give the LLM permission to use. Excitement point: Our imagination is the only bound. If we can code it, the LLM can use it. 
+
+Theme Integration: Tools are the futuristic gadgets (like the Hoverboard) that help our hero navigate obstacles. 
+
+Additional Needs [LIVE DEMO 4]: 
+
+A dummy weather tool. Show the Agent calling it and answering the question it previously failed. 
+
+A dummy "Property Sale Lookup" tool. 
+
+An actual Tavily Web Search tool to show it searching the live internet. 
+
+7. Reaching 88 MPH: Mass Valuation Assistance (15 Minutes) 
+
+Topic: This is the core IAAO payload. Building an Agent that acts as a virtual assistant for an appraiser. It helps review valuations, identifies areas for review, and researches parcels instantly. 
+
+Theme Integration: This is where we hit 88 MPH and see some "serious speed." We are combining everything learned so far into the ultimate Appraisal machine. 
+
+Additional Needs [LIVE DEMO 5]: An Agent equipped with 3 tools running live: 
+
+SQL/Query tool to gather parcel info. 
+
+A calculator tool for valuation performance (Ratio studies, COD, PRD). 
+
+A mapping tool that plots parcel IDs visually. 
+
+8. Grays Sports Almanac: Introducing RAG (8 Minutes) 
+
+Topic: General office questions. What is RAG (Retrieval-Augmented Generation)? How can we use it as a tool so the Agent can answer questions about internal office policies, deadlines, and manuals? 
+
+Theme Integration: RAG is literally Grays Sports Almanac. It’s a book of historical facts we hand to the agent so it knows exactly what happened in the past and can’t get the answers wrong. 
+
+Additional Needs [LIVE DEMO 6]: Add a RAG tool connected to a PDF/document of office historical records. Ask it a deadline or policy question live. 
+
+9. The DeLorean Engine: Small Can Be Powerful (5 Minutes) 
+
+Topic: SLMs (Small Language Models). You don't need a massive, expensive, cloud-based ChatGPT to do this. Models like SmolLM or Qwen are tiny, fast, free, and can still call tools. 
+
+Theme Integration: The DeLorean is a small, compact car, but it houses an incredible engine. SLMs are the same. 
+
+Additional Needs [LIVE DEMO 7]: A quick POC where an open-source SLM uses the RAG tool to answer an office question locally. 
+
+10. The Universal Adapter: Model Context Protocol (MCP) (10 Minutes) 
+
+Topic: Differentiating Tools (custom-built chargers) from MCP (the open-source "USB-C of AI"). Explain how MCP creates a standardized way for multiple agents to talk to secure servers and data sources without hardcoding new tools for every system. 
+
+Theme Integration: MCP is the Universal Adapter on the back of Mr. Fusion. You don't need a different engine for different fuels anymore; if it has the adapter, it just works. 
+
+Use Case 1 (Internal) - "The CAMA/GIS Universal Plug": Explain how a County Clerk's deed system, Esri GIS, and local CAMA software historically don't talk to each other. With MCP, your Agent can read a messy deed from the Clerk's MCP and verify it against the CAMA MCP instantly without custom IT integrations. 
+
+Use Case 2 (External) - "The Open Source IAAO Dream": Mass appraisal offices use completely different software across the state. If a state creates a secure "Sales Standard MCP," your local Agent can securely plug into the state's verified sales data to audit your model's performance and check for non-arm's length transactions. 
+
+Additional Needs [LIVE DEMO 8]: A small live conceptual demo showing an Agent gathering parcel data via a locally hosted MCP server, emphasizing that no custom tool code was written to make the connection. 
+
+11. The Dashboard: Putting a Bow On It (5 Minutes) 
+
+Topic: Embracing AI without needing to be a hardcore programmer. Show how all the Python code we just looked at can be wrapped into a clean, simple UI (Streamlit or Gradio) that any appraiser can use securely and locally. 
+
+Theme Integration: We've built the engine and hooked up the time circuits, now we just need the steering wheel and dashboard to make it drivable for the everyday user. 
+
+Additional Needs [LIVE DEMO 9]: Boot up a small Streamlit/Gradio app running the Mass Valuation Agent in the background, allowing the audience to see a clean, ChatGPT-like interface responding to a property inquiry. 
+
+12. Wrap Up & Q&A (10 Minutes) 
+
+Topic: Thank you, contact info, and opening the floor to the audience. 
+
+Theme Integration: "Your future hasn't been written yet. No one's has. Your future is whatever you make it. So make it a good one." (Classic Doc Brown quote). 
