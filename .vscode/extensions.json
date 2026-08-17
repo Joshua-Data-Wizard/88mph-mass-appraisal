@@ -1,0 +1,9 @@
+// The two extensions this repo needs to open correctly in VS Code.
+// VS Code offers these once, in a dismissable prompt, the first time
+// someone opens the folder. Nothing is installed without a click.
+{
+  "recommendations": [
+    "ms-python.python",   // interpreter discovery — makes settings.json work
+    "ms-toolsai.jupyter"  // runs the .ipynb notebooks in demos 1-8
+  ]
+}

@@ -1,0 +1,53 @@
+// ─────────────────────────────────────────────────────────────────────────
+//  VS Code settings — committed on purpose.
+//
+//  This file exists so that opening this folder in VS Code Just Works:
+//  the notebooks find the right Python without anyone registering a
+//  Jupyter kernel or reading a setup guide first.
+//
+//  Why not register a kernel instead (`ipykernel install --user`)?
+//  Because that writes into your Windows user profile, outside the repo,
+//  and every project you clone adds one more entry to a kernel list that
+//  nobody ever cleans up. This file is deleted when the folder is.
+//
+//  VS Code allows comments in settings.json. Yes, really.
+// ─────────────────────────────────────────────────────────────────────────
+{
+  // ── Point VS Code at the venv `uv sync` builds ──────────────────────────
+  //
+  // This is the whole fix. Without it, VS Code hunts for an interpreter on
+  // its own and often picks a different one — or none at all, which shows up
+  // as "no kernel" when you open a notebook.
+  //
+  // Windows path. On macOS and Linux the interpreter is at
+  // `.venv/bin/python` instead, and this line simply does not match — but
+  // the Python extension auto-discovers a `.venv/` in the workspace root on
+  // those platforms anyway, so they still land in the right place.
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+
+  // ── Do NOT auto-activate the venv in new terminals ──────────────────────
+  //
+  // VS Code runs `Activate.ps1` in every terminal you open by default. We
+  // turn that off deliberately: everything in this repo is documented as
+  // `uv run <command>`, which picks the right environment on its own. An
+  // auto-activated prompt just adds a step that can silently disagree with
+  // what uv is doing.
+  "python.terminal.activateEnvironment": false,
+
+  // ── Run notebooks from the repo root, not from notebooks/ ───────────────
+  //
+  // By default a notebook's working directory is its own folder, so a path
+  // like "data/parcels.csv" resolves to "notebooks/data/parcels.csv" and
+  // fails. Pinning the root means a relative path means the same thing in
+  // VS Code, in JupyterLab, and in the nbconvert command we use to embed
+  // outputs. This matters more with every demo we add.
+  "jupyter.notebookFileRoot": "${workspaceFolder}",
+
+  // ── Keep the file tree readable ─────────────────────────────────────────
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.ipynb_checkpoints": true
+  },
+  "python-envs.defaultEnvManager": "ms-python.python:system",
+  "python-envs.pythonProjects": []
+}
