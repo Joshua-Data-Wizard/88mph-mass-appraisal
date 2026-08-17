@@ -147,6 +147,8 @@ on stage, you can find it in about ten seconds. 👀
 | § | The Bit | ⚙️ What You Actually Learn |
 |:---:|---|---|
 | 2 | ⚡ **The Flux Capacitor** ✅<br/>[🖥️ local](notebooks/01_flux_capacitor_local.ipynb) · [☁️ hosted](notebooks/01_flux_capacitor_api.ipynb) | What an LLM *is* — watch next-word prediction happen live |
+| 3 | 🎛️ **Setting the Time Circuits** ✅<br/>[🖥️ local](notebooks/02_time_circuits_local.ipynb) · [☁️ hosted](notebooks/02_time_circuits_api.ipynb) | The system prompt — one sentence that changes everything |
+| 4 | 🔋 **Running out of Plutonium** ✅<br/>[🖥️ local](notebooks/03_plutonium_local.ipynb) · [☁️ hosted](notebooks/03_plutonium_api.ipynb) | Where it goes blind — and invents an ordinance to cover it |
 | 3 | 🕰️ **Setting the Time Circuits** | System prompts: telling the model who it is |
 | 4 | ☢️ **Running Out of Plutonium** | Where LLMs fail, and why they confidently make things up |
 | 5 | 🗑️ **Introducing Mr. Fusion** | Agents & the ReAct loop: Reason → Act → Observe |
@@ -228,20 +230,48 @@ Copy `.env.example` → `.env` and fill in your keys.
 ✅ notebooks/
      01_flux_capacitor_local.ipynb   ⚡ §2, on your own GPU
      01_flux_capacitor_api.ipynb     ☁️ §2, hosted
+     02_time_circuits_local.ipynb    🎛️ §3, system prompts
+     02_time_circuits_api.ipynb      ☁️ §3, hosted
+     03_plutonium_local.ipynb        🔋 §4, where it goes blind
+     03_plutonium_api.ipynb          ☁️ §4, hosted
 ✅ app/
      01_Flux_Capacitor_local_Streamlit.py  🖱️ §2 as a clickable app
+     02_03_Time_Circuits_and_Plutonium_local_Streamlit.py  🎛️ §3 + §4
 ✅ scripts/
      check_setup.py          🔍 run this first — can my machine do this?
+     generate_hill_valley_data.py  🏘️ rebuilds data/ from scratch, seeded
 ✅ src/delorean/             🚗 the shared engine every notebook imports
      models.py                  which model, and why
      llm.py                     loading models, local and hosted
      viz.py                     the visuals — token chips, probability bars
+     data.py                    reaching the three county systems
+✅ data/                     🏘️ Hill Valley County — 100% synthetic
+     cama.db                    🏛️ Appraiser's office · 1,200 parcels
+     clerk.db                   📜 Clerk of Courts · 244 recorded deeds
+     tax.db                     💵 Tax Collector · 1,200 tax accounts
+     csv/                       the same data, readable right on GitHub
+     policy/                    📄 4 office policy docs — §8's RAG corpus
+✅ DEMOS.md                  🎬 what each demo shows + the takeaway line
 ✅ Presentation_Material/    🎤 the session outline (source of truth for scope)
 
-⬜ data/                     🏘️ synthetic parcels, sales, office documents
 ⬜ mcp_server/               🔌 §10 — a local MCP server
 ⬜ app/dashboard.py          📊 §11 — the full Streamlit dashboard
 ```
+
+> ### 🏘️ About that data — [read data/README.md](data/README.md)
+>
+> Three **separate** databases with no foreign keys between them, because that
+> is the real situation in a county: three elected offices, three vendors, and
+> no integration anyone ever funded. You can't join them. That's the point, and
+> it's what §10 is about.
+>
+> **The flaws in it are deliberate.** Three of the six neighborhoods fail a
+> different IAAO test — one on level, one on uniformity, one on equity — while
+> the countywide numbers pass every standard. An office reporting only the
+> county figure would call it a good year. That gap is what §7's agent finds.
+>
+> Everything is invented. No real parcel, owner, address, or sale is in this
+> repository.
 
 ### ▶️ Running the app
 
@@ -283,8 +313,8 @@ Built in the open, in the order the session presents it. 🔨
 | ✅ | Model registry — 4 models, swappable in one word 🤖 |
 | ✅ | **§2 — ⚡ The Flux Capacitor: what an LLM actually is** *(both roads)* |
 | ✅ | §2 as an interactive Streamlit app 🖱️ |
-| ⬜ | Synthetic parcel and sales data 🏘️ |
-| ⬜ | §3–4 — prompting, and where it breaks 🕰️ |
+| ✅ | Synthetic county data — 3 office systems + policy corpus 🏘️ |
+| ✅ | **§3–4 — prompting, and where it breaks** 🕰️ *(4 notebooks + shared app)* |
 | ⬜ | §6–7 — tools, and the mass valuation agent 🏎️ |
 | ⬜ | §8 — RAG over office documents 📖 |
 | ⬜ | §9 — small models 🔋 |

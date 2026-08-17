@@ -36,6 +36,18 @@ CHIP_COLORS = ("#dbeafe", "#fef3c7")
 CHIP_BORDERS = ("#93c5fd", "#fcd34d")
 
 
+def show_html(markup: str) -> None:
+    """Display any markup built by the *_html() functions in a notebook.
+
+    Every builder in this file returns a string, so a notebook can compose or
+    loop over them and then hand the result here. Streamlit calls
+    `st.html(...)` on the same string instead.
+    """
+    from IPython.display import HTML, display
+
+    display(HTML(markup))
+
+
 def _visible(text: str) -> str:
     """Make whitespace visible.
 
@@ -271,3 +283,215 @@ def note(title: str, body: str, *, kind: str = "info") -> None:
     from IPython.display import HTML, display
 
     display(HTML(note_html(title, body, kind=kind)))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Section 3 — the time circuits
+#
+#  The DeLorean's dashboard has three rows of LEDs: where you are going, when
+#  you are now, and where you were last. It maps onto a chat call almost
+#  exactly, which is too good a coincidence to waste:
+#
+#      DESTINATION TIME   -> the system prompt. Who the model is this time.
+#      PRESENT TIME       -> the question being asked right now.
+#      LAST TIME DEPARTED -> the persona used before this one.
+#
+#  Deliberately dark, unlike everything else in this file. It is a piece of
+#  hardware on screen, and it needs to read from the back of a conference room.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# (label, text colour, glow colour) for each of the three rows.
+_CIRCUIT_ROWS = (
+    ("Destination Time", "#ff3b30", "rgba(255,59,48,.80)"),
+    ("Present Time", "#34e05a", "rgba(52,224,90,.75)"),
+    ("Last Time Departed", "#ffb000", "rgba(255,176,0,.70)"),
+)
+
+
+def _clip(text: str, limit: int) -> str:
+    """Shorten to fit one LED row, with an ellipsis if we cut it."""
+    text = " ".join((text or "").split())
+    if len(text) <= limit:
+        return text
+    return text[: limit - 1].rstrip() + "…"
+
+
+def time_circuits_html(
+    destination: str,
+    present: str = "",
+    last_departed: str = "",
+    *,
+    limit: int = 62,
+) -> str:
+    """Build the three-row time circuit display.
+
+    Args:
+        destination:   the persona / system prompt now loaded.
+        present:       the question being asked.
+        last_departed: the persona used before this one.
+        limit:         characters per row before truncation.
+    """
+    values = (destination, present, last_departed)
+    rows = []
+    for (label, color, glow), value in zip(_CIRCUIT_ROWS, values):
+        shown = _clip(value, limit) or "—"
+        dim = "" if value else "opacity:.35;"
+        rows.append(
+            f"<div style='display:flex;align-items:center;gap:12px;padding:5px 0'>"
+            f"<div style='width:132px;flex:none;text-align:right;font-size:9px;"
+            f"letter-spacing:.16em;text-transform:uppercase;color:#7b7b7b;"
+            f"font-family:-apple-system,Segoe UI,sans-serif'>{label}</div>"
+            f"<div style='flex:1;min-width:0;background:#0d0d0d;border:1px solid #242424;"
+            f"border-radius:4px;padding:9px 13px;font-family:{MONO};font-size:16px;"
+            f"font-weight:600;color:{color};text-shadow:0 0 9px {glow};{dim}"
+            f"white-space:nowrap;overflow:hidden;text-overflow:ellipsis'>"
+            f"{html.escape(shown)}</div>"
+            f"</div>"
+        )
+
+    return (
+        f"<div style='background:#050505;border:2px solid #2b2b2b;border-radius:10px;"
+        f"padding:14px 18px;margin:6px 0;box-shadow:inset 0 0 34px rgba(0,0,0,.9)'>"
+        f"{''.join(rows)}</div>"
+    )
+
+
+def show_time_circuits(destination: str, present: str = "",
+                       last_departed: str = "") -> None:
+    """Display the time circuit panel in a notebook."""
+    from IPython.display import HTML, display
+
+    display(HTML(time_circuits_html(destination, present, last_departed)))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Section 3 — one persona's answer
+# ─────────────────────────────────────────────────────────────────────────────
+
+#: Accent colours for personas shown side by side. Picked to stay
+#: distinguishable on a washed-out projector.
+PERSONA_COLORS = ("#2563eb", "#dc2626", "#7c3aed", "#0d9488", "#c2410c")
+
+
+def persona_card_html(
+    name: str,
+    answer: str,
+    *,
+    system_prompt: str | None = None,
+    accent: str = PERSONA_COLORS[0],
+    pending: bool = False,
+) -> str:
+    """Build one persona's answer card, for the side-by-side comparison.
+
+    The system prompt is shown above the answer on purpose. The whole lesson
+    is that this text -- and only this text -- produced that difference.
+    """
+    head = (
+        f"<div style='background:{accent};color:#fff;padding:7px 13px;"
+        f"border-radius:7px 7px 0 0;font-size:13px;font-weight:700;"
+        f"letter-spacing:.03em'>{html.escape(name)}</div>"
+    )
+
+    prompt_block = ""
+    if system_prompt is not None:
+        prompt_block = (
+            f"<div style='background:#f8fafc;border-bottom:1px solid #e2e8f0;"
+            f"padding:9px 13px;font-family:{MONO};font-size:11.5px;"
+            f"line-height:1.5;color:#475569'>"
+            f"<span style='opacity:.55'>system:</span> "
+            f"{html.escape(system_prompt)}</div>"
+        )
+
+    body_text = html.escape(answer) if answer else (
+        "<span style='opacity:.4'>waiting…</span>" if pending else ""
+    )
+    cursor = (
+        "<span style='display:inline-block;width:8px;height:15px;"
+        f"background:{accent};vertical-align:-2px;margin-left:2px'></span>"
+        if pending and answer else ""
+    )
+
+    return (
+        f"<div style='border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;"
+        f"margin:6px 0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;"
+        f"background:#fff;color:#0f172a'>"
+        f"{head}{prompt_block}"
+        f"<div style='padding:13px;font-size:14.5px;line-height:1.62;"
+        f"white-space:pre-wrap'>{body_text}{cursor}</div></div>"
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Section 4 — what it said, against what is true
+#
+#  This is the component the whole of Section 4 rests on. A hallucination is
+#  only alarming once you put the real record beside it, because on its own an
+#  invented answer looks exactly like a correct one. That is the point.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def verification_html(
+    claim: str,
+    truth: str,
+    *,
+    source: str,
+    question: str | None = None,
+    consequence: str | None = None,
+) -> str:
+    """Build the side-by-side 'model said / county record says' panel.
+
+    Args:
+        claim:       what the model asserted.
+        truth:       what the record actually says.
+        source:      where the truth came from, e.g. "Policy 4.3".
+        question:    the question that was asked, shown above.
+        consequence: why being wrong here matters. This is the line that
+                     turns a curiosity into a problem, so it is worth filling in.
+    """
+    q_block = ""
+    if question:
+        q_block = (
+            f"<div style='font-family:{MONO};font-size:13.5px;background:#f8fafc;"
+            f"border:1px dashed #cbd5e1;border-radius:6px;padding:10px 12px;"
+            f"margin-bottom:14px'>{html.escape(question)}</div>"
+        )
+
+    def column(title: str, body: str, note_line: str, color: str, bg: str) -> str:
+        return (
+            f"<div style='flex:1;min-width:0;background:{bg};border:1px solid {color}40;"
+            f"border-top:3px solid {color};border-radius:7px;padding:12px 14px'>"
+            f"<div style='font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;"
+            f"color:{color};font-weight:700;margin-bottom:8px'>{title}</div>"
+            f"<div style='font-size:15px;line-height:1.6;white-space:pre-wrap'>"
+            f"{html.escape(body)}</div>"
+            f"<div style='margin-top:9px;font-size:11.5px;opacity:.65'>{note_line}</div>"
+            f"</div>"
+        )
+
+    cols = (
+        f"<div style='display:flex;gap:12px;flex-wrap:wrap'>"
+        + column("The model said", claim, "generated, not retrieved",
+                 "#dc2626", "#fef2f2")
+        + column("The county record says", truth, html.escape(source),
+                 "#16a34a", "#f0fdf4")
+        + "</div>"
+    )
+
+    tail = ""
+    if consequence:
+        tail = (
+            f"<div style='margin-top:13px;background:#fffbeb;border-left:4px solid #f59e0b;"
+            f"border-radius:0 6px 6px 0;padding:11px 14px;font-size:14px;line-height:1.6'>"
+            f"<b>Why this matters.</b> {consequence}</div>"
+        )
+
+    return f"<div style='{CARD}'>{q_block}{cols}{tail}</div>"
+
+
+def show_verification(claim: str, truth: str, *, source: str,
+                      question: str | None = None,
+                      consequence: str | None = None) -> None:
+    """Display the truth-check panel in a notebook."""
+    from IPython.display import HTML, display
+
+    display(HTML(verification_html(claim, truth, source=source,
+                                   question=question, consequence=consequence)))

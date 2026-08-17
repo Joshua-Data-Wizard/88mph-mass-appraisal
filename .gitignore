@@ -76,10 +76,20 @@ data/**/*_real.*
 .DS_Store
 Thumbs.db
 desktop.ini
-.vscode/
 .idea/
 *.swp
 *~
+
+# VS Code: ignore personal state, but SHARE the two files that make
+# this repo open correctly on someone else's machine.
+#
+# Note the `/*`. Writing `.vscode/` here instead would break the
+# negations below it: git does not look inside an excluded DIRECTORY,
+# so a file within one can never be re-included. Excluding the
+# directory's CONTENTS leaves the door open.
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 
 # ── Logs & temp ──────────────────────────────────────────────
 *.log
