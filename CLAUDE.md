@@ -22,6 +22,14 @@ Two constraints come from the presenters, not from the outline, and they drive e
 - **Every demo maps to a numbered outline section.** An attendee who liked §7 must be able to find §7's code in under ten seconds. Never renumber.
 - **Assume a county IT laptop.** Windows, no admin rights guaranteed, corporate proxy possible, 8 GB VRAM. If a step needs more than `uv sync`, it needs a documented reason.
 - **Every live demo needs an offline fallback.** Conference wifi is the single largest risk to this talk. Notebooks are committed *with outputs* so a dead cell can be narrated from the saved result. See §8.
+- **Give each demo the smallest toolbelt its lesson needs.** §6 hands the agent
+  *one* tool because watching it choose between five is a different lesson than
+  watching it use one. Where a later demo introduces something new, prefer
+  **swapping a tool out** over piling another on. This is a teaching rule
+  first — a short tool list keeps the screen readable and the point singular.
+  It also happens to help the model: restraint measurably degrades at three
+  tools and a guardrail system prompt buys it back (§13). **Small toolbelts
+  because it suits the demo; the prompt is what handles scale.**
 
 ---
 
@@ -114,7 +122,8 @@ Document all three in the `_api` notebooks so an attendee can pick by budget. Ca
 │   └── 01_flux_capacitor_api.ipynb        DONE
 ├── app/                         # Streamlit — always .py, never a notebook
 │   ├── 01_Flux_Capacitor_local_Streamlit.py   DONE
-│   └── 02_03_Time_Circuits_and_Plutonium_local_Streamlit.py  DONE (§3+§4)
+│   ├── 02_03_Time_Circuits_and_Plutonium_local_Streamlit.py  DONE (§3+§4)
+│   └── 04_06_Office_Assistant_local_Streamlit.py  DONE (§6+§8)
 ├── src/delorean/                # importable package — the shared engine
 │   ├── models.py                # ModelSpec registry: get/tiny/default_local/compare
 │   ├── llm.py                   # load_local, load_tokenizer, chat_prompt,
@@ -217,9 +226,9 @@ both so an attendee can drop in their own office's real PDFs.
 | 3 | Setting the Time Circuits | 2 | ✅ **DONE** — `02_time_circuits_{local,api}.ipynb` + shared app |
 | 4 | Running out of Plutonium | 3 | ✅ **DONE** — `03_plutonium_{local,api}.ipynb` + shared app |
 | 5 | Introducing Mr. Fusion | — | slides: Reason → Act → Observe |
-| 6 | The Hoverboard | 4 | `04_hoverboard` — **one live tool: parcel lookup.** Weather + Tavily demoted to explore |
+| 6 | The Hoverboard | 4 | ✅ **DONE** — `04_hoverboard_{local,api}.ipynb` + shared app tab 1 |
 | 7 | Reaching 88 MPH | 5 | `05_88mph` — SQL + ratio study (COD, PRD) + mapping |
-| 8 | Grays Sports Almanac | 6 | `06_almanac` — RAG over office policy docs, **as a second tool on §6's agent** (shared app) |
+| 8 | Grays Sports Almanac | 6 | ✅ **DONE** — `06_almanac_{local,api}.ipynb` + shared app tab 2 |
 | 9 | The DeLorean Engine | 7 | `07_delorean_engine` — **local only**, an API variant defeats the point |
 | 10 | The Universal Adapter | 8 | `mcp_server/` + `08_universal_adapter` — **the parcel-split scenario**, see below |
 | 11 | The Dashboard | 9 | `app/` Streamlit |
@@ -488,6 +497,9 @@ uv run python scripts/generate_hill_valley_data.py             # rebuild data/ (
 uv run jupyter lab                                             # notebooks
 uv run streamlit run app/01_Flux_Capacitor_local_Streamlit.py  # the §2 app
 uv run streamlit run app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py  # §3+§4
+uv run streamlit run app/04_06_Office_Assistant_local_Streamlit.py            # §6+§8
+uv run python scripts/test_tools.py                            # tool robustness
+uv run python scripts/eval_tools.py                            # tool-use score
 
 # after authoring a notebook, embed its outputs:
 uv run jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=900 <path>
@@ -826,3 +838,98 @@ guardrail prompt, and re-measured at that count before the dry run.
 This is §3 doing real engineering work rather than being a party trick, and it
 is worth saying so on stage: the same lever that made the model *sound* like an
 appraiser is what stops it reaching for a database to answer "good morning".
+
+### Streamlit + transformers: the torchvision traceback wall
+
+Running any app printed **hundreds** of `ModuleNotFoundError: No module named
+'torchvision'` tracebacks and burned noticeable CPU.
+
+**Cause.** Streamlit's hot-reload watcher walks every loaded module on **every
+rerun** to decide which files to watch. `transformers` exposes ~**5,500** lazily
+imported submodules, so the watcher imports image processors for models we never
+touch — many of which import `torchvision`, which this project deliberately does
+not install.
+
+**Fix: `.streamlit/config.toml`, committed.**
+
+```toml
+[server]
+fileWatcherType = "none"   # the whole fix
+[theme]
+base = "light"             # viz.py components are light cards
+[browser]
+gatherUsageStats = false
+[client]
+toolbarMode = "minimal"
+```
+
+⚠️ **Do not "fix" this by installing torchvision.** ~2 GB, not a line of it
+used, and the watcher would still walk 5,500 modules. The cost of the fix is
+losing auto-reload on file save (press **R** in the browser) — which is an
+improvement on stage, where nothing should rerun unless you ask.
+
+`theme.base = "light"` matters too: everything `viz.py` produces is a light
+card, so a presenter whose laptop is in dark mode would otherwise get white
+cards on dark chrome.
+
+### "Is it actually using the GPU?" — how to answer it
+
+**`llm.where_it_runs(model)`** counts parameter tensors per device and reports
+VRAM. Measured on the dev box with `qwen`: **426 of 426 tensors on `cuda:0`,
+0 on CPU**, 2.90 GB allocated, 2.98 GB peak, 11.3 tok/s.
+
+**High CPU during generation is normal and does not mean a CPU fallback.** The
+weights and the maths are on the card; Python is launching one small kernel per
+token. Two things *are* on the CPU on purpose: `bge-small` for retrieval (so an
+office with no GPU can still do RAG, and so the VRAM stays free) and
+tokenization.
+
+The §6/§8 app puts this in the sidebar — part diagnostic, part demo. An audience
+being told "this runs on the machine under your desk" should be able to see it.
+
+
+### §6/§8 notebooks — what they establish
+
+**§6 puts the naive-then-hardened arc on the MAIN path**, not in explore. Acts
+1–4 build a working tool call with **nothing imported from `src/`** — a plain
+function, a hand-written schema, a two-line regex over the model's raw output.
+Act 5 breaks it with `4-127-3891`; Act 6 brings in the hardened tool. That
+sequence is the repo's best answer to "but how did you actually do that".
+
+**⚠️ §6's twins diverge at Act 3, structurally.** The Anthropic API does tool
+parsing for you and returns `tool_use` objects, so the `_api` notebook **cannot**
+show the raw `<tool_call>` text — the demystifying moment. It quotes the local
+model's output instead and says why. Same precedent as §2's logits and §4's
+refusal. Do not "fix" this.
+
+**§8's twins are nearly identical, and that is a selling point.** Chunking,
+embedding and search all run locally in both. Only generation differs. Say it
+out loud: *your document index never leaves the building; only the retrieved
+passages are sent.* That is a data-governance argument this audience cares
+about and it falls out of the architecture for free.
+
+**Measured, and quotable on stage** — the §8 Act 3 similarity demo against
+Policy 4.3:
+
+| Probe | Score |
+|---|---|
+| "What is the minimum lot size to split an R-1 parcel?" | 0.825 |
+| **"Can I divide my property into two?"** — no shared keywords | **0.698** |
+| "How small is a lot allowed to be before it can be subdivided?" | 0.748 |
+| "What are the office's holiday hours?" | 0.432 |
+| "Best pizza in Calgary" | 0.406 |
+
+Act 1, same question, no tools: the local 4B invents *"0.25 acres, per the
+County's Zoning Ordinance"*; Haiku refuses with *"while I'm roleplaying as an
+experienced appraiser, I shouldn't…"*. Both notebooks report their own result.
+
+### 🐛 `api_responder` and the system prompt (fixed)
+
+The local models take a system prompt as an ordinary message in the list. **The
+Anthropic API rejects that with a 400** — it must be a top-level `system`
+parameter. `api_responder()` now lifts any `role: "system"` messages out of the
+list and merges them into that parameter.
+
+This never showed up until an `_api` notebook called `respond()` with a system
+message, because nothing else exercised that path. **Any new responder must be
+tested with a system prompt, not just a bare question.**

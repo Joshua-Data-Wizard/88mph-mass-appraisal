@@ -1,0 +1,47 @@
+# Streamlit settings for every app in this repository.
+#
+# Committed on purpose: without the first setting below, running any of these
+# apps floods the console with hundreds of tracebacks and burns CPU that has
+# nothing to do with the model.
+
+[server]
+# ─────────────────────────────────────────────────────────────────────────
+#  This is the important one.
+#
+#  Streamlit's hot-reload watcher walks EVERY loaded Python module on every
+#  rerun to work out which files to watch. `transformers` exposes about 5,500
+#  lazily-imported submodules, so the watcher imports image processors for
+#  models we will never touch -- and many of those import torchvision, which
+#  this project deliberately does not install.
+#
+#  The result is a wall of
+#      ModuleNotFoundError: No module named 'torchvision'
+#  which look alarming, are completely harmless, and are genuinely expensive:
+#  it is thousands of attempted imports every time you click a button.
+#
+#  Turning the watcher off removes all of it. The cost is that editing a
+#  .py file no longer auto-reloads the app -- press R in the browser, or
+#  restart. For a demo app that is a fair trade, and on stage it is an
+#  improvement: nothing reruns unless you ask it to.
+#
+#  Do NOT "fix" this by installing torchvision. It is roughly 2 GB, we do not
+#  use a single line of it, and the watcher would still walk 5,500 modules.
+# ─────────────────────────────────────────────────────────────────────────
+fileWatcherType = "none"
+
+[theme]
+# The visuals in src/delorean/viz.py are built as light cards, because that is
+# how they render in Jupyter and on GitHub. Pinning the app to a light theme
+# keeps the app chrome and the components consistent, whatever theme the
+# presenter's laptop happens to be set to.
+base = "light"
+
+[browser]
+# No usage telemetry. Some county IT departments care about this, and it costs
+# us nothing to switch off.
+gatherUsageStats = false
+
+[client]
+# Hides the "Deploy" button and trims the hamburger menu. One less thing on
+# screen during a demo.
+toolbarMode = "minimal"

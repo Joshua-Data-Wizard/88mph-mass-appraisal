@@ -269,12 +269,65 @@ audit. Both notebook twins report their own result truthfully.
 
 ---
 
-# 🛹 §6 + 📖 §8 — The Office Assistant  ⬜ **NOT BUILT YET**
+# 🛹 §6 + 📖 §8 — The Office Assistant  ✅ **APP BUILT**
 
-*Planned design, recorded so the script can be drafted in parallel. Numbers here
-are measured from prototypes; the app itself does not exist.*
+**`app/04_06_Office_Assistant_local_Streamlit.py`** · model: `Qwen3.5-4B`
+*(the four notebooks are still to come)*
 
 **One app whose toolbelt grows.** §7 sits between the two tabs, so you reopen it.
+
+### 🎛️ The system prompt panel — open it on stage
+
+An expander above both tabs holds the agent's system prompt, live-editable, with
+three presets and its **token count** (a §3 callback: you re-send it every call).
+
+This is not decoration. It is the third demo hiding in this app, and it is
+measured:
+
+| Toolbelt | Restraint | Recall |
+|---|---|---|
+| 1 tool | 6/6 | 1/1 |
+| 2 tools | 6/6 | 2/2 |
+| **3 tools** | **5/6** ❌ | 4/4 |
+| **3 tools + guardrail** | **6/6** ✅ | **4/4** ✅ |
+
+**The stage move**, verified working end to end:
+
+1. Open the panel, hit **🤖 No system prompt at all**
+2. Almanac tab → ask *"What is the difference between market value and assessed
+   value?"* → it **searches the policy manual**, unnecessarily
+3. Hit **🎛️ Front counter (the guardrail)**, ask again → it **answers directly**
+
+> 🎯 *"Section 3 showed you a system prompt changes how it sounds. It also
+> decides when it reaches for the filing cabinet — and when it just answers."*
+
+### 🔍 The raw reveal — §6's demystifying beat
+
+After any run, an expander shows **the literal text the model wrote**:
+
+```
+<tool_call>
+<function=lookup_parcel>
+<parameter=parcel_id>
+4-127-3891
+</parameter>
+</function>
+</tool_call>
+```
+
+> 🎯 *"No magic happened. It wrote text, in a format it was trained to use, and
+> about fifteen lines of our Python noticed. It never stopped being next-word
+> prediction."*
+
+Note the parcel number in that block: **`4-127-3891`, leading zero missing.**
+The model passed through exactly what the user typed and the tool repaired it.
+That is §2's lesson collecting its debt, visible on screen.
+
+### The loop turns live
+
+The graph is **streamed**, so Reason appears at ~3.9 s, Act instantly after, and
+the answer at ~6.4 s. The audience watches it think rather than waiting seven
+seconds for a finished diagram.
 
 | Tab | § | Tools the agent has |
 |---|---|---|
