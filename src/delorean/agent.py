@@ -88,6 +88,12 @@ def local_responder(model: Any, tokenizer: Any, *, max_new_tokens: int = 320,
         raw = tokenizer.decode(out[0][inputs["input_ids"].shape[1]:],
                                skip_special_tokens=True)
 
+        # Keep the untouched output so callers can show it verbatim. Section 6
+        # reveals this to make the point that a "tool call" is just text the
+        # model wrote -- reconstructing it from the parsed result would look
+        # the same and quietly be a lie.
+        respond.last_raw = raw
+
         calls = toolkit.parse_tool_calls(raw)
         if not calls and toolkit.attempted_tool_call(raw):
             # The call was cut off. Say so plainly rather than pretending the
@@ -95,6 +101,7 @@ def local_responder(model: Any, tokenizer: Any, *, max_new_tokens: int = 320,
             return ("(the tool call was cut off — raise max_new_tokens)", [])
         return toolkit.strip_tool_calls(raw), calls
 
+    respond.last_raw = ""
     return respond
 
 
@@ -109,8 +116,19 @@ def api_responder(client: Any, model_id: str, *, max_tokens: int = 512,
     """
     def respond(messages: list[dict], schemas: list[dict]):
         # Anthropic wants its own message shape, so translate on the way out.
+        #
+        # The system prompt is the one that bites: the local models take it as
+        # an ordinary message in the list, and this API rejects that outright --
+        # it must be a top-level `system` parameter. So we lift any system
+        # messages out here rather than making every caller know the difference.
         wire: list[dict] = []
+        lifted: list[str] = []
+
         for m in messages:
+            if m["role"] == "system":
+                if str(m.get("content", "")).strip():
+                    lifted.append(str(m["content"]))
+                continue
             if m["role"] == "tool":
                 wire.append({"role": "user", "content": [{
                     "type": "tool_result",
@@ -137,8 +155,9 @@ def api_responder(client: Any, model_id: str, *, max_tokens: int = 512,
                        "input_schema": s["function"]["parameters"]}
                       for s in schemas],
         }
-        if system:
-            kwargs["system"] = system
+        combined = "\n\n".join(([system] if system.strip() else []) + lifted)
+        if combined:
+            kwargs["system"] = combined
 
         response = client.messages.create(**kwargs)
 

@@ -19,6 +19,7 @@ apart.
 from __future__ import annotations
 
 import html
+import re
 from typing import Any, Iterable, Sequence
 
 # A light card, so it looks the same on a dark JupyterLab theme, a light
@@ -349,10 +350,27 @@ def time_circuits_html(
             f"</div>"
         )
 
-    return (
-        f"<div style='background:#050505;border:2px solid #2b2b2b;border-radius:10px;"
-        f"padding:14px 18px;margin:6px 0;box-shadow:inset 0 0 34px rgba(0,0,0,.9)'>"
+    # Two layers, and the outer one is the point.
+    #
+    # The display itself has to stay dark -- it is a DeLorean instrument, and
+    # the glowing readouts only work against black. But a near-black rectangle
+    # dropped straight onto a light page reads as a hole punched through it,
+    # which is exactly how this looked once the Streamlit theme was pinned to
+    # light. Wrapping it in a lit metal bezel and letting it cast a real shadow
+    # turns the same panel into something that is *mounted on* the page: the
+    # contrast becomes deliberate rather than jarring.
+    display = (
+        f"<div style='background:#0a0b0d;border-radius:7px;padding:12px 15px;"
+        f"box-shadow:inset 0 2px 16px rgba(0,0,0,.85), inset 0 0 0 1px #1b1e23'>"
         f"{''.join(rows)}</div>"
+    )
+
+    return (
+        f"<div style='background:linear-gradient(180deg,#5b616b 0%,#3d424a 45%,"
+        f"#2c3037 100%);border-radius:12px;padding:9px;margin:8px 0;"
+        f"box-shadow:0 12px 26px -14px rgba(15,23,42,.55),"
+        f"0 2px 5px rgba(15,23,42,.16),"
+        f"inset 0 1px 0 rgba(255,255,255,.22)'>{display}</div>"
     )
 
 
@@ -495,3 +513,302 @@ def show_verification(claim: str, truth: str, *, source: str,
 
     display(HTML(verification_html(claim, truth, source=source,
                                    question=question, consequence=consequence)))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Sections 6-8 — watching the agent think
+#
+#  Section 5 draws Reason -> Act -> Observe on a slide. These functions draw the
+#  same three boxes from a real run, so the concept and the machinery are
+#  visibly the same thing.
+#
+#  The audience for this is a property appraisal director, not an engineer. The
+#  design rule throughout: a "tool call" must stop sounding like machinery and
+#  start looking like the model asking someone a question and getting an answer.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# One colour per step of the loop. Used for the badge, the label and the rule
+# down the left of each card, so the eye can follow the sequence at a glance.
+STEP_COLORS = {
+    "reason": "#4f46e5",    # indigo -- thinking
+    "act": "#b45309",       # amber  -- doing
+    "observe": "#15803d",   # green  -- what came back
+    "error": "#b91c1c",     # red    -- what came back, badly
+    "answer": "#0f172a",    # near-black -- the thing the human reads
+}
+
+
+def toolbelt_html(names: Sequence[str], *, active: str | None = None,
+                  title: str = "Tools this agent may use") -> str:
+    """Show the agent's tools as chips.
+
+    Section 8's whole argument is that RAG is not special -- it is one more
+    entry in this list. Showing the list grow from one chip to two makes that
+    argument without anyone having to assert it.
+    """
+    chips = []
+    for name in names:
+        live = name == active
+        bg = "#4f46e5" if live else "#eef2ff"
+        fg = "#ffffff" if live else "#3730a3"
+        border = "#4f46e5" if live else "#c7d2fe"
+        weight = "700" if live else "500"
+        chips.append(
+            f"<span style='display:inline-block;background:{bg};color:{fg};"
+            f"border:1px solid {border};border-radius:999px;padding:5px 13px;"
+            f"margin:3px 4px 3px 0;font-family:{MONO};font-size:13px;"
+            f"font-weight:{weight}'>{html.escape(name)}</span>"
+        )
+
+    body = "".join(chips) if chips else "<i>none</i>"
+    return (
+        f"<div style='{CARD}'>"
+        f"<div style='font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;"
+        f"color:#64748b;font-weight:700;margin-bottom:9px'>{html.escape(title)}"
+        f" &middot; {len(names)}</div>"
+        f"<div>{body}</div></div>"
+    )
+
+
+def raw_call_html(text: str, *, title: str = "What the model actually wrote") -> str:
+    """Show the literal text the model produced, tool-call markup and all.
+
+    This is the demystifying moment of Section 6. "Tool calling" sounds like
+    plumbing somebody clever built into the model. It is not. The model wrote
+    some text, in a format it was trained to use, and about fifteen lines of
+    our Python noticed and acted on it.
+
+    Anyone who sat through Section 2 already knows the punchline: this is still
+    next-token prediction. It never stopped being next-token prediction.
+    """
+    escaped = html.escape(text or "")
+
+    # Light up the tool-call markup so the eye lands on it immediately.
+    escaped = re.sub(
+        r"(&lt;/?(?:tool_call|function|parameter)[^&]*?&gt;)",
+        r"<span style='color:#fbbf24;font-weight:700'>\1</span>",
+        escaped,
+    )
+
+    # Same reasoning as the time circuits: a dark block on a light page needs a
+    # shadow to sit on the page rather than float above a hole in it. A dark
+    # code panel is a familiar sight, so this one needs far less help.
+    return (
+        f"<div style='background:#0b1020;border:1px solid #1e293b;border-radius:9px;"
+        f"padding:14px 16px;margin:6px 0;"
+        f"box-shadow:0 8px 20px -14px rgba(15,23,42,.5)'>"
+        f"<div style='font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;"
+        f"color:#64748b;font-weight:700;margin-bottom:9px'>{html.escape(title)}</div>"
+        f"<pre style='margin:0;font-family:{MONO};font-size:13.5px;line-height:1.62;"
+        f"color:#e2e8f0;white-space:pre-wrap;word-break:break-word'>{escaped}</pre>"
+        f"</div>"
+    )
+
+
+def _call_signature(tool: str, args: dict) -> str:
+    """Render a tool call the way a person would write it: name(arg=value)."""
+    parts = []
+    for key, value in (args or {}).items():
+        shown = str(value)
+        if len(shown) > 60:
+            shown = shown[:57] + "..."
+        parts.append(f"{html.escape(str(key))}=<b>{html.escape(shown)}</b>")
+    return f"{html.escape(tool)}({', '.join(parts)})"
+
+
+def _observe_html(result: dict) -> str:
+    """Render whatever a tool handed back, in a shape a human can scan.
+
+    A parcel record becomes a small table. Retrieved policy becomes citations.
+    A failure shows its hint, because the hint is the interesting part -- it is
+    the sentence the model reads next and uses to correct itself.
+    """
+    if not isinstance(result, dict):
+        return (f"<div style='font-family:{MONO};font-size:13px'>"
+                f"{html.escape(str(result))}</div>")
+
+    if not result.get("ok", True):
+        hint = result.get("hint", "")
+        hint_block = ""
+        if hint:
+            hint_block = (
+                f"<div style='margin-top:9px;background:#fffbeb;"
+                f"border-left:3px solid #f59e0b;padding:8px 11px;"
+                f"border-radius:0 5px 5px 0;font-size:13.5px;line-height:1.55'>"
+                f"<b>Hint handed back to the model:</b><br/>"
+                f"{html.escape(hint)}</div>"
+            )
+        return (
+            f"<div style='font-size:14.5px;line-height:1.55'>"
+            f"<b style='color:#b91c1c'>Failed.</b> "
+            f"{html.escape(str(result.get('error', '')))}</div>{hint_block}"
+        )
+
+    data = result.get("data", result)
+
+    # Retrieved policy passages -- lead with the citation.
+    if isinstance(data, dict) and isinstance(data.get("passages"), list):
+        rows = []
+        for p in data["passages"]:
+            body = " ".join(str(p.get("text", "")).split())
+            more = "&hellip;" if len(body) > 340 else ""
+            rows.append(
+                f"<div style='margin-bottom:11px'>"
+                f"<div style='font-family:{MONO};font-size:12.5px;color:#15803d;"
+                f"font-weight:700'>{html.escape(str(p.get('cite', '')))}"
+                f"<span style='opacity:.55;font-weight:400'> &middot; relevance "
+                f"{p.get('relevance', '')}</span></div>"
+                f"<div style='font-size:13.5px;line-height:1.55;margin-top:3px'>"
+                f"{html.escape(body[:340])}{more}</div></div>"
+            )
+        return (f"<div style='font-size:12px;opacity:.6;margin-bottom:8px'>"
+                f"{len(data['passages'])} passage(s) retrieved</div>"
+                + "".join(rows))
+
+    # A list of matches.
+    if isinstance(data, dict) and isinstance(data.get("matches"), list):
+        rows = "".join(
+            f"<tr><td style='padding:3px 12px 3px 0;font-family:{MONO};"
+            f"font-size:13px'>{html.escape(str(m.get('parcel_id', '')))}</td>"
+            f"<td style='padding:3px 12px 3px 0;font-size:13.5px'>"
+            f"{html.escape(str(m.get('situs_address', '')))}</td>"
+            f"<td style='padding:3px 0;font-size:13.5px'>"
+            f"{html.escape(str(m.get('owner_name', '')))}</td></tr>"
+            for m in data["matches"]
+        )
+        count = data.get("match_count", len(data["matches"]))
+        return (f"<div style='font-size:12px;opacity:.6;margin-bottom:6px'>"
+                f"{count} match(es)</div>"
+                f"<table style='border-collapse:collapse'>{rows}</table>")
+
+    # A flat record -- a small two-column table.
+    if isinstance(data, dict):
+        rows = "".join(
+            f"<tr><td style='padding:2px 14px 2px 0;font-size:12.5px;opacity:.6;"
+            f"white-space:nowrap'>{html.escape(str(k).replace('_', ' '))}</td>"
+            f"<td style='padding:2px 0;font-family:{MONO};font-size:13.5px'>"
+            f"{html.escape(str(v))}</td></tr>"
+            for k, v in data.items() if not isinstance(v, (dict, list))
+        )
+        return f"<table style='border-collapse:collapse'>{rows}</table>"
+
+    return (f"<div style='font-family:{MONO};font-size:13px;white-space:pre-wrap'>"
+            f"{html.escape(str(data))}</div>")
+
+
+def _step_html(index: int, kind: str, label: str, body: str,
+               *, last: bool = False) -> str:
+    """One step of the loop: a numbered badge, a rule, and a card."""
+    color = STEP_COLORS.get(kind, "#475569")
+    connector = ""
+    if not last:
+        connector = ("<div style='flex:1;width:2px;background:#e2e8f0;"
+                     "margin-top:4px'></div>")
+    pad = "2px" if last else "16px"
+    return (
+        f"<div style='display:flex;gap:13px;align-items:stretch'>"
+        f"<div style='display:flex;flex-direction:column;align-items:center;"
+        f"width:30px;flex:none'>"
+        f"<div style='width:28px;height:28px;border-radius:50%;background:{color};"
+        f"color:#fff;font-size:13px;font-weight:700;display:flex;"
+        f"align-items:center;justify-content:center;font-family:{MONO}'>"
+        f"{index}</div>{connector}</div>"
+        f"<div style='flex:1;min-width:0;padding-bottom:{pad}'>"
+        f"<div style='font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;"
+        f"color:{color};font-weight:700;margin-bottom:5px'>{html.escape(label)}</div>"
+        f"<div style='border:1px solid #e2e8f0;border-left:4px solid {color};"
+        f"border-radius:0 7px 7px 0;padding:11px 14px;background:#fff'>{body}</div>"
+        f"</div></div>"
+    )
+
+
+def trace_html(trace: Sequence[dict], *, answer: str = "",
+               question: str | None = None) -> str:
+    """Draw a finished agent run as Reason -> Act -> Observe -> Answer.
+
+    `trace` is what `delorean.agent.ask()` leaves in `state["trace"]`.
+
+    Each tool call becomes two steps rather than one, on purpose. **Act** and
+    **Observe** are different events -- the agent asking, and the world
+    answering -- and collapsing them into a single box loses the part that
+    makes an agent different from a chatbot.
+    """
+    blocks: list[str] = []
+    n = 0
+
+    head = ""
+    if question:
+        head = (
+            f"<div style='font-family:{MONO};font-size:14.5px;background:#f8fafc;"
+            f"border:1px dashed #cbd5e1;border-radius:6px;padding:11px 13px;"
+            f"margin-bottom:16px'>{html.escape(question)}</div>"
+        )
+
+    for entry in trace:
+        if entry.get("step") == "reason":
+            wants = entry.get("wants") or []
+            thought = (entry.get("thought") or "").strip()
+
+            if wants:
+                named = html.escape(", ".join(wants))
+                if thought:
+                    body = (f"<div style='font-size:14.5px;line-height:1.6;"
+                            f"white-space:pre-wrap'>{html.escape(thought)}</div>"
+                            f"<div style='margin-top:8px;font-size:13.5px;"
+                            f"opacity:.7'>Decided to use <b>{named}</b>.</div>")
+                else:
+                    # Thinking is off, so it went straight for the tool. Say so
+                    # rather than showing an empty box.
+                    body = (f"<div style='font-size:14.5px;line-height:1.6'>"
+                            f"Went straight for <b>{named}</b> &mdash; no "
+                            f"deliberation needed.</div>")
+                n += 1
+                blocks.append(_step_html(n, "reason", "Reason", body))
+            elif thought and not answer:
+                n += 1
+                blocks.append(_step_html(
+                    n, "reason", "Reason",
+                    f"<div style='font-size:14.5px;line-height:1.6;"
+                    f"white-space:pre-wrap'>{html.escape(thought)}</div>"))
+
+        elif entry.get("step") == "act":
+            n += 1
+            blocks.append(_step_html(
+                n, "act", "Act",
+                f"<div style='font-family:{MONO};font-size:14px;line-height:1.6'>"
+                f"{_call_signature(entry.get('tool', ''), entry.get('args', {}))}"
+                f"</div>"))
+
+            result = entry.get("result", {})
+            good = isinstance(result, dict) and result.get("ok", True)
+            n += 1
+            blocks.append(_step_html(n, "observe" if good else "error",
+                                     "Observe", _observe_html(result)))
+
+    if answer:
+        n += 1
+        blocks.append(_step_html(
+            n, "answer", "Answer",
+            f"<div style='font-size:15.5px;line-height:1.65;white-space:pre-wrap'>"
+            f"{html.escape(answer)}</div>", last=True))
+
+    if not blocks:
+        return f"<div style='{CARD}'><i>Nothing happened yet.</i></div>"
+
+    return f"<div style='{CARD}'>{head}{''.join(blocks)}</div>"
+
+
+def show_toolbelt(names: Sequence[str], *, active: str | None = None) -> None:
+    """Display the agent's tool list in a notebook."""
+    show_html(toolbelt_html(names, active=active))
+
+
+def show_raw_call(text: str) -> None:
+    """Display the model's literal output in a notebook."""
+    show_html(raw_call_html(text))
+
+
+def show_trace(trace: Sequence[dict], *, answer: str = "",
+               question: str | None = None) -> None:
+    """Display a finished agent run in a notebook."""
+    show_html(trace_html(trace, answer=answer, question=question))

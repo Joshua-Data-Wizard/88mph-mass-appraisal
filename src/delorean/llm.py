@@ -141,6 +141,47 @@ def chat_prompt(
     )
 
 
+def where_it_runs(model: Any | None = None) -> dict[str, Any]:
+    """Report where the model's weights actually live, and what memory is free.
+
+    Worth checking rather than assuming. "The GPU is being used" and "the CPU is
+    busy" are both true at once during generation: the weights and the maths sit
+    on the graphics card, while Python spends its time launching one small
+    kernel per token. High CPU does not mean the model fell back to the CPU --
+    but this is how you find out for certain.
+
+    Pass a loaded model to count its parameter tensors per device. Call it with
+    nothing for just the hardware summary.
+    """
+    import torch
+
+    report: dict[str, Any] = {
+        "cuda_available": torch.cuda.is_available(),
+        "device_name": None,
+        "on_gpu": 0,
+        "on_cpu": 0,
+        "allocated_gb": None,
+        "free_gb": None,
+        "total_gb": None,
+    }
+
+    if report["cuda_available"]:
+        report["device_name"] = torch.cuda.get_device_name(0)
+        free, total = torch.cuda.mem_get_info()
+        report["free_gb"] = free / 1024**3
+        report["total_gb"] = total / 1024**3
+        report["allocated_gb"] = torch.cuda.memory_allocated() / 1024**3
+
+    if model is not None:
+        for param in model.parameters():
+            if param.device.type == "cuda":
+                report["on_gpu"] += 1
+            else:
+                report["on_cpu"] += 1
+
+    return report
+
+
 def vocab_size(model: Any) -> int:
     """How many different tokens this model can choose from.
 

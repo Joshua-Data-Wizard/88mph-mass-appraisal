@@ -70,21 +70,25 @@ and exactly what to do instead if it can't. No guessing. ✅
 
 ---
 
-## ▶️ Start here — Demo 1 is live
+## ▶️ Start here — five demos are live
 
-Three minutes, and you will never think about these things the same way again.
-Two ways to take it in:
+Every one of them runs **on your own machine**. Pick a road and go:
 
 ```powershell
-uv run streamlit run app/01_Flux_Capacitor_local_Streamlit.py   # 🖱️ click around
-uv run jupyter lab                                              # 📓 read the notebook
+uv run streamlit run app/01_Flux_Capacitor_local_Streamlit.py                  # §2
+uv run streamlit run app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py  # §3 + §4
+uv run streamlit run app/04_06_Office_Assistant_local_Streamlit.py             # §6 + §8
+uv run jupyter lab                                                             # 📓 the notebooks
 ```
 
-| | |
+| 🖱️ The apps | What you click |
 |---|---|
-| 🖱️ **[The app](app/01_Flux_Capacitor_local_Streamlit.py)** | Point-and-click. Type in *your* parcel number and watch what happens. Best for showing someone. |
-| 📓 **[The notebook](notebooks/01_flux_capacitor_local.ipynb)** | The full explanation, top to bottom, with the code visible. Best for understanding it yourself. |
-| ☁️ **[Hosted notebook](notebooks/01_flux_capacitor_api.ipynb)** | Same demo with no GPU required. |
+| **[⚡ The Flux Capacitor](app/01_Flux_Capacitor_local_Streamlit.py)** | Type in *your* parcel number and watch it shatter into tokens. Then watch the model predict one word at a time. |
+| **[🎛️ Time Circuits & Plutonium](app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py)** | Punch a personality into the dashboard, then ask it something it cannot know and watch it invent an ordinance. |
+| **[🛹 The Office Assistant](app/04_06_Office_Assistant_local_Streamlit.py)** | Hand it a tool and watch it stop guessing — then hand it your policy manual. |
+
+**New here? Start with the Flux Capacitor.** Three minutes, and you will never
+think about these things the same way again.
 
 Everyone has watched a chatbot type an answer. Almost nobody has been shown **what
 is actually happening** while it does. So we open it up:
@@ -146,20 +150,26 @@ on stage, you can find it in about ten seconds. 👀
 
 | § | The Bit | ⚙️ What You Actually Learn |
 |:---:|---|---|
-| 2 | ⚡ **The Flux Capacitor** ✅<br/>[🖥️ local](notebooks/01_flux_capacitor_local.ipynb) · [☁️ hosted](notebooks/01_flux_capacitor_api.ipynb) | What an LLM *is* — watch next-word prediction happen live |
-| 3 | 🎛️ **Setting the Time Circuits** ✅<br/>[🖥️ local](notebooks/02_time_circuits_local.ipynb) · [☁️ hosted](notebooks/02_time_circuits_api.ipynb) | The system prompt — one sentence that changes everything |
-| 4 | 🔋 **Running out of Plutonium** ✅<br/>[🖥️ local](notebooks/03_plutonium_local.ipynb) · [☁️ hosted](notebooks/03_plutonium_api.ipynb) | Where it goes blind — and invents an ordinance to cover it |
-| 3 | 🕰️ **Setting the Time Circuits** | System prompts: telling the model who it is |
-| 4 | ☢️ **Running Out of Plutonium** | Where LLMs fail, and why they confidently make things up |
-| 5 | 🗑️ **Introducing Mr. Fusion** | Agents & the ReAct loop: Reason → Act → Observe |
-| 6 | 🛹 **The Hoverboard** | Tools — *any* Python function you let the model call |
-| 7 | 🏎️ **Reaching 88 MPH** | The mass valuation agent: parcels, ratio studies, maps |
-| 8 | 📖 **Grays Sports Almanac** | RAG — answers from **your** office documents |
-| 9 | 🔋 **The DeLorean Engine** | Small models: tiny, free, and surprisingly mighty |
-| 10 | 🔌 **The Universal Adapter** | MCP — the "USB-C of AI" ⚡ |
-| 11 | 📊 **The Dashboard** | Wrapping it all in something *anyone* in the office can use |
+| 2 | ⚡ **The Flux Capacitor** ✅<br/>[🖥️ local](notebooks/01_flux_capacitor_local.ipynb) · [☁️ hosted](notebooks/01_flux_capacitor_api.ipynb) · [🖱️ app](app/01_Flux_Capacitor_local_Streamlit.py) | What an LLM *is* — watch next-word prediction happen live |
+| 3 | 🎛️ **Setting the Time Circuits** ✅<br/>[🖥️ local](notebooks/02_time_circuits_local.ipynb) · [☁️ hosted](notebooks/02_time_circuits_api.ipynb) · [🖱️ app ⑂](app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py) | The system prompt — one sentence that changes everything |
+| 4 | 🔋 **Running out of Plutonium** ✅<br/>[🖥️ local](notebooks/03_plutonium_local.ipynb) · [☁️ hosted](notebooks/03_plutonium_api.ipynb) · [🖱️ app ⑂](app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py) | Where it goes blind — and invents an ordinance to cover it |
+| 5 | 🗑️ **Introducing Mr. Fusion** | Agents & the ReAct loop: Reason → Act → Observe *(slides)* |
+| 6 | 🛹 **The Hoverboard** ✅<br/>[🖥️ local](notebooks/04_hoverboard_local.ipynb) · [☁️ hosted](notebooks/04_hoverboard_api.ipynb) · [🖱️ app ⑂](app/04_06_Office_Assistant_local_Streamlit.py) | A tool is a Python function *you* wrote — build one from nothing |
+| 7 | 🏎️ **Reaching 88 MPH** ⬜ | The mass valuation agent: parcels, ratio studies, maps |
+| 8 | 📖 **Grays Sports Almanac** ✅<br/>[🖥️ local](notebooks/06_almanac_local.ipynb) · [☁️ hosted](notebooks/06_almanac_api.ipynb) · [🖱️ app ⑂](app/04_06_Office_Assistant_local_Streamlit.py) | RAG in plain English — and it's just another tool |
+| 9 | ⚙️ **The DeLorean Engine** ⬜ | Small models: tiny, free, and surprisingly mighty |
+| 10 | 🔌 **The Universal Adapter** ⬜ | MCP — the "USB-C of AI" ⚡ |
+| 11 | 📊 **The Dashboard** ⬜ | Wrapping it all in something *anyone* in the office can use |
 
----
+> ### ⑂ Two apps each cover two sections — on purpose.
+>
+> **§3 + §4** share one app because they are cause and effect: the system prompt
+> that makes the model sound like an expert is the same one that makes it invent
+> an ordinance. Splitting them would throw away the twist.
+>
+> **§6 + §8** share one app because the whole point of §8 is that RAG is **not**
+> special — it is one more tool on the same agent. You watch the toolbelt grow
+> from one chip to two. §7 sits between them in the talk, so you reopen it.
 
 ## 🛣️ Two Roads
 
@@ -227,30 +237,36 @@ Copy `.env.example` → `.env` and fill in your keys.
 ```
 ✅ Guides/
      UV_Readme.md            📘 never used uv? start here
-✅ notebooks/
-     01_flux_capacitor_local.ipynb   ⚡ §2, on your own GPU
-     01_flux_capacitor_api.ipynb     ☁️ §2, hosted
-     02_time_circuits_local.ipynb    🎛️ §3, system prompts
-     02_time_circuits_api.ipynb      ☁️ §3, hosted
-     03_plutonium_local.ipynb        🔋 §4, where it goes blind
-     03_plutonium_api.ipynb          ☁️ §4, hosted
-✅ app/
-     01_Flux_Capacitor_local_Streamlit.py  🖱️ §2 as a clickable app
+✅ notebooks/                📓 one pair per demo — local and hosted
+     01_flux_capacitor_{local,api}.ipynb   ⚡ §2  what an LLM is
+     02_time_circuits_{local,api}.ipynb    🎛️ §3  system prompts
+     03_plutonium_{local,api}.ipynb        🔋 §4  where it goes blind
+     04_hoverboard_{local,api}.ipynb       🛹 §6  tools, built from nothing
+     06_almanac_{local,api}.ipynb          📖 §8  RAG as one more tool
+✅ app/                      🖱️ clickable versions, for showing someone
+     01_Flux_Capacitor_local_Streamlit.py                  ⚡ §2
      02_03_Time_Circuits_and_Plutonium_local_Streamlit.py  🎛️ §3 + §4
+     04_06_Office_Assistant_local_Streamlit.py             🛹 §6 + §8
 ✅ scripts/
-     check_setup.py          🔍 run this first — can my machine do this?
-     generate_hill_valley_data.py  🏘️ rebuilds data/ from scratch, seeded
+     check_setup.py               🔍 run this first — can my machine do this?
+     generate_hill_valley_data.py 🏘️ rebuilds data/ from scratch, seeded
+     test_tools.py                🛡️ can the tools survive a sloppy model?
+     eval_tools.py                📊 does the model actually use them well?
 ✅ src/delorean/             🚗 the shared engine every notebook imports
      models.py                  which model, and why
      llm.py                     loading models, local and hosted
-     viz.py                     the visuals — token chips, probability bars
+     viz.py                     the visuals — tokens, time circuits, the agent loop
      data.py                    reaching the three county systems
+     agent.py                   Reason → Act → Observe, hand-built
+     rag.py                     chunk, embed, search — §8's machinery
+     tools/                     what the agent is allowed to do
 ✅ data/                     🏘️ Hill Valley County — 100% synthetic
      cama.db                    🏛️ Appraiser's office · 1,200 parcels
      clerk.db                   📜 Clerk of Courts · 244 recorded deeds
      tax.db                     💵 Tax Collector · 1,200 tax accounts
      csv/                       the same data, readable right on GitHub
      policy/                    📄 4 office policy docs — §8's RAG corpus
+✅ .streamlit/config.toml    ⚙️ shared app settings (see below)
 ✅ DEMOS.md                  🎬 what each demo shows + the takeaway line
 ✅ Presentation_Material/    🎤 the session outline (source of truth for scope)
 
@@ -273,14 +289,23 @@ Copy `.env.example` → `.env` and fill in your keys.
 > Everything is invented. No real parcel, owner, address, or sale is in this
 > repository.
 
-### ▶️ Running the app
+### ▶️ Running the apps
 
 ```powershell
-uv run streamlit run app/01_Flux_Capacitor_local_Streamlit.py
+uv run streamlit run app/01_Flux_Capacitor_local_Streamlit.py                  # §2
+uv run streamlit run app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py  # §3 + §4
+uv run streamlit run app/04_06_Office_Assistant_local_Streamlit.py             # §6 + §8
 ```
 
-Opens at `localhost:8501`. Three tabs — tokens, prediction, generation — with a
-model picker in the sidebar so you can swap engines mid-demo.
+Each opens at `localhost:8501` with a model picker in the sidebar, so you can
+swap engines mid-demo. The Office Assistant also reports **which device the
+weights are actually on**, so nobody has to take "it runs locally" on faith.
+
+> ⚙️ **Settings are committed** in `.streamlit/config.toml`. The important one
+> turns Streamlit's file watcher off: it otherwise walks ~5,500 `transformers`
+> submodules on every click and prints a wall of harmless `torchvision` errors.
+> The trade is that editing a `.py` no longer auto-reloads — press **R** in the
+> browser.
 
 > 🛡️ **All demo data is synthetic.** No real parcels, owners, or addresses live in
 > this repository — and none should ever be committed to it.
@@ -315,8 +340,8 @@ Built in the open, in the order the session presents it. 🔨
 | ✅ | §2 as an interactive Streamlit app 🖱️ |
 | ✅ | Synthetic county data — 3 office systems + policy corpus 🏘️ |
 | ✅ | **§3–4 — prompting, and where it breaks** 🕰️ *(4 notebooks + shared app)* |
-| ⬜ | §6–7 — tools, and the mass valuation agent 🏎️ |
-| ⬜ | §8 — RAG over office documents 📖 |
+| ✅ | **§6 + §8 — tools, and RAG as one more tool** 🛹📖 *(4 notebooks + shared app)* |
+| ⬜ | §7 — the mass valuation agent 🏎️ |
 | ⬜ | §9 — small models 🔋 |
 | ⬜ | §10 — Model Context Protocol 🔌 |
 | ⬜ | §11 — the dashboard 📊 |
