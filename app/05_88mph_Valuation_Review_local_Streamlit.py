@@ -174,6 +174,12 @@ def build(model_key: str, tool_names: tuple[str, ...]):
 
 
 @st.cache_data(show_spinner=False)
+def cached(model_key: str) -> bool:
+    """Is this model already downloaded? Cached so it is not a disk walk per rerun."""
+    return models.is_cached(model_key)
+
+
+@st.cache_data(show_spinner=False)
 def county_parcels():
     """Every parcel, for drawing the county underneath a selection."""
     return data.parcels_df()
@@ -273,18 +279,38 @@ with st.sidebar:
     st.caption("Section 7 — the valuation review assistant")
     st.divider()
 
-    keys = list(models.REGISTRY)
+    keys = models.selectable()
     model_key = st.selectbox(
         "Model", options=keys,
         index=keys.index(DEFAULT_MODEL) if DEFAULT_MODEL in keys else 0,
-        format_func=lambda k: f"{models.REGISTRY[k].label}  ({models.REGISTRY[k].params})",
+        format_func=lambda k: (
+            f"{'✅' if cached(k) else '⬇️'} {models.REGISTRY[k].label}  "
+            f"({models.REGISTRY[k].params})"),
     )
     spec = models.REGISTRY[model_key]
     st.caption(f"`{spec.hf_id}`")
-    if spec.role == "tiny":
+
+    # Picking a model that is not on this machine starts a multi-gigabyte
+    # download the moment you press Run, with no progress bar anywhere the
+    # audience can see. Say so before that happens rather than after.
+    if not cached(model_key):
+        st.error(
+            f"**Not on this machine yet.** Choosing this will download it "
+            f"first — several GB, and nothing on screen will show progress. "
+            f"Fetch it before you present:\n\n"
+            f"```\nuv run python -c \"from delorean import llm; "
+            f"llm.load_local('{model_key}')\"\n```",
+            icon="⬇️")
+    elif spec.role == "tiny":
         st.warning(
             "The 0.8B model cannot drive three tools. Fine to try once, then "
             "switch back.", icon="⚠️")
+
+    # This app is where a blocked model would have done the most damage --
+    # Section 7's prompt is about 1,600 tokens, which is past where Nemotron
+    # runs out of memory. Explain the absence rather than leaving a gap.
+    for missing in models.blocked():
+        st.caption(f"⚠️ **{missing.label}** is not offered — {missing.blocked_reason}")
 
     st.divider()
     st.markdown("**The toolbelt**")
@@ -484,6 +510,6 @@ if state:
             f" · {state['elapsed']:.1f}s")
 else:
     st.info(
-        "Press **1⃣ How did the county do?** to begin. The agent will write "
+        "Press **1️⃣ How did the county do?** to begin. The agent will write "
         "its own SQL, run the IAAO ratio study, and report back.",
         icon="⚡")

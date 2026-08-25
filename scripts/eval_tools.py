@@ -13,8 +13,10 @@ That last one matters more than it sounds. An agent that reaches for a database
 every time somebody says "good morning" is worse than useless: it is slow, it
 looks broken, and in front of an audience it is the thing that goes wrong.
 
-⚠️  Only Qwen3.5-4B is cached on the dev box. Naming `smol` or `nemotron` will
-    download several GB of weights the first time.
+⚠️  Check `models.is_cached(key)` before naming a model here. An uncached one
+    downloads several GB with no progress bar. Note that `nemotron` is in the
+    registry but runs out of memory on Windows at this prompt size -- see
+    `models.blocked()` and Section 14 of CLAUDE.md.
 """
 
 from __future__ import annotations

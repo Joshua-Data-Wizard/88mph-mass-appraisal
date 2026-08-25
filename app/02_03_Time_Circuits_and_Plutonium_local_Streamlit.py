@@ -418,7 +418,7 @@ with st.sidebar:
     st.caption("Sections 3 & 4 — prompting, and where it breaks")
     st.divider()
 
-    keys = list(models.REGISTRY)
+    keys = models.selectable()
     choice = st.selectbox(
         "Model",
         options=keys,

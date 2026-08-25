@@ -291,12 +291,101 @@ _SHAPE_A = re.compile(r"<tool_call>\s*<function=([^>\s]+)\s*>(.*?)</function>", 
 _SHAPE_A_PARAM = re.compile(r"<parameter=([^>\s]+)\s*>\s*(.*?)\s*</parameter>", re.S)
 _SHAPE_B = re.compile(r"<tool_call>\s*(\{.*?\})\s*</tool_call>", re.S)
 
+# Shape D -- Gemma 4. Its own delimiters, and note they are NOT <tool_call>:
+# the pipe is inside the angle brackets, and the closing tag is mirrored.
+#
+#   <|tool_call>call:map_parcels{sql:<|"|>SELECT parcel_id FROM ...<|"|>}<tool_call|>
+#
+# String values are fenced with <|"|> rather than quoted, which is what makes
+# it safe to put a SQL statement -- commas, quotes, braces and all -- inside a
+# brace-delimited argument list.
+_SHAPE_D = re.compile(
+    r"<\|tool_call>\s*call:\s*([A-Za-z_]\w*)\s*\{(.*?)\}\s*<tool_call\|>", re.S)
+_SHAPE_D_ARG = re.compile(
+    r"([A-Za-z_]\w*)\s*:\s*(?:<\|\"\|>(.*?)<\|\"\|>|([^,}]*))", re.S)
+
+
+#: The same call after skip_special_tokens=True has eaten its delimiters.
+_SHAPE_D_BARE = re.compile(r"\bcall:\s*([A-Za-z_]\w*)\s*\{")
+
+
+def _shape_d_args(body: str) -> dict:
+    """Pull `key:<|"|>value<|"|>` pairs out of one Gemma 4 argument list."""
+    args: dict = {}
+    for key, fenced, bare in _SHAPE_D_ARG.findall(body):
+        value = fenced if fenced else bare.strip()
+        if key:
+            args[key] = value
+    return args
+
+
+def _shape_c_calls(text: str) -> tuple[list[ToolCall], list[tuple[int, int]]]:
+    """Shape C -- bare JSON, with no <tool_call> tags around it at all.
+
+    SmolLM3 does this, and it took a while to notice because its chat template
+    *tells* it not to. The rendered prompt ends with a clear instruction to
+    wrap calls in <tool_call></tool_call>, and the model writes the payload
+    correctly and then simply omits the tags:
+
+        {"name": "run_sql", "arguments": {"sql": "SELECT owner_name FROM ..."}}
+
+    ⚠️ The lesson is worth more than the fix: **the chat template tells you
+    what a model was trained to emit, not what it actually emits.** Rendering
+    the template is not a substitute for generating from the model and reading
+    what comes out.
+
+    Two things keep this from firing on ordinary prose that happens to contain
+    a brace. It parses with `raw_decode` rather than a regex, so it only
+    matches genuinely well-formed JSON -- and the payload has to name a tool
+    that actually exists.
+
+    Returns the calls and where they sat in the text, so 
+    can take them back out of the prose a human is shown.
+    """
+    decoder = json.JSONDecoder()
+    calls: list[ToolCall] = []
+    spans: list[tuple[int, int]] = []
+    at = 0
+
+    while True:
+        start = (text or "").find("{", at)
+        if start == -1:
+            return calls, spans
+        try:
+            payload, end = decoder.raw_decode(text, start)
+        except ValueError:
+            at = start + 1          # not JSON after all; keep looking
+            continue
+
+        at = end
+        if not isinstance(payload, dict):
+            continue
+        name = payload.get("name")
+        args = payload.get("arguments")
+        if args is None:
+            args = payload.get("parameters")
+        if name and isinstance(args, dict) and resolve_tool(str(name)) is not None:
+            calls.append(ToolCall(str(name), dict(args)))
+            spans.append((start, end))
+
 
 def parse_tool_calls(text: str) -> list[ToolCall]:
     """Pull every tool call out of what the model generated.
 
     Returns a list because Qwen3.5 is known to be over-eager about asking for
     several tools at once. Callers that only want one take the first.
+
+    Three shapes, tried in order, because three models in our own registry
+    write them three different ways:
+
+        A  nested XML inside <tool_call>     Qwen3.5, Nemotron
+        B  JSON inside <tool_call>           what SmolLM3's template asks for
+        C  bare JSON, no tags at all         what SmolLM3 actually does
+        D  <|tool_call>call:name{...}        Gemma 4, with <|"|> as its quote
+
+    Shape C is tried last because it is the loosest -- it will match a bare
+    JSON object anywhere in the text, so anything with real delimiters gets
+    first refusal.
 
     Note that Shape A has no types at all -- every value arrives as a string.
     `dispatch()` coerces them against the schema.
@@ -316,6 +405,12 @@ def parse_tool_calls(text: str) -> list[ToolCall]:
                 args = payload.get("arguments") or payload.get("parameters") or {}
                 calls.append(ToolCall(str(payload["name"]), dict(args)))
 
+    for name, body in _SHAPE_D.findall(text or ""):
+        calls.append(ToolCall(name.strip(), _shape_d_args(body)))
+
+    if not calls:
+        calls, _spans = _shape_c_calls(text)
+
     return calls
 
 
@@ -326,13 +421,38 @@ def attempted_tool_call(text: str) -> bool:
     almost always `max_new_tokens` set too low. Budget at least 320 when
     thinking is on, or you get a truncated parameter and no way to tell why.
     """
-    return "<tool_call>" in (text or "")
+    return "<tool_call>" in (text or "") or "<|tool_call>" in (text or "")
 
 
 def strip_tool_calls(text: str) -> str:
     """The prose the model wrote around its tool call, for showing a human."""
     cleaned = re.sub(r"<tool_call>.*?</tool_call>", "", text or "", flags=re.S)
     cleaned = re.sub(r"<tool_call>.*", "", cleaned, flags=re.S)   # truncated tail
+
+    # Shape D, and then everything from the point Gemma starts inventing its
+    # own tool RESPONSE. Measured: it emits <|tool_response> straight after the
+    # call and, left alone, writes a plausible result for a tool that has not
+    # run yet. That text must never reach a user -- it is Section 4 wearing a
+    # tool call's clothes.
+    cleaned = re.sub(r"<\|tool_call>.*?<tool_call\|>", "", cleaned, flags=re.S)
+    cleaned = re.sub(r"<\|tool_call>.*", "", cleaned, flags=re.S)
+    cleaned = re.sub(r"<\|tool_response>.*", "", cleaned, flags=re.S)
+
+    # ...and the remnant left when a caller decoded Gemma's output with
+    # skip_special_tokens=True, which deletes its delimiters but not the call
+    # itself. Guarded on the name resolving to a real tool so that ordinary
+    # prose containing "call:" survives untouched.
+    for name in set(_SHAPE_D_BARE.findall(cleaned)):
+        if resolve_tool(name) is not None:
+            cleaned = re.sub(r"call:\s*" + re.escape(name) + r"\s*\{.*?\}",
+                             "", cleaned, flags=re.S)
+
+    # Shape C leaves no tags to strip, so cut out the spans the parser
+    # recognised. Back to front, so earlier offsets stay valid.
+    _calls, spans = _shape_c_calls(cleaned)
+    for start, end in reversed(spans):
+        cleaned = cleaned[:start] + cleaned[end:]
+
     return cleaned.strip()
 
 

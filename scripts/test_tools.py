@@ -223,21 +223,33 @@ check("tool nickname 'policy_search' resolves", r["ok"])
 
 
 # ── 10. Parsing what the model emitted ───────────────────────────────────
-section("10. The parser handles BOTH registry formats")
-print("     All three models wrap in <tool_call>, so a tag check alone fools you.")
-print("     The contents differ, and Qwen3.5 is NOT the JSON one.\n")
+section("10. The parser handles all FOUR registry formats")
+print("     Four models, four conventions. Two wrap in <tool_call> with")
+print("     different contents, one omits the tags entirely, and Gemma 4")
+print("     brings its own delimiters. A tag check alone fools you.\n")
 
 SHAPE_A = (  # Qwen3.5 and Nemotron -- measured
     "<tool_call>\n<function=lookup_parcel>\n"
     "<parameter=parcel_id>\n04-127-3891\n</parameter>\n</function>\n</tool_call>"
 )
-SHAPE_B = (  # SmolLM3 -- from its chat template
+SHAPE_B = (  # SmolLM3 -- what its chat template ASKS for
     '<tool_call>\n{"name": "lookup_parcel", '
     '"arguments": {"parcel_id": "04-127-3891"}}\n</tool_call>'
 )
+SHAPE_C = (  # SmolLM3 -- what it ACTUALLY writes. No tags at all.
+    '{"name": "lookup_parcel", "arguments": {"parcel_id": "04-127-3891"}}'
+)
+SHAPE_D = (  # Gemma 4 -- its own delimiters, <|"|> instead of quotes
+    '<|tool_call>call:lookup_parcel{parcel_id:<|"|>04-127-3891<|"|>}<tool_call|>'
+)
 
 for label, blob in (("Shape A (Qwen3.5 / Nemotron)", SHAPE_A),
-                    ("Shape B (SmolLM3)", SHAPE_B)):
+                    ("Shape B (SmolLM3 template)", SHAPE_B),
+                    ("Shape C (SmolLM3 actual)", SHAPE_C),
+                    ("Shape D (Gemma 4)", SHAPE_D),
+                    ("Shape D (Phi-4-mini, = Shape C)",
+                     '{"name": "lookup_parcel", '
+                     '"parameters": {"parcel_id": "04-127-3891"}}')):
     calls = tools.parse_tool_calls(blob)
     good = (len(calls) == 1 and calls[0].name == "lookup_parcel"
             and calls[0].args.get("parcel_id") == HERO)
@@ -260,8 +272,36 @@ MULTI = SHAPE_A + "\n" + SHAPE_A.replace("04-127-3891", "01-133-3269")
 check("parallel tool calls are all returned, not just the first",
       len(tools.parse_tool_calls(MULTI)) == 2)
 
+# Shape C is the loose one -- bare JSON with no delimiters at all -- so it
+# carries two guards the others do not need. Both matter: without them, any
+# answer containing a brace could fire a tool.
+check("Shape C ignores prose that merely contains JSON",
+      tools.parse_tool_calls('Store it as {"a": 1} in the config.') == [])
+check("Shape C ignores well-formed JSON naming no real tool",
+      tools.parse_tool_calls(
+          '{"name": "launch_missiles", "arguments": {"x": 1}}') == [])
+
+# Shape D has explicit delimiters, so an unknown NAME is a genuine call to a
+# tool that does not exist -- parsed on purpose, so dispatch() can hand the
+# model back the list of tools it really has. See section 5 above.
+unknown = tools.parse_tool_calls(
+    '<|tool_call>call:launch_missiles{x:<|"|>1<|"|>}<tool_call|>')
+check("Shape D parses an unknown tool rather than silently dropping it",
+      len(unknown) == 1 and unknown[0].name == "launch_missiles")
+check("  ...and dispatch turns that into a usable hint",
+      not json.loads(tools.dispatch("launch_missiles", {}))["ok"])
+
+# Gemma emits <|tool_response> straight after the call and, unchecked, invents
+# a result for a tool that has not run. That must never reach a human.
+GEMMA_RUNON = (SHAPE_D + '<|tool_response>The owner is Marty McFly.')
+check("Gemma's invented tool response is stripped from the prose",
+      "Marty" not in tools.strip_tool_calls(GEMMA_RUNON))
+check("  ...and the real call still parses out of it",
+      tools.parse_tool_calls(GEMMA_RUNON)[0].name == "lookup_parcel")
+
 # End to end: parse, then dispatch, exactly as the agent node will.
-for label, blob in (("Shape A", SHAPE_A), ("Shape B", SHAPE_B)):
+for label, blob in (("Shape A", SHAPE_A), ("Shape B", SHAPE_B),
+                    ("Shape C", SHAPE_C), ("Shape D", SHAPE_D)):
     c = tools.parse_tool_calls(blob)[0]
     out = json.loads(tools.dispatch(c.name, c.args))
     check(f"{label}: parse -> dispatch -> Biff Tannen",

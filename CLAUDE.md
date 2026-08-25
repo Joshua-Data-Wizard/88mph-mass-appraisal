@@ -2,6 +2,19 @@
 
 Working agreement for this repository. Read this first every session.
 
+> ### 📂 This is one of two files. The other is [FINDINGS.md](FINDINGS.md).
+> **CLAUDE.md is the agreement — what to do and what not to break.**
+> **FINDINGS.md is the evidence — what we measured and what it cost.**
+> Read this one every session. Go to the other when something surprises you,
+> when a test fails impossibly, or before you "fix" something that looks
+> wrong on purpose.
+
+> **Two numbering systems, and they collide.** `§2`–`§12` in prose are
+> **sections of the 90-minute talk** (§7 is the ratio study, §10 is MCP).
+> `## 1.`–`## 15.` are **sections of this document**. Where this file refers
+> to itself it says so by name — *"see §11 Tool calling"* — because `§11`
+> alone could mean either the dashboard or the parser.
+
 ---
 
 ## 1. What this is
@@ -30,6 +43,37 @@ Two constraints come from the presenters, not from the outline, and they drive e
   It also happens to help the model: restraint measurably degrades at three
   tools and a guardrail system prompt buys it back (§13). **Small toolbelts
   because it suits the demo; the prompt is what handles scale.**
+
+---
+
+### ⛔ Non-negotiables that came from bugs
+
+Every line here cost somebody an afternoon. **The rule is here; the story is in
+[FINDINGS.md](FINDINGS.md).** If one of these looks unnecessary, read the story
+before removing it — most of them look unnecessary right up until they don't.
+
+| Rule | Break it and |
+|---|---|
+| **Apps build model pickers from `models.selectable()`**, never `list(models.REGISTRY)` | a presenter picks a model that OOMs mid-demo |
+| **Draw SVG with `st.iframe`, never `st.html`** | DOMPurify silently deletes the drawing and leaves the card |
+| **Model output never goes into an HTML string** | markdown tables render as raw pipes, and untrusted text lands in markup |
+| **Call `llm.unload()` between models** in any multi-model script | VRAM accumulates and every measurement after the first is wrong |
+| **Never block a thread you did not create** (`run_in_executor` on a blocking `get`) | the interpreter cannot exit and holds the GPU |
+| **Parse tool calls with the full decode** (`skip_special_tokens=False`) | Gemma's calls vanish and it scores 0/6 |
+| **Write system-prompt checklist items as nouns, not negations** | the model repeats *"no tax is outstanding"* back as a finding |
+| **`.streamlit/config.toml` keeps `fileWatcherType = "none"`** | the watcher walks 5,500 `transformers` modules on every rerun |
+| **`link-mode = "copy"` stays in `[tool.uv]`** | `uv sync` dies on OneDrive with `os error 396` |
+| **Pass Chroma an explicit embedding function** | it downloads 79 MB mid-demo |
+| **Never widen a tool's guessing to make a demo pass** | you ship the §4 failure the talk spends three minutes warning about |
+| **Never renumber a demo** | an attendee who liked §7 cannot find §7 |
+
+⚠️ **When a model scores zero, suspect the harness before the model.** It has
+happened three times in this repository and the model was fine every time.
+Print the raw generation with `repr()` before you believe any scoreboard.
+
+⚠️ **When a process seems to hang, compare CPU time against wall clock.** A
+working process burns CPU; one stuck at exit does not. That ratio was sitting
+in plain sight for an hour once.
 
 ---
 
@@ -117,28 +161,47 @@ Document all three in the `_api` notebooks so an attendee can pick by budget. Ca
 
 ```
 88mph-mass-appraisal/
-├── notebooks/                   # one pair per demo, numbered to the outline
-│   ├── 01_flux_capacitor_local.ipynb      DONE
-│   └── 01_flux_capacitor_api.ipynb        DONE
+├── notebooks/                   # 15 notebooks — a _local/_api pair per demo
+│   ├── 01_flux_capacitor_{local,api}.ipynb    §2  what an LLM is
+│   ├── 02_time_circuits_{local,api}.ipynb     §3  system prompts
+│   ├── 03_plutonium_{local,api}.ipynb         §4  where it goes blind
+│   ├── 04_hoverboard_{local,api}.ipynb        §6  tools, from nothing
+│   ├── 05_88mph_{local,api}.ipynb             §7  ratio studies, SQL, maps
+│   ├── 06_almanac_{local,api}.ipynb           §8  RAG as one more tool
+│   ├── 07_delorean_smol.ipynb                 §9  local only, by design
+│   └── 08_universal_adapter_{local,api}.ipynb §10 three offices over MCP
 ├── app/                         # Streamlit — always .py, never a notebook
-│   ├── 01_Flux_Capacitor_local_Streamlit.py   DONE
-│   ├── 02_03_Time_Circuits_and_Plutonium_local_Streamlit.py  DONE (§3+§4)
-│   └── 04_06_Office_Assistant_local_Streamlit.py  DONE (§6+§8)
+│   ├── 01_Flux_Capacitor_local_Streamlit.py                  §2
+│   ├── 02_03_Time_Circuits_and_Plutonium_local_Streamlit.py  §3 + §4
+│   ├── 04_06_Office_Assistant_local_Streamlit.py             §6 + §8
+│   ├── 05_88mph_Valuation_Review_local_Streamlit.py          §7
+│   └── 08_09_Universal_Adapter_local_Streamlit.py            §10
 ├── src/delorean/                # importable package — the shared engine
-│   ├── models.py                # ModelSpec registry: get/tiny/default_local/compare
-│   ├── llm.py                   # load_local, load_tokenizer, chat_prompt,
-│   │                            #   vocab_size, get_api_client, api_model
-│   ├── viz.py                   # *_html() builders + show_*() notebook wrappers
-│   ├── data.py                  # DONE — check/build, cama/clerk/tax connections,
-│   │                            #   *_df frames, policy_documents, systems
-│   ├── tools/                   # base.py + parcel.py DONE — see §12
-│   │                            #   (§7+) ratio study, mapping still to build
-│   └── rag/                     # (§8) index + retrieve
+│   ├── models.py                # ModelSpec registry; selectable() / blocked()
+│   ├── llm.py                   # load_local, unload, chat_prompt, vocab_size,
+│   │                            #   where_it_runs, get_api_client, api_model
+│   ├── agent.py                 # the graph; responders; render_prompt; toolbox
+│   ├── prompts.py               # the measured system prompts, with their why
+│   ├── viz.py                   # *_html() builders + show_*() wrappers (~1760 ln)
+│   ├── data.py                  # check/build, cama/clerk/tax, *_df frames
+│   ├── ratio.py                 # IAAO maths — no model anywhere near it
+│   ├── rag.py                   # §8 index + retrieve (bge-small, Chroma)
+│   ├── offices.py               # §10 MCP client — discovery, routing, sync API
+│   └── tools/                   # base, parcel, policy, query, review
+├── mcp_server/                  # §10 — three servers, three offices
+│   ├── appraiser_server.py      #   get_parcel, find_parcels
+│   ├── clerk_server.py          #   get_deeds, corrections_since
+│   └── tax_server.py            #   get_tax_status
 ├── scripts/
 │   ├── check_setup.py           # 4-stage machine check — run this first
-│   └── generate_hill_valley_data.py   # DONE — seeded, deterministic
+│   ├── generate_hill_valley_data.py   # seeded, deterministic, re-runnable
+│   ├── test_tools.py            # 20 parser checks, no model needed
+│   ├── eval_tools.py            # tool-use score against a live model
+│   ├── compare_models.py        # every model, same questions, same tools
+│   ├── test_app_88mph.py        # §7 app, clicked
+│   ├── test_app_office.py       # §6/§8 app, clicked
+│   └── test_app_adapter.py      # §10 app, clicked
 ├── Guides/UV_Readme.md          # uv for newcomers
-├── mcp_server/                  # §10 — must be .py
 ├── data/                        # DONE — see data/README.md
 │   ├── cama.db                  #   Appraiser's office   1,200 parcels
 │   ├── clerk.db                 #   Clerk of Courts        244 deeds
@@ -248,9 +311,9 @@ both so an attendee can drop in their own office's real PDFs.
 | 6 | The Hoverboard | 4 | ✅ **DONE** — `04_hoverboard_{local,api}.ipynb` + shared app tab 1 |
 | 7 | Reaching 88 MPH | 5 | ✅ **DONE** — `05_88mph_{local,api}.ipynb` + `app/05_88mph_Valuation_Review_local_Streamlit.py` |
 | 8 | Grays Sports Almanac | 6 | ✅ **DONE** — `06_almanac_{local,api}.ipynb` + shared app tab 2 |
-| 9 | The DeLorean Engine | 7 | `07_delorean_engine` — **local only**, an API variant defeats the point |
-| 10 | The Universal Adapter | 8 | `mcp_server/` + `08_universal_adapter` — **the parcel-split scenario**, see below |
-| 11 | The Dashboard | 9 | `app/` Streamlit |
+| 9 | The DeLorean Engine | 7 | ✅ **DONE** — `07_delorean_smol.ipynb` — **local only**, an API variant defeats the point |
+| 10 | The Universal Adapter | 8 **and 9** | ✅ **DONE** — `mcp_server/` × 3 + `08_universal_adapter_{local,api}.ipynb` + `app/08_09_Universal_Adapter_local_Streamlit.py` |
+| 11 | Putting a Bow On It | — | ✅ **DECIDED — no new artifact.** The take-home close; see §15 |
 | 12 | Wrap Up & Q&A | — | slides |
 
 Demos 1–3 share one conceptual thread. **Build them in outline order** so each artifact can lean on the previous one.
@@ -301,36 +364,25 @@ a detour.
 
 ## 7. Model registry
 
+> 📎 Why Phi-4-mini and Gemma 4 were added, and what each model measured, are in **[FINDINGS.md](FINDINGS.md)**.
+
 Primary workhorse for §6–§11, and the default everywhere:
 
 **`Qwen/Qwen3.5-4B`** — Apache 2.0, released 2026-03-02. Ranked **#1 of 13 local models** on a 2026 tool-calling eval (97.5%, one failure in 40 cases), beating models 5–7× its size. 262K native context. Hybrid thinking mode. ~2.5–3 GB at 4-bit NF4.
 
-**Build out these three first**, all swappable behind the same interface, with a strengths/weaknesses writeup attendees can use to pick for their own office. All three are ≥3B so they can genuinely reason through a valuation problem — parameter count is not the thing to economize on in the agent demos.
+All swappable behind the same interface, with a strengths/weaknesses writeup attendees can use to pick for their own office. All are ≥2.3B so they can genuinely reason through a valuation problem — parameter count is not the thing to economize on in the agent demos.
 
-| Model | Params | License | Strength | Weakness |
-|---|---|---|---|---|
-| `Qwen/Qwen3.5-4B` | 4B | Apache 2.0 | Best-in-class tool calling (97.5%); 262K context | Over-eager parallel tool calls |
-| `HuggingFaceTB/SmolLM3-3B` | 3B | Apache 2.0 | Smallest of the three; best "look how tiny" story for §9 | Did not place in the 2026 tool-calling top tier |
-| `nvidia/NVIDIA-Nemotron-3-Nano-4B-BF16` | 4B | NVIDIA Open Model | Sequential reasoning (95%) | Struggles with parallel same-tool calls |
+**Every figure here is measured** by `scripts/compare_models.py` on the §7 toolbelt: ten questions, three tools. **Peak VRAM, not weights.**
 
-⚠️ **That Nemotron id is exact and non-obvious.** It is *Nemotron-**3**-Nano*, not `Nemotron-Nano-4B` — the plausible-looking names all 404. All four registry models are **ungated** (no license click-through), which matters for a take-home repo. The canonical list lives in `src/delorean/models.py`; this table is a summary of it.
+| Model | Params | License | Recall | Restr | SQL | Peak | s/q |
+|---|---|---|---|---|---|---|---|
+| `Qwen/Qwen3.5-4B` ⭐ | 4B | Apache 2.0 | **6/6** | 4/4 | **6/6** | 4.00 GB | 8.7 |
+| `HuggingFaceTB/SmolLM3-3B` | 3B | Apache 2.0 | **6/6** | 4/4 | **6/6** | **2.77 GB** | 6.8 |
+| `microsoft/Phi-4-mini-instruct` | 3.8B | **MIT** | 5/6 | 4/4 | 7/10 | 4.15 GB | 7.0 |
+| `google/gemma-4-E2B-it` | 2.3B | Apache 2.0 | 5/6 | 4/4 | **5/5** | 6.55 GB | **5.7** |
+| `nvidia/NVIDIA-Nemotron-3-Nano-4B-BF16` | 4B | NVIDIA Open | — | — | — | ⚠️ OOM | — |
 
-**`Qwen/Qwen3.5-0.8B` is for demo 1 only.** A tiny model is pedagogically *better* for showing next-word prediction — fast, dramatic, and it runs on a laptop with no GPU at all. It is **not** in the agent registry; §6 onward needs a model that can actually think.
-
-### Measured on the dev box (2026-08-16, RTX 3080)
-`scripts/check_setup.py` results — all four stages passed:
-
-| Model | Precision | Weights | Peak inc. KV cache | Speed |
-|---|---|---|---|---|
-| `Qwen/Qwen3.5-0.8B` | fp16 | 1.40 GB | 1.44 GB | 12.0 tok/s |
-| `Qwen/Qwen3.5-4B` | 4-bit NF4 | 2.95 GB | 2.98 GB | 13.6 tok/s |
-
-**The 4B model uses under 3 GB.** That leaves ~5 GB free even on the team's
-8 GB floor — far more headroom than planned for. Consequences:
-- Context can be generous, not the 8–16K originally assumed. Determine the real
-  ceiling empirically when building §7 rather than guessing.
-- Running two models side by side for a live comparison is feasible.
-- SmolLM3-3B and Nemotron-Nano-4B will both fit comfortably alongside.
+⚠️ **That Nemotron id is exact and non-obvious.** It is *Nemotron-**3**-Nano*, not `Nemotron-Nano-4B` — the plausible-looking names all 404. **Every registry model is ungated** (no license click-through), which matters for a take-home repo. The canonical list lives in `src/delorean/models.py`; this table is a summary of it.
 
 ### Traps to avoid
 - **`Qwen/Qwen3.5-4B-Base` is a base model.** No chat template, no instruction tuning, no tool calling. It exists and looks right; it will not work for any agent demo. Always the non-`-Base` checkpoint.
@@ -377,6 +429,17 @@ Always test an app with `streamlit.testing.v1.AppTest`, which actually executes
 the script and clicks the widgets. An HTTP 200 from the server proves nothing:
 Streamlit does not run your script until a client connects.
 
+⚠️ **Every app needs its own test, and for a while one did not have one.**
+`test_app_88mph.py` existed from the day §7 was built; the §6/§8 app had
+**no test at all**, and a change to `local_responder` reached it unnoticed
+because nothing exercised it. `scripts/test_app_office.py` now covers it:
+the one-tool and two-tool belts, the raw reveal, the restraint case, the
+mangled parcel id, and the system-prompt presets clicked in sequence.
+
+**The lesson is not "write tests."** It is that the two agent apps look
+similar enough that testing one feels like testing both, and it is not.
+They exercise different toolbelts and different parts of `agent.py`.
+
 **But AppTest does not catch everything.** `max_selections` is enforced in the
 browser, so `set_value()` jumped straight to the final state and sailed past a
 bug a user hit within minutes. When a report is about *interaction*, reproduce
@@ -418,85 +481,20 @@ has no `multiselect` and its text widgets already use `key=` + a seed.
 4. ~~**§2 The Flux Capacitor**~~ — **done**: local notebook, API notebook, Streamlit app
 5. ~~Synthetic `data/` — three office systems + policy corpus~~ — **done**, flaws verified
 6. ~~§3 + §4 — shared app + four notebooks~~ — **done**, all executed with outputs
-7. Remaining demos in outline order: ~~§6~~ → ~~§7~~ → ~~§8~~ → **§9 → next** → §10 → §11
-7. Model comparison writeup (registry → attendee-facing doc)
-8. Full dry run against the 90-minute clock
+7. ~~Remaining demos in outline order: §6 → §7 → §8 → §9 → §10~~ — **done**
+8. ~~§11 The Dashboard~~ — **resolved without an artifact**, see *§15 Section 11* below
 
-### What §2 established (reuse it)
-- **`viz.py` is the shared visual language.** Token chips, probability bars, and
-  the generated-text canvas are used by notebook and app alike. Later demos
-  should extend it rather than inventing new styling.
-- **The four-act shape works**: set up → show the mechanism → show it looping →
-  ask something real, then optional "explore on your own" sections below the
-  live path. Keep the live path to ~4 cells.
-- **Hunt for the honest example.** The planned math demo *succeeded* (`1,247 +
-  3,891` is correct), which would have contradicted the narration. Testing found
-  `17% of $412,500 → 68,125` (truth 70,125) — off by $2,000 and entirely
-  plausible-looking. That reframed the lesson from "it can't do math" to "it
-  hands you a wrong number that passes the eyeball test," which is far more
-  useful. **Always run the demo before writing the story about it.**
+### ✅ Every demo is built. What is left is not code.
 
-### What §3/§4 established (measured, not assumed)
+| | |
+|---|---|
+| **The 90-minute dry run** | never done, and it is now the biggest open risk. Nine demos, five apps, one clock. |
+| **Model comparison writeup** | the registry has six models and real numbers; an attendee-facing page does not exist yet |
+| **A presenter card** | the workflow below plus the pre-flight checks, on one printable page |
 
-**§3 and §4 are cause and effect, and that is the spine of both demos.**
-A bare model asked something it cannot know **politely refuses** — every probe,
-both models. The outline's "watch it hallucinate" does not reproduce. What does
-reproduce: give it the *confident expert persona from §3* and it invents
-specific, cited, entirely fictional answers. **The prompt that makes it useful
-is the prompt that makes it lie.** Verified on `qwen` 4B:
-
-| Probe | Bare model | With the §3 expert persona | Truth |
-|---|---|---|---|
-| R-1 min lot size | "no such county… not defined" | "**0.25 acres.** Per the County's Zoning Ordinance…" | 6,000 sq ft |
-| Appeal deadline | invents Jan 15, blames a *Community* episode | "**January 15**, late filings not accepted" | July 25 |
-| Comps near 1955 Hilldale Ct | correctly refuses | "1952 Hilldale Ct — $485,000, closed 14 days ago" | no such address |
-| PRD | — | invents "Property **Revenue Distribution**", then "Property **Reference Date**" | Price Related Differential |
-
-**Use the lot-size probe as the hero.** 0.25 acres = 10,890 sq ft; Biff's
-15,800 sq ft lot halves to 7,900, which *passes* the real 6,000 rule and *fails*
-the invented one. The hallucination reverses §10's actual decision.
-
-**§3/§4 use `qwen` (4B), not `tiny`.** The 0.8B model **breaks character** on
-the angry-taxpayer persona — it stops and lectures you about being an AI. The
-4B is superb at it. The app exposes the small model anyway so that failure can
-be shown deliberately.
-
-**"You are a helpful assistant" is a no-op.** On 4B it produced output nearly
-identical to no system prompt at all, because that is already what the model
-was trained to be. Value comes from specificity, not from having *a* prompt.
-
-**The failure is unpredictable, and say so.** The same persona invented lavish
-comps and then correctly refused to describe a sale that never happened. Do not
-promise the audience a hallucination on any single question — promise them that
-you cannot tell which you will get.
-
-**Measured VRAM is higher in real use than `check_setup.py` reports.** The 4B
-sat at **4.36 GB** during generation with these prompts, versus 2.98 GB for the
-setup check's short probe. Still fine on an 8 GB floor; do not quote 2.98 as a
-working figure.
-
-**`viz.py` gained four §3/§4 helpers** — `time_circuits_html()` (the dark
-three-row LED panel: destination = persona, present = question, last departed =
-previous persona), `persona_card_html()`, `verification_html()` (the
-model-said / county-record-says panel §4 rests on), and `show_html()`, a
-generic notebook display for any builder's string.
-
-**⚠️ The §4 twins reach genuinely different conclusions, and that is correct.**
-This is the one place the twin rule bends: both notebooks run identical code,
-but `claude-haiku-4-5` **refuses** the probe that `Qwen3.5-4B` **invents** an
-answer to — often naming the persona while refusing (*"while I'm playing the
-role of an experienced appraiser, I shouldn't guess"*). The `_api` notebook
-therefore quotes the local model's fabrication verbatim and frames the gap as a
-real local-vs-hosted trade-off an attendee should weigh, with the caveat that
-**resistance is not immunity**. Haiku also identified Hill Valley as *Back to
-the Future* correctly, where the 4B guessed *Toy Story*, *Community*, and
-*Young Sheldon* across three runs. Do not "fix" this divergence by making the
-twins agree — re-measure if models change, and rewrite the narration to match.
-
-**Notebook authoring trap that cost a re-run:** the builder script had
-`build("local")` and `build("api")` at the bottom, so re-running it to fix the
-API variant silently wiped the already-executed local notebook's outputs.
-Build scripts that emit twins should take the variant as an argument.
+⚠️ **Do not add a tenth demo.** The outline is 90 minutes with zero slack and
+every section is now spoken for. New ideas belong in the explore sections of
+existing notebooks, where they cost no stage time.
 
 ### DEMOS.md is the presentation-facing companion
 **[DEMOS.md](DEMOS.md)** holds, per demo: what is on screen, the click order,
@@ -519,6 +517,9 @@ uv run streamlit run app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py  #
 uv run streamlit run app/04_06_Office_Assistant_local_Streamlit.py            # §6+§8
 uv run python scripts/test_tools.py                            # tool robustness
 uv run python scripts/eval_tools.py                            # tool-use score
+uv run python scripts/compare_models.py                        # every model, S7 toolbelt
+uv run python scripts/test_app_88mph.py                        # the S7 app, clicked
+uv run python scripts/test_app_office.py                       # the S6/S8 app, clicked
 
 # after authoring a notebook, embed its outputs:
 uv run jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=900 <path>
@@ -542,125 +543,58 @@ GPU memory. `nvidia-smi` overstates this on Windows; trust
 - ~~Verify a released `transformers` covers Qwen3.5~~ — **resolved**, 5.15.0 on PyPI, no `git+` pin.
 - ~~Confirm bitsandbytes 4-bit loads under CUDA 13 on the RTX 3080~~ — **resolved**, works; 4B fits in 2.98 GB.
 - ~~Does `ChatHuggingFace` surface tool calling for local Qwen3.5?~~ — **moot.** The LangGraph-only decision means we parse tool calls ourselves, so the wrapper is gone along with the risk.
-- ~~Parse each registry model's tool-call format.~~ — **RESOLVED, see §11 below.**
+- ~~Parse each registry model's tool-call format.~~ — **RESOLVED, see *§11 Tool calling* below.**
   The old note here guessed Qwen emits JSON inside `<tool_call>`. **It does not.**
 
-### Known environment gotchas
+## 11. Tool calling — measured formats
 
-**OneDrive is actively hostile to Python installs — recommend moving the repo.**
-This repo currently lives in `OneDrive\Documents\GitHub\`. That has already
-caused two distinct failures in one session:
-
-1. `uv sync` died with `os error 396` — OneDrive's cloud filesystem rejects the
-   hardlinks uv uses by default. Fixed with `link-mode = "copy"` in `[tool.uv]`.
-2. `scikit-learn` installed **silently corrupt** — 40 of 1055 files, no
-   `__init__.py`, but valid `.dist-info` metadata, so uv and `pip list` both
-   reported success. Symptom was a nonsense error from transformers. Fixed with
-   `uv sync --reinstall-package scikit-learn`.
-
-Failure 2 is the dangerous one: a partially-written package looks installed.
-Moving the repo to a non-synced path (`C:\dev\88mph-mass-appraisal`) removes
-the whole class of problem. Model weights are unaffected either way — they
-cache to `~/.cache/huggingface`, outside OneDrive.
-
-**If a package behaves impossibly, suspect a partial install first.**
-```powershell
-uv sync --reinstall-package <name>
-```
-
-**Chroma downloads a 79 MB ONNX model on first use** if you let it pick its own
-embedding function. That is a surprise network call in the middle of a live
-demo. Always pass an explicit embedding function backed by
-`sentence-transformers` — it uses the GPU we already have, avoids the download,
-and makes the "text becomes numbers" step visible in the code, which §8 needs
-the audience to see anyway.
-
-**transformers 5.15.0 has an undeclared scikit-learn dependency.**
-`generation/candidate_generator.py` imports `sklearn.metrics` at module level,
-so any use of `AutoModelForCausalLM` fails with the misleading
-`Could not import module 'GenerationMixin'`. We declare `scikit-learn`
-explicitly in `pyproject.toml`. Re-check on transformers upgrades.
-
----
-
-## 11. Tool calling — measured formats (2026-08-16)
+> 📎 The full investigations — how a template silently drops your tools, why a model scoring zero is usually your fault, and what thinking mode costs — are in **[FINDINGS.md](FINDINGS.md)**.
 
 **This was the riskiest open item in the project. It is now resolved, and the
 previous assumption was wrong.** Verified by rendering each model's chat
 template with `tools=` and by generating a real call on the 4B.
 
-### Two shapes, not three
+### Four shapes, and both ends of the pipe can betray you
 
-| Model | Emits |
-|---|---|
-| `Qwen/Qwen3.5-4B` | **nested XML** |
-| `nvidia/NVIDIA-Nemotron-3-Nano-4B-BF16` | **nested XML** — same as Qwen3.5 |
-| `HuggingFaceTB/SmolLM3-3B` | **JSON** |
+> 🩹 **Corrected twice.** This section once said "two shapes, not three" and
+> claimed all models wrap calls in `<tool_call>`. That cost SmolLM3 a score of
+> **0/6**. It then said "three shapes"; adding Phi-4-mini and Gemma 4 on
+> 2026-08-25 found a fourth *output* shape **and a second failure mode
+> entirely — on the input side.** Assume there is a fifth.
+
+| Model | Emits | Wrapped in `<tool_call>`? |
+|---|---|---|
+| `Qwen/Qwen3.5-4B` | nested XML | yes |
+| `nvidia/NVIDIA-Nemotron-3-Nano-4B-BF16` | nested XML | yes |
+| `HuggingFaceTB/SmolLM3-3B` | **bare JSON** | ❌ **no** |
+| `microsoft/Phi-4-mini-instruct` | bare JSON (Shape C) | ❌ no |
+| `google/gemma-4-E2B-it` | **`<\|tool_call>call:name{…}`** | ❌ **its own tags** |
 
 ```text
-Shape A — Qwen3.5 and Nemotron          Shape B — SmolLM3
-<tool_call>                             <tool_call>
-<function=lookup_parcel>                {"name": "lookup_parcel",
-<parameter=parcel_id>                    "arguments": {"parcel_id": "04-127-3891"}}
-04-127-3891                             </tool_call>
-</parameter>
-</function>
-</tool_call>
+Shape D — Gemma 4. Note the pipe is INSIDE the brackets, and the closing
+tag is mirrored, so a `"<tool_call>" in text` check does not see it at all:
+
+    <|tool_call>call:map_parcels{sql:<|"|>SELECT parcel_id FROM …<|"|>}<tool_call|>
+
+Strings are fenced with `<|"|>` rather than quoted, which is what makes it
+safe to put a SQL statement — commas, quotes and braces included — inside a
+brace-delimited argument list.
 ```
 
-⚠️ **All three wrap in `<tool_call>`, so a tag check alone will fool you.** The
-contents differ. A parser that only does `json.loads()` on the tag body — the
-obvious implementation, and what the old note implied — **fails on our own
-default model.** This parser handles both and is verified end to end:
-
-```python
-def parse_tool_call(text: str):
-    # Shape A -- nested XML. Qwen3.5 and Nemotron.
-    m = re.search(r"<tool_call>\s*<function=([^>\s]+)\s*>(.*?)</function>", text, re.S)
-    if m:
-        args = dict(re.findall(
-            r"<parameter=([^>\s]+)\s*>\s*(.*?)\s*</parameter>", m.group(2), re.S))
-        return m.group(1).strip(), args
-    # Shape B -- JSON. SmolLM3.
-    m = re.search(r"<tool_call>\s*(\{.*?\})\s*</tool_call>", text, re.S)
-    if m:
-        payload = json.loads(m.group(1))
-        return payload.get("name"), payload.get("arguments", {})
-    return None
-```
-
-**Arguments from Shape A are always strings.** There is no typing in the XML —
-`<parameter=year>1971</parameter>` gives you `"1971"`. Coerce against the tool's
-own JSON schema before calling the function.
+⚠️ **Gemma also writes `<|tool_response>` immediately after its call and, left
+alone, invents a plausible result for a tool that has not run yet.**
+`strip_tool_calls()` cuts everything from that marker, and there is a test for
+it. That text must never reach a user — it is §4 wearing a tool call's
+clothes.
 
 ### Passing results back
 Append `{"role": "tool", "content": <string>}`. All three templates render that
 as a `<tool_response>` block inside a **user** turn. Content must be a string —
 `json.dumps()` the payload.
 
-### Thinking mode is ON by default when you pass `tools=`
-The rendered prompt ends with `<think>\n` whether or not you asked for it.
-Measured on the 4B, one full Reason → Act → Observe → Answer round trip:
-
-| | Wall clock | Notes |
-|---|---|---|
-| `enable_thinking=False` | **6.8 s** | clean tool call, correct answer |
-| `enable_thinking=True` | **23.8 s** | emits a real reasoning trace first |
-
-The trace is genuinely good — *"I have a tool called lookup_parcel… this seems
-perfect for this request"* — and it **is** the Reason step §5 describes on a
-slide. Worth showing once in §6, then switching off.
-
-**Optimisation worth taking:** enable thinking on the *decide* call only, not on
-the *report* call. Thinking on the final answer costs ~12 s and adds nothing —
-the model has already decided. Roughly halves the visible cost.
-
-**Budget ≥320 `max_new_tokens` for a tool call with thinking on.** At 120 the
-call truncated mid-parameter and the parser got nothing.
-
----
-
 ## 12. The tools layer — built for sloppy callers
+
+> 📎 The measured tool-use scores, the over-eager-tool signal, and why the normalizer exists at all are in **[FINDINGS.md](FINDINGS.md)**.
 
 `src/delorean/tools/` · verify with `uv run python scripts/test_tools.py`
 
@@ -679,18 +613,6 @@ to read.** One envelope, always:
 
 `dispatch()` **never raises.** An agent that sees an exception cannot recover.
 
-### Why it exists — measured, not assumed
-
-Across ten phrasings of one question, Qwen3.5-4B picked the right tool **10/10**
-but emitted the parcel number **three different ways**: `04-127-3891`,
-`04127-3891`, `4-127-3891`. A plain `WHERE parcel_id = ?` resolved **8/10** —
-and failed *silently*, looking exactly like a parcel that does not exist.
-
-**With the hardening layer: 10/10 end to end against the live model.**
-
-Small models are reliable at *deciding* and sloppy at *formatting*. Absorb the
-formatting and they behave far better than their size suggests.
-
 ### What `base.py` absorbs
 
 Tool name punctuation/case/nicknames (`lookupParcel`, `parcel_lookup`,
@@ -706,106 +628,9 @@ side by side. The decorator only does what is genuinely about robustness.
 `schemas(["lookup_parcel"])` exposes a subset — §6's live path gives the agent
 **one** tool, because watching it choose between five is a different lesson.
 
-### The §2 callback worth narrating
-
-`normalize_parcel_id()` exists *because* of §2. The model sees `04-127-3891` as
-thirteen fragments, so it cannot reassemble it the same way twice. Extract the
-digits, left-pad to nine, reformat — the fixed-width format makes it unambiguous.
-Fragments (`"3891"`) are **refused, not guessed at**, so the tool never invents
-a parcel nobody asked for.
-
-**Never widen a tool's guessing to make a demo pass.** Returning the wrong
-parcel confidently is the exact failure §4 spends three minutes warning about.
-
-### Measured tool-use score (`scripts/eval_tools.py`)
-
-24 questions, both tools offered, `Qwen3.5-4B`, 2026-08-16:
-
-| Category | Score |
-|---|---|
-| Clean parcel lookup | 5/5 |
-| **Mangled identifier** (`04127-3891`, `4-127-3891`, `04/127/3891`) | **4/4** |
-| A different real parcel (not the memorised hero) | 2/2 |
-| No parcel number given → must `search_parcels` | 4/4 |
-| **Answer directly, call no tool** | **6/6** |
-| Tool must fail gracefully | 3/3 |
-| **TOTAL** | **24/24 (100%)** · 5.0 s per question |
-
-**Zero unnecessary tool calls** on the six "just answer" questions, and **zero
-parallel calls**. Category E is the one to watch when anything changes: an agent
-that hits the database because somebody said "good morning" looks broken on
-stage, and it is the failure a bigger tool list makes more likely.
-
-⚠️ **`models.py` lists "over-eager parallel tool calls" as Qwen3.5's weakness.**
-It did not reproduce here — 0 of 24, with two tools offered. Treat that registry
-note as unverified at this scale rather than as fact, and re-measure when §7
-raises the count to five or six tools.
-
-⚠️ **100% on a suite we wrote ourselves is a good signal, not proof.** The cases
-cover the failure modes we know about. Add a case whenever a new one turns up.
-
-Only `qwen` is cached on the dev box; naming `smol` or `nemotron` downloads
-5.7 GB / 7.4 GB. The dual-shape parser is unit-tested against both formats in
-`scripts/test_tools.py` without needing either download.
-
-### `search_policy` — §8's RAG tool (`rag.py` + `tools/policy.py`)
-
-**RAG is built as an ordinary tool, alongside the others.** That is the §8
-lesson made structural rather than asserted: same agent, same loop, one more
-entry in the tool list.
-
-| | |
-|---|---|
-| Embedding model | `BAAI/bge-small-en-v1.5` — MIT, ungated, 33M params, 384-dim, 128 MB |
-| Device | **CPU by default.** The `_api` twin assumes no GPU, and RAG still needs embeddings computed locally. Also leaves VRAM for the 4B. |
-| Store | Chroma, **in memory** — the corpus rebuilds in ~1 s, and an index that cannot go stale is one less thing to debug live |
-| Corpus | **27 chunks** from 4 policy documents, split on `###` headings |
-| Retrieval | **6/6 hero questions at rank 1**; queries take 10–20 ms |
-
-**Every passage carries `document §section`.** Non-negotiable — §10 needs the
-agent to say *"Policy 4.2 bars the split"* and a human to be able to check it.
-It is also the direct answer to §4, where the model cited an ordinance that
-does not exist.
-
-**Chunks that cannot name their own section are excluded.** Document front
-matter retrieved as `§` with no number — an uncheckable citation. Dropping it
-took the corpus 31 → 27 chunks and *improved* the appeal-deadline score from
-0.799 to 0.825.
-
-**Traps hit while building this, all fixed:**
-- `chromadb.EphemeralClient()` returns a **shared** in-memory database per
-  process, not a fresh one. Building twice raises "collection already exists".
-  `build_index()` now drops the collection first, so re-running a notebook cell
-  is safe.
-- Chroma 1.5.9 calls **`embed_query()`**, not `__call__`, for queries — it
-  exists for *asymmetric* models that want questions phrased differently from
-  passages. A custom embedding function without it fails only at query time.
-- We deliberately skip BGE's `"Represent this sentence for searching relevant
-  passages: "` query prefix. Measured: no difference, 6/6 either way. Revisit on
-  a larger corpus.
-
-### ⚠️ The over-eager-tool signal (re-measure at every tool added)
-
-`scripts/eval_tools.py` with **three** tools offered: **28/29 (97%)**,
-4.3 s/question. Perfect on lookup, mangled ids, search, policy, and graceful
-failure. The single failure is the one that matters:
-
-> **"What is the difference between market value and assessed value?"** →
-> called `search_policy` instead of answering directly.
-
-**Two tools scored 6/6 on that category; three tools scored 4/5.** The first
-unnecessary call appeared exactly when the toolbelt grew. The case is genuinely
-borderline — checking the manual before answering a policy-adjacent question is
-defensible — and it has been **left in the suite unreclassified**, because
-massaging a test case to reach 100% would throw away the leading indicator.
-
-**§7 offers five or six tools. Re-run this eval then, and expect category E to
-degrade further.** The mitigation is a system prompt that says when to search
-and when to answer — which is §3's lesson doing real work.
-
----
-
 ## 13. The agent loop (`agent.py`) and the tool-count question
+
+> 📎 The toolbelt-versus-restraint measurements, the Streamlit bugs, and what each demo's notebooks established are in **[FINDINGS.md](FINDINGS.md)**.
 
 `build_agent(responder, tool_names, max_steps=4)` — two nodes, one conditional
 edge, hand-written. `reason` asks the model what it wants; `act` runs it;
@@ -822,75 +647,6 @@ message shapes. Everything above that line is identical, which is what lets
 `act` contains **no error handling on purpose** — `dispatch()` never raises, so
 a tool failure arrives as a readable observation the model can act on.
 
-### ⚠️ Measured: a bigger toolbelt costs restraint, and a system prompt buys it back
-
-Same questions at each toolbelt size. **Restraint** = answered directly when it
-should have. **Recall** = called the right tool when it genuinely needed one.
-
-| Config | Restraint | Recall |
-|---|---|---|
-| 1 tool | 6/6 | 1/1 |
-| 2 tools | 6/6 | 2/2 |
-| **3 tools** | **5/6** ❌ | 4/4 |
-| **3 tools + guardrail prompt** | **6/6** ✅ | **4/4** ✅ |
-
-The failure at three tools is reproducible and specific: *"What is the
-difference between market value and assessed value?"* → searched the policy
-manual instead of answering.
-
-**The guardrail prompt fixes it completely, at no cost to recall.** That is the
-important result — restraint was recovered *without* removing a tool:
-
-```
-Use lookup_parcel or search_parcels ONLY when the question is about a specific
-property, owner or address.
-Use search_policy ONLY for questions about THIS office's own rules, deadlines,
-standards or procedures.
-Answer general appraisal questions, definitions and small talk directly from
-your own knowledge. Do not use a tool for those.
-```
-
-**So: keep toolbelts small because it suits each demo's lesson, not because the
-model cannot cope.** §7 needs five or six tools and can have them — with a
-guardrail prompt, and re-measured at that count before the dry run.
-
-This is §3 doing real engineering work rather than being a party trick, and it
-is worth saying so on stage: the same lever that made the model *sound* like an
-appraiser is what stops it reaching for a database to answer "good morning".
-
-### Streamlit + transformers: the torchvision traceback wall
-
-Running any app printed **hundreds** of `ModuleNotFoundError: No module named
-'torchvision'` tracebacks and burned noticeable CPU.
-
-**Cause.** Streamlit's hot-reload watcher walks every loaded module on **every
-rerun** to decide which files to watch. `transformers` exposes ~**5,500** lazily
-imported submodules, so the watcher imports image processors for models we never
-touch — many of which import `torchvision`, which this project deliberately does
-not install.
-
-**Fix: `.streamlit/config.toml`, committed.**
-
-```toml
-[server]
-fileWatcherType = "none"   # the whole fix
-[theme]
-base = "light"             # viz.py components are light cards
-[browser]
-gatherUsageStats = false
-[client]
-toolbarMode = "minimal"
-```
-
-⚠️ **Do not "fix" this by installing torchvision.** ~2 GB, not a line of it
-used, and the watcher would still walk 5,500 modules. The cost of the fix is
-losing auto-reload on file save (press **R** in the browser) — which is an
-improvement on stage, where nothing should rerun unless you ask.
-
-`theme.base = "light"` matters too: everything `viz.py` produces is a light
-card, so a presenter whose laptop is in dark mode would otherwise get white
-cards on dark chrome.
-
 ### "Is it actually using the GPU?" — how to answer it
 
 **`llm.where_it_runs(model)`** counts parameter tensors per device and reports
@@ -906,206 +662,82 @@ tokenization.
 The §6/§8 app puts this in the sidebar — part diagnostic, part demo. An audience
 being told "this runs on the machine under your desk" should be able to see it.
 
+## 14. Section 10 — MCP, and the three offices
 
-### §6/§8 notebooks — what they establish
+> 📎 The measured timings, the negation-in-a-prompt failure and the capability ceiling between §7 and §10 are in **[FINDINGS.md](FINDINGS.md)**.
 
-**§6 puts the naive-then-hardened arc on the MAIN path**, not in explore. Acts
-1–4 build a working tool call with **nothing imported from `src/`** — a plain
-function, a hand-written schema, a two-line regex over the model's raw output.
-Act 5 breaks it with `4-127-3891`; Act 6 brings in the hardened tool. That
-sequence is the repo's best answer to "but how did you actually do that".
+`mcp_server/` × 3 · `src/delorean/offices.py` · verify with
+`uv run python scripts/test_app_adapter.py`
 
-**⚠️ §6's twins diverge at Act 3, structurally.** The Anthropic API does tool
-parsing for you and returns `tool_use` objects, so the `_api` notebook **cannot**
-show the raw `<tool_call>` text — the demystifying moment. It quotes the local
-model's output instead and says why. Same precedent as §2's logits and §4's
-refusal. Do not "fix" this.
+### The decision: three servers, not one more tool
 
-**§8's twins are nearly identical, and that is a selling point.** Chunking,
-embedding and search all run locally in both. Only generation differs. Say it
-out loud: *your document index never leaves the building; only the retrieved
-passages are sent.* That is a data-governance argument this audience cares
-about and it falls out of the architecture for free.
+The outline framed MCP as "tools, but standardised". **We build it as three
+separate programs representing three elected offices**, because that is the
+argument the room actually needs. A question a taxpayer asks at a counter —
+*may I split my lot?* — cannot be answered by any single office in the county,
+and today the only thing joining them is somebody making three phone calls.
 
-**Measured, and quotable on stage** — the §8 Act 3 similarity demo against
-Policy 4.3:
+Showing MCP as one more entry in a toolbelt makes it look like plumbing.
+Showing three buildings makes it look like the problem it solves.
 
-| Probe | Score |
-|---|---|
-| "What is the minimum lot size to split an R-1 parcel?" | 0.825 |
-| **"Can I divide my property into two?"** — no shared keywords | **0.698** |
-| "How small is a lot allowed to be before it can be subdivided?" | 0.748 |
-| "What are the office's holiday hours?" | 0.432 |
-| "Best pizza in Calgary" | 0.406 |
+### `build_agent(toolbox=...)` is the whole section in one argument
 
-Act 1, same question, no tools: the local 4B invents *"0.25 acres, per the
-County's Zoning Ordinance"*; Haiku refuses with *"while I'm roleplaying as an
-experienced appraiser, I shouldn't…"*. Both notebooks report their own result.
-
-### 🐛 `api_responder` and the system prompt (fixed)
-
-The local models take a system prompt as an ordinary message in the list. **The
-Anthropic API rejects that with a 400** — it must be a top-level `system`
-parameter. `api_responder()` now lifts any `role: "system"` messages out of the
-list and merges them into that parameter.
-
-This never showed up until an `_api` notebook called `respond()` with a system
-message, because nothing else exercised that path. **Any new responder must be
-tested with a system prompt, not just a bare question.**
-
-### 🐛 `st.html()` silently deletes every SVG (fixed)
-
-Reported from the running §7 app: the map card drew its title, its parcel
-count and its legend, and had **a hole where the map should be**. No error, no
-warning, nothing in the console.
-
-**Cause.** `st.html()` sanitises with DOMPurify configured
-`USE_PROFILES: {html: true}`. That profile allows HTML elements and **strips
-the SVG namespace entirely**. Confirmed in the shipped bundle:
-
-```
-streamlit/static/static/js/Html.*.js
-    var s={USE_PROFILES:{html:!0},FORCE_BODY:!0}
+```python
+agent.build_agent(respond, toolbox=offices)     # three MCP servers
+agent.build_agent(respond, ["run_sql"])         # local functions, §7
 ```
 
-The server sends the markup intact — verified, 75 KB with 1,200 `<circle>`
-elements — and the browser throws the drawing away on arrival. The surrounding
-`<div>` chrome survives, which is what makes it look like your own layout bug
-rather than a sanitiser.
+Anything with `.schemas(names)` and `.dispatch(name, args)` works. Reason →
+Act → Observe does not change, the responder does not change, the notebook
+does not change. **Only where the tools live changes**, which is the entire
+claim MCP makes — and it is a three-line change to `agent.py` rather than a
+new abstraction.
 
-**It was hitting two things, not one.** The bug was reported against the map;
-the speedometer was equally blank and had simply not been mentioned.
+### ⚠️ The docstring under `@mcp.tool()` is the prompt, not documentation
 
-**Fix: `st.iframe(markup, height=N)`.** An iframe is not sanitised.
-`st.components.v1.html()` works too but is deprecated in favour of `st.iframe`.
+It is the literal text a model reads when deciding whether to call the
+function. Every server here names its units, says what a number means, and
+says explicitly what it does **not** know (*"the Appraiser's roll and the
+Clerk's deeds do NOT carry this information"*). A vague docstring on an MCP
+server is indistinguishable from a broken tool.
 
-**Pass a real number for `height`, not `'content'`.** Auto-measure is tidier
-right until it measures zero, and that failure looks identical to the bug
-being fixed. Both §7 pictures cap their width (`viz.SPEEDOMETER_MAX_WIDTH`,
-`viz.MAP_MAX_WIDTH`) so the height is arithmetic — see `viz.map_frame_height()`.
+### Traps specific to MCP
 
-**Only `speedometer_html` and `parcel_map_html` emit SVG.** Every other
-`viz.py` builder is divs and tables, so §2, §3/§4 and §6/§8 were never
-affected. Check this before adding SVG to any shared builder.
+- **FastMCP generates the schema from the signature**, so parameter
+  descriptions in an `Args:` block do **not** become per-property
+  descriptions — they stay in the tool description. Both models coped; do not
+  assume a future one will.
+- **Tool names must be unique across servers.** `Offices` raises rather than
+  letting two offices publish the same name, because the agent has no way to
+  tell them apart.
+- **Servers log every request at INFO to stderr.** `Offices(quiet=True)` is
+  the default for that reason — and `quiet=False` is the first debugging move,
+  because a server that dies on startup says so on stderr and nowhere else.
+- **The `search_policy` tool stays LOCAL on purpose.** The policy manual
+  belongs to this office; MCP is for reaching somebody else's system. The app
+  draws it in a dashed panel to make that difference visible.
 
-**Notebooks are unaffected** — `IPython.display.HTML` sanitises nothing.
-So a visual can work perfectly in Jupyter and vanish in Streamlit, which is
-the reverse of the usual direction and worth remembering.
+---
 
-⚠️ **`AppTest` cannot catch this.** The element is present and correct in the
-proto either way; the stripping happens in the browser. The test now asserts
-the SVG rides in an `iframe` element rather than an `html` one, which is a
-proxy — the only real check is looking at the running app.
+## 15. Section 11 — the take-home close (no artifact)
 
-### Model output does not go into an HTML string
+**Decided 2026-08-25.** The outline asks for *"a small Streamlit app running
+the Mass Valuation Agent… a clean, ChatGPT-like interface."* That is §7's
+engine with a different face — a reprise, not a new product.
 
-The §7 answer panel originally interpolated the model's reply into a styled
-`<div>` via `unsafe_allow_html=True`. Two problems, and the second is the one
-that showed up immediately: the model **writes markdown** — given no ratio
-tool it returns a full markdown table — which inside a `<div>` renders as raw
-pipes and dashes. And model output is untrusted text that should not be
-concatenated into markup in a repository other offices are told to copy.
+Building a third app would end the talk on a **smaller** demo than the two
+before it. §7 finds the problem; §10 reaches across the county to solve it;
+anything after that is an anticlimax.
 
-Now `st.container(border=True)` + `st.markdown(answer)`. Renders tables
-properly and nothing is interpolated.
+So §11 spends its five minutes on what the presenters care about most: **how
+somebody actually starts on Monday.** Reopen either finished app with the
+machinery collapsed, then show the repository itself.
 
-### The §7 map: three rules, each learned by getting it wrong
+⚠️ **The nine-demo count is preserved** — §10's app carries two distinct demo
+beats (the cross-office question, and the sync check), which is also the
+honest way to describe it.
 
-`viz.parcel_map_html()` is hand-drawn SVG. The reasoning lives in its
-docstring; these are the rules not to undo.
-
-**1. No mapping library.** folium renders **ten** external resources and
-`leaflet.js` is one of them — on dead conference wifi you get no map at all,
-not a map missing its streets. It would also stop committed notebook outputs
-drawing on GitHub, which is most of why we commit them.
-
-**2. The frame fits the SELECTION, not the county, and nothing outlines a
-neighborhood.** Parcels are sampled inside a disc, so convex hulls came out as
-six near-perfect circles — which is not what a county looks like to anyone who
-values property for a living. **The outline was the problem, not the dots:** a
-scatter reads as a cluster, but a boundary drawn round it reads as a *claim*
-about a shape, and that claim was false. Asked to map Riverside Heights, the
-map now shows Riverside Heights filling the frame. Nothing is asserted about
-where a neighborhood ends because nothing needs to be — the name is in the
-title. Parcels in shot but not selected are drawn as small grey dots, so a
-selection sits among its neighbours instead of floating.
-
-**3. A grid, a scale bar and a north arrow — never a fake basemap.** Inventing
-streets under invented parcels doubles the fiction and invites "what road is
-that?". A plain grid says *coordinate space*.
-
-⚠️ **The scale bar is not decoration.** Once the frame fits whatever was
-selected, 36 sales across 800 m and 244 across 5 km fill it identically.
-Measured: the bar adapts 100 m → 200 m → 500 m → 2 km across the demo's
-selections. Remove it and two maps at a sevenfold difference in scale look the
-same, to a room full of people who read scaled maps professionally.
-
-A minimum span (~250 m) stops a single-parcel selection zooming to infinity.
-
-**`NEIGHBORHOOD_RADIUS` still matters even though hulls are gone** — it is what
-keeps neighborhoods contiguous rather than interleaved, which is what makes
-"the sales in Riverside Heights" a coherent place. `verify_geography()` checks
-it on every generator run.
-
-### §7 notebooks — what they establish
-
-**§7 is the first demo whose twins CONVERGE, and that is the finding.**
-Sections 4 and 6 both ended with the hosted model and the local one behaving
-differently, and we wrote that up as an honest trade-off. Here they agree,
-because `ratio_study` computes the statistics either way — the model never
-touches them. Verified mechanically: the two notebooks differ in **exactly one
-code cell** (the model-construction cell) plus three markdown cells that point
-at each other.
-
-That convergence is the strongest argument in this repository for putting
-domain knowledge in tools, and it is the natural set-up for §9: **a small
-model is not worse at arithmetic it never does.**
-
-### ⚠️ Act 4 — measured, and it changed the whole act
-
-The plan was to have the model attempt a ratio study in SQL and fail loudly.
-Measuring it produced something better and much more uncomfortable.
-
-| Asked | Qwen3.5-4B | Haiku 4.5 |
-|---|---|---|
-| *"Run the ratio study by neighborhood"* (vague) | `AVG(assessed_value / sale_price)` → SQLite integer division → Riverside Heights reads **0.000** | **declines** — "the available tools don't include a ratio_study function… what would you like me to calculate?" |
-| *"Using SQL, work out the average assessment ratio…"* (directive) | `AVG(ratio)` | `AVG(ratio)` — **byte-identical output** |
-
-So the notebook uses the **directive** phrasing, and both twins print the same
-six numbers. The lesson lands harder that way:
-
-- The numbers are **plausible** — 0.79 to 0.98, exactly where a ratio belongs.
-  Riverside Heights even comes out lowest, which is correct.
-- They are still wrong: an **average, not a median** (Twin Pines Ranch is off
-  by 0.036), and **no COD and no PRD at all**. Two of the three IAAO tests
-  quietly cease to exist.
-- **It is not a small-model failure.** Both models wrote the same query. It
-  does not go away by spending more money, because it is a *domain-knowledge*
-  failure — and domain knowledge belongs somewhere the model cannot get it
-  wrong.
-
-The integer-division result is preserved as a **quoted aside** rather than an
-executed cell, because reproducing it needs the vague phrasing, which makes
-Haiku decline and breaks the twin. *"That one you would catch. The table above
-is the one you would not."*
-
-⚠️ **Do not "fix" the twins by making Act 4 diverge.** The convergence is the
-point, and it was measured rather than hoped for.
-
-### `ratio.summarize()` lives in ratio.py, not in the tool
-
-The one-sentence verdict (*"Meets all three IAAO standards on 210 sales…"*)
-was originally `_summary()` inside `tools/review.py`. It moved to `ratio.py`
-and `ratio_stats()` now fills in `result["summary"]` itself, so an attendee
-running `ratio_stats()` on their own sales gets the same wording the agent
-reports. Found because the notebook printed `result["summary"]` and raised
-`KeyError` — the maths module had no such key.
-
-### The explore section runs on data that is not Hill Valley
-
-The "point it at your own county" cell uses twenty invented sales from a
-made-up two-neighborhood county, and reproduces the whole section in
-miniature: **together they meet every IAAO standard; split in two, Southside
-sits at 0.82 of market.** Tuned deliberately — the first attempt had six sales,
-which failed COD as "suspiciously tight" and reported NOT ENOUGH SALES for
-both groups, teaching the wrong thing entirely.
+**If a §11 artifact is ever wanted**, the cheapest honest version is a ~100
+line chat wrapper over the same engine — `chat_input`, `agent.ask`,
+`st.markdown`, no sidebar and no trace. The contrast *is* the message. It is
+not built, and the talk does not need it.
