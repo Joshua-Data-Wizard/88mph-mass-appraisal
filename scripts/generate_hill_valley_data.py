@@ -51,10 +51,48 @@ CSV_DIR = DATA_DIR / "csv"
 N_PARCELS = 1_200
 TAX_YEAR = 2025
 
+# How far a parcel can sit from the middle of its neighborhood, in degrees of
+# latitude. About 420 metres, so a neighborhood is a little under a kilometre
+# across -- roughly a real subdivision.
+#
+# The number matters: the two closest neighborhood centres in Hill Valley are
+# about 0.0085 degrees apart, so anything at or above 0.00425 would let two
+# neighborhoods bleed into each other on the map. Change the centres below and
+# this needs re-checking; `verify_geography()` does exactly that on every run.
+NEIGHBORHOOD_RADIUS = 0.0038
+
+# A degree of longitude is only cos(latitude) as long as a degree of latitude.
+# At Hill Valley's 51 degrees north that is about 0.63.
+LON_SQUEEZE = math.cos(math.radians(51.03))
+
 # The parcel the audience already met. Section 2 chops "parcel 04-127-3891"
 # into 13 tokens to show that the model sees fragments, not an identifier.
 # It becomes the star of Section 10, so it has to actually exist here.
 HERO_PARCEL = "04-127-3891"
+
+# ─────────────────────────────────────────────────────────────────────────
+#  The sales feed — and why it is deliberately a little bit out of date
+# ─────────────────────────────────────────────────────────────────────────
+#
+# Section 7 needs an appraiser to be able to run a ratio study, and a ratio
+# study needs the sale price (the Clerk's) next to the assessed value (ours).
+# In a real county nobody queries the Clerk live for that. The Clerk sends
+# over a sales file, somebody loads it, and the Appraiser works from their own
+# copy. So that is exactly what we build: a `sales_feed` table sitting inside
+# cama.db, stamped with the date it was pulled.
+#
+# That stamp is the setup for Section 10. A feed is a photograph, and the
+# Clerk's records keep moving after the shutter closes. We plant precisely one
+# such change: after the feed was pulled, the Clerk amended a deed to record
+# that it was NOT an arm's length sale after all.
+#
+# So Section 7's ratio study is right as of the feed and wrong as of today,
+# and nothing in the Appraiser's office can tell you that. Section 10 plugs
+# into the Clerk live through MCP and the discrepancy surfaces in one query.
+# The argument for MCP stops being "look, it connects" and becomes "your feed
+# was stale and you had no way to know."
+FEED_PULLED_ON = "2026-01-15"
+FEED_CORRECTED_ON = "2026-03-04"
 
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -302,10 +340,29 @@ def build_parcels(rng: random.Random) -> list[dict]:
             number = rng.randint(100, 3_499)
             owner = f"{rng.choice(FIRST_NAMES)} {rng.choice(LAST_NAMES)}"
 
-            # Coordinates: scatter around the neighborhood center. About
-            # 0.012 degrees of latitude is a little over a kilometre.
-            lat = hood["lat"] + rng.gauss(0, 0.0075)
-            lon = hood["lon"] + rng.gauss(0, 0.0110)
+            # Coordinates: scatter inside a DISC around the neighborhood
+            # centre, not a gaussian cloud.
+            #
+            # This started as `rng.gauss(0, 0.0075)` and it made a mess. A
+            # gaussian has no edge, and with a spread that wide the six
+            # neighborhoods came out wider than the gaps between them --
+            # Hilldale's outline ended up containing the centres of three
+            # other neighborhoods. On a map it read as one shapeless blob.
+            #
+            # Real neighborhoods are contiguous and they do not interleave, so
+            # a bounded disc is both better looking and more honest. Sampling
+            # the radius as sqrt(uniform) spreads parcels evenly across the
+            # area instead of bunching them in the middle.
+            #
+            # NEIGHBORHOOD_RADIUS is less than half the distance between the
+            # two closest centres, which is what guarantees the outlines drawn
+            # in viz.parcel_map_html() never overlap.
+            angle = rng.uniform(0, 2 * math.pi)
+            reach = NEIGHBORHOOD_RADIUS * math.sqrt(rng.random())
+            lat = hood["lat"] + reach * math.sin(angle)
+            # A degree of longitude is shorter than a degree of latitude this
+            # far north, so widen it to keep the blob round on the ground.
+            lon = hood["lon"] + reach * math.cos(angle) / LON_SQUEEZE
 
             parcels.append({
                 "parcel_id": pid,
@@ -379,8 +436,11 @@ def install_hero_parcel(parcels: list[dict], rng: random.Random) -> dict:
         "lot_size_sqft": 15_800,     # big lot -- which is WHY a split is plausible
         "bedrooms": 3,
         "bathrooms": 2.0,
-        "latitude": round(hood["lat"] + 0.0031, 6),
-        "longitude": round(hood["lon"] - 0.0042, 6),
+        # Placed by hand rather than sampled, so the hero parcel sits in a
+        # predictable spot on the map. Kept well inside NEIGHBORHOOD_RADIUS --
+        # about 0.0025 of the 0.0038 available.
+        "latitude": round(hood["lat"] + 0.0018, 6),
+        "longitude": round(hood["lon"] - 0.0028, 6),
         "assessed_value": 412_500,   # the number Section 2 does bad math on
         "assessment_year": TAX_YEAR,
     })
@@ -540,6 +600,98 @@ def install_hero_tax(accounts: list[dict], hero: dict) -> dict:
 
 
 # ─────────────────────────────────────────────────────────────────────────
+#  The sales feed — the Appraiser's own copy of the Clerk's sales file
+# ─────────────────────────────────────────────────────────────────────────
+
+def build_sales_feed(sales: list[dict], parcels: list[dict]) -> list[dict]:
+    """Flatten the Clerk's deeds against our parcel characteristics.
+
+    This table exists for one reason and it is a Section 7 reason: **the model
+    should never have to write a JOIN.** A small language model asked to join
+    two tables will do it, and will do it wrongly in ways that look right --
+    we measured exactly that, an inner join that silently returned zero rows
+    for an owner who happened to have no sale on file.
+
+    So every column an appraiser needs for a ratio study is carried here
+    already: what it sold for, what we said it was worth, the ratio between
+    them, and enough characteristics to slice by. One table, no joins, and
+    every question in Section 7 answerable with a plain WHERE clause.
+
+    Note this is a SNAPSHOT, taken on FEED_PULLED_ON. See the note up top.
+    """
+    by_id = {p["parcel_id"]: p for p in parcels}
+    feed = []
+
+    for sale in sales:
+        parcel = by_id.get(sale["parcel_id"])
+        if parcel is None:
+            continue    # a deed for a parcel we do not have on the roll
+
+        assessed = parcel["assessed_value"]
+        price = sale["sale_price"]
+        feed.append({
+            "parcel_id": sale["parcel_id"],
+            "sale_date": sale["recorded_date"],
+            "sale_price": price,
+            "assessed_value": assessed,
+            # Precomputed so somebody can eyeball the table, and so a query
+            # can filter on it. The ratio STUDY still goes through the tool --
+            # a median, a COD and a PRD are not things to attempt in SQL.
+            "ratio": round(assessed / price, 4) if price else None,
+            "arms_length": sale["arms_length"],
+            "deed_type": sale["deed_type"],
+            "neighborhood": parcel["neighborhood"],
+            "property_class": parcel["property_class"],
+            "year_built": parcel["year_built"],
+            "living_area_sqft": parcel["living_area_sqft"],
+            "lot_size_sqft": parcel["lot_size_sqft"],
+            "feed_pulled_on": FEED_PULLED_ON,
+        })
+
+    return feed
+
+
+def install_clerk_correction(sales: list[dict], parcels: list[dict]) -> dict:
+    """Amend one deed in the Clerk's records, AFTER the feed was pulled.
+
+    Call this only once the feed snapshot has been taken -- the whole point is
+    that the two disagree.
+
+    The correction we plant is the most ordinary one in the business: a sale
+    recorded as an ordinary transfer turns out, on review, to have been
+    between family members. Not market evidence, and IAAO says exclude it.
+
+    We pick it deterministically rather than at random -- the Courthouse
+    Square arm's length sale with the highest assessment ratio, meaning the
+    property sold for far less than we think it is worth. Which is precisely
+    what a below-market family transfer looks like in a sales file, and
+    precisely the kind of sale a good ratio study should never have counted.
+    """
+    by_id = {p["parcel_id"]: p for p in parcels}
+
+    candidates = [
+        s for s in sales
+        if s["arms_length"] == 1
+        and by_id.get(s["parcel_id"], {}).get("neighborhood") == "Courthouse Square"
+        and s["sale_price"] > 0
+    ]
+    if not candidates:
+        raise RuntimeError("No candidate sale to correct - check build_sales().")
+
+    def ratio_of(sale: dict) -> float:
+        return by_id[sale["parcel_id"]]["assessed_value"] / sale["sale_price"]
+
+    # Sorted by parcel_id as a tiebreak so the choice cannot drift between runs.
+    worst = sorted(candidates, key=lambda s: (-ratio_of(s), s["parcel_id"]))[0]
+
+    worst["arms_length"] = 0
+    worst["deed_type"] = "QUIT CLAIM"
+    worst["corrected_on"] = FEED_CORRECTED_ON
+
+    return worst
+
+
+# ─────────────────────────────────────────────────────────────────────────
 #  Writing it out
 # ─────────────────────────────────────────────────────────────────────────
 
@@ -547,6 +699,27 @@ def write_db(path: Path, table: str, rows: list[dict], schema: str,
              columns: list[str]) -> None:
     """Create one database with one table and fill it."""
     path.unlink(missing_ok=True)
+    con = sqlite3.connect(path)
+    con.execute(schema)
+    placeholders = ",".join("?" for _ in columns)
+    con.executemany(
+        f"INSERT INTO {table} ({','.join(columns)}) VALUES ({placeholders})",
+        [tuple(r.get(c) for c in columns) for r in rows],
+    )
+    con.execute(f"CREATE INDEX idx_{table}_parcel ON {table}(parcel_id)")
+    con.commit()
+    con.close()
+
+
+def add_table(path: Path, table: str, rows: list[dict], schema: str,
+              columns: list[str]) -> None:
+    """Add a second table to a database that already exists.
+
+    `write_db` deletes the file first, which is right for the office systems
+    -- one office, one table. The Appraiser's database is the exception: it
+    holds our roll AND our copy of the Clerk's sales file, exactly as a real
+    CAMA system does.
+    """
     con = sqlite3.connect(path)
     con.execute(schema)
     placeholders = ",".join("?" for _ in columns)
@@ -585,7 +758,12 @@ def ratio_stats(pairs: list[tuple[float, float]]) -> dict:
 
 
 def verify(parcels: list[dict], sales: list[dict]) -> None:
-    """Print the ratio study so we can SEE that the flaws are where we put them."""
+    """Print the ratio study so we can SEE that the flaws are where we put them.
+
+    Run this against the FEED, not the Clerk's live deeds. The feed is what
+    Section 7 reads, so the feed is what has to reproduce -- and after
+    `install_clerk_correction` the two deliberately disagree by one sale.
+    """
     by_id = {p["parcel_id"]: p for p in parcels}
     qualified = [s for s in sales
                  if s["arms_length"] == 1
@@ -624,6 +802,63 @@ def verify(parcels: list[dict], sales: list[dict]) -> None:
     print("\n  IAAO: median 0.90-1.10 | COD <= 15 (improved residential) | PRD 0.98-1.03")
 
 
+
+
+def verify_geography(parcels: list[dict]) -> None:
+    """Prove the neighborhoods do not sit on top of one another.
+
+    Worth a check on every run because the failure is silent and only visible
+    on a map. The first version of this generator scattered parcels with a
+    gaussian wide enough that Hilldale's outline swallowed the centres of
+    three other neighborhoods; every number in the ratio study was still
+    perfectly correct, and the county map was unreadable.
+
+    Two neighborhoods are clear of each other when the gap between their
+    centres is larger than the sum of how far their parcels actually reach.
+    """
+    print("\n  Neighborhood geography")
+    print("  " + "-" * 74)
+
+    reach: dict[str, tuple[float, float, float]] = {}
+    for hood in NEIGHBORHOODS:
+        here = [p for p in parcels if p["neighborhood"] == hood["name"]]
+        if not here:
+            continue
+        far = max(
+            math.hypot(p["latitude"] - hood["lat"],
+                       (p["longitude"] - hood["lon"]) * LON_SQUEEZE)
+            for p in here)
+        reach[hood["name"]] = (hood["lat"], hood["lon"], far)
+        print(f"  {hood['name']:<20} {len(here):>4} parcels, "
+              f"reach {far * 111:.2f} km of the {NEIGHBORHOOD_RADIUS * 111:.2f} km allowed")
+
+    worst_gap, worst_pair = 1e9, ("", "")
+    clashes = []
+    names = sorted(reach)
+    for i, a in enumerate(names):
+        for b in names[i + 1:]:
+            lat_a, lon_a, reach_a = reach[a]
+            lat_b, lon_b, reach_b = reach[b]
+            apart = math.hypot(lat_a - lat_b, (lon_a - lon_b) * LON_SQUEEZE)
+            slack = apart - (reach_a + reach_b)
+            if slack < worst_gap:
+                worst_gap, worst_pair = slack, (a, b)
+            if slack < 0:
+                clashes.append((a, b, slack))
+
+    print("  " + "-" * 74)
+    if clashes:
+        print(f"  !! {len(clashes)} PAIR(S) OVERLAP - the map will look like "
+              f"one blob:")
+        for a, b, slack in clashes:
+            print(f"       {a} and {b} overlap by {abs(slack) * 111:.2f} km")
+        print(f"  !! Lower NEIGHBORHOOD_RADIUS (now {NEIGHBORHOOD_RADIUS}) "
+              f"or move the centres apart.")
+    else:
+        print(f"  All {len(names)} neighborhoods are clear of each other. "
+              f"Tightest gap: {worst_gap * 111:.2f} km "
+              f"({worst_pair[0]} / {worst_pair[1]}).")
+
 # ─────────────────────────────────────────────────────────────────────────
 
 PARCEL_COLS = [
@@ -636,6 +871,18 @@ PARCEL_COLS = [
 SALE_COLS = [
     "instrument_number", "parcel_id", "recorded_date", "sale_price", "grantor",
     "grantee", "deed_type", "arms_length", "book", "page",
+    # NULL on every deed but one. The exception is the Section 10 payload:
+    # a deed the Clerk amended after the Appraiser's sales feed was pulled.
+    "corrected_on",
+]
+
+# The Appraiser's copy of the Clerk's sales file. Curated on purpose -- these
+# are the columns a ratio study needs and nothing else. Every extra column is
+# one more thing for a small model to reach for and get wrong.
+FEED_COLS = [
+    "parcel_id", "sale_date", "sale_price", "assessed_value", "ratio",
+    "arms_length", "deed_type", "neighborhood", "property_class", "year_built",
+    "living_area_sqft", "lot_size_sqft", "feed_pulled_on",
 ]
 
 TAX_COLS = [
@@ -665,6 +912,12 @@ def main() -> None:
     accounts = build_tax_accounts(rng, parcels)
     install_hero_tax(accounts, hero)
 
+    # Order matters here. The feed is a photograph of the Clerk's sales file
+    # taken on FEED_PULLED_ON; the correction happens afterwards. Swap these
+    # two lines and Section 10 has nothing to find.
+    feed = build_sales_feed(sales, parcels)
+    corrected = install_clerk_correction(sales, parcels)
+
     write_db(
         DATA_DIR / "cama.db", "parcels", parcels,
         """CREATE TABLE parcels (
@@ -676,13 +929,25 @@ def main() -> None:
                assessment_year INTEGER, latitude REAL, longitude REAL)""",
         PARCEL_COLS,
     )
+    # The Appraiser's own copy of the Clerk's sales file, living inside the
+    # Appraiser's database because that is where it lives in a real county.
+    add_table(
+        DATA_DIR / "cama.db", "sales_feed", feed,
+        """CREATE TABLE sales_feed (
+               parcel_id TEXT, sale_date TEXT, sale_price INTEGER,
+               assessed_value INTEGER, ratio REAL, arms_length INTEGER,
+               deed_type TEXT, neighborhood TEXT, property_class TEXT,
+               year_built INTEGER, living_area_sqft INTEGER,
+               lot_size_sqft INTEGER, feed_pulled_on TEXT)""",
+        FEED_COLS,
+    )
     write_db(
         DATA_DIR / "clerk.db", "sales", sales,
         """CREATE TABLE sales (
                instrument_number TEXT PRIMARY KEY, parcel_id TEXT,
                recorded_date TEXT, sale_price INTEGER, grantor TEXT,
                grantee TEXT, deed_type TEXT, arms_length INTEGER,
-               book INTEGER, page INTEGER)""",
+               book INTEGER, page INTEGER, corrected_on TEXT)""",
         SALE_COLS,
     )
     write_db(
@@ -698,16 +963,26 @@ def main() -> None:
     write_csv(CSV_DIR / "parcels.csv", parcels, PARCEL_COLS)
     write_csv(CSV_DIR / "sales.csv", sales, SALE_COLS)
     write_csv(CSV_DIR / "tax_accounts.csv", accounts, TAX_COLS)
+    write_csv(CSV_DIR / "sales_feed.csv", feed, FEED_COLS)
 
     print(f"\n  cama.db   {len(parcels):>5} parcels        (Appraiser's office)")
+    print(f"            {len(feed):>5} sales in feed  (pulled {FEED_PULLED_ON})")
     print(f"  clerk.db  {len(sales):>5} recorded deeds (Clerk of Courts)")
     print(f"  tax.db    {len(accounts):>5} tax accounts   (Tax Collector)")
+
+    print(f"\n  Section 10 plant - the Clerk amended one deed AFTER the feed:")
+    print(f"    parcel {corrected['parcel_id']}  {corrected['instrument_number']}")
+    print(f"    feed  says : arm's length sale, ${corrected['sale_price']:,}")
+    print(f"    clerk says : {corrected['deed_type']}, NOT arm's length "
+          f"(corrected {corrected['corrected_on']})")
+    print(f"    -> Section 7's ratio study counts a sale it should not.")
 
     delinquent = [a for a in accounts if a["status"] == "DELINQUENT"]
     print(f"\n  Delinquent accounts: {len(delinquent)} "
           f"({100 * len(delinquent) / len(accounts):.1f}%)")
 
-    verify(parcels, sales)
+    verify(parcels, feed)
+    verify_geography(parcels)
 
     print(f"\n  Hero parcel {HERO_PARCEL} - the Section 10 split scenario")
     print(f"    CAMA  : {hero['owner_name']}, {hero['situs_address']}, "

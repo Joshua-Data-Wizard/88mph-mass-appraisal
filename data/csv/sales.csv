@@ -1,245 +1,245 @@
-instrument_number,parcel_id,recorded_date,sale_price,grantor,grantee,deed_type,arms_length,book,page
-2024-000042,04-490-2882,2024-01-12,378000,Marvin Evans,Milton Clayton,Warranty Deed,1,1269,799
-2024-000043,07-112-1379,2024-01-16,878500,Karen Nakamura,Linda Ibrahim,Warranty Deed,1,1242,743
-2024-000060,04-221-5588,2024-01-20,1028000,Gerald Kowalski,Rita Parker,Warranty Deed,1,1457,385
-2024-000046,04-305-5290,2024-01-26,1041000,Ivan Evans,Clara Gagnon,Grant Deed,1,1407,751
-2024-000064,04-195-6294,2024-01-30,1816000,Harold O'Brien,Victor Patel,Warranty Deed,1,1186,672
-2024-000140,10-144-2947,2024-02-01,1040000,Joey Ueda,Clara Anderson,Warranty Deed,1,1402,871
-2024-000068,09-357-5765,2024-02-04,238500,Helen Ibrahim,Wendy Baines,Warranty Deed,1,1403,422
-2024-000243,07-134-2220,2024-02-04,1738000,Edward Caruthers,Linda Rossi,Warranty Deed,1,1201,14
-2024-000183,04-238-5689,2024-02-08,537500,Goldie Lindqvist,Karen Statler,Warranty Deed,1,1327,111
-2024-000107,01-133-3269,2024-02-10,358000,Patrick Peabody,Olive O'Brien,Warranty Deed,1,1280,441
-2024-000131,11-470-1710,2024-02-10,1025500,Frank Bennett,Otis Bennett,Quit Claim Deed,0,1424,285
-2024-000181,02-140-7114,2024-02-12,1138000,Rita Evans,Harold Whitfield,Warranty Deed,1,1466,703
-2024-000058,12-165-4712,2024-02-15,1505000,Otis Fletcher,Joey Zielinski,Warranty Deed,1,1146,189
-2024-000211,09-347-2788,2024-02-19,475500,Curtis Statler,Beverly Lindqvist,Warranty Deed,1,1248,669
-2024-000019,11-346-8048,2024-02-21,466000,Frank Ibrahim,Irene Yamada,Grant Deed,1,1269,685
-2024-000036,07-139-1887,2024-02-22,327000,Rita Baines,Joey Rossi,Warranty Deed,1,1146,319
-2024-000073,03-457-5217,2024-02-25,610000,Curtis Ibrahim,Curtis Quinn,Warranty Deed,1,1284,179
-2024-000227,11-422-1232,2024-02-28,1114500,Edward Anderson,Stephen Yamada,Warranty Deed,1,1209,30
-2024-000226,01-277-4047,2024-02-29,575500,Emmett Moreau,Marcia Patel,Warranty Deed,1,1192,858
-2024-000012,12-106-7227,2024-03-05,705000,Frank Chen,Victor Wilson,Warranty Deed,1,1478,22
-2024-000039,07-182-2153,2024-03-05,633000,Marvin Gagnon,Alan Strickland,Sheriff's Deed,0,1427,579
-2024-000155,07-445-3526,2024-03-06,381000,Stella O'Brien,Wendy Evans,Grant Deed,1,1154,545
-2024-000187,06-451-7579,2024-03-08,526500,Marvin Evans,Sam Peabody,Grant Deed,1,1362,893
-2024-000166,04-128-2377,2024-03-09,974000,Harold Caruthers,Janet Kowalski,Warranty Deed,1,1445,8
-2024-000142,04-256-6881,2024-03-13,1396500,Gerald Whitfield,Janet O'Brien,Warranty Deed,1,1479,305
-2024-000009,01-230-3765,2024-03-24,302000,Arthur Bennett,Rita Quinn,Warranty Deed,1,1114,591
-2024-000216,08-294-2386,2024-03-25,1696000,Neil Yamada,Edward Anderson,Warranty Deed,1,1269,631
-2024-000014,06-482-6968,2024-03-29,100,Carol Statler,Edward Hendricks,Interfamily Transfer,0,1242,384
-2024-000134,08-238-1196,2024-04-01,525000,Leonard O'Brien,Ivan Ibrahim,Warranty Deed,1,1419,318
-2024-000207,10-392-6866,2024-04-02,489000,Daniel Parker,Janet Wilson,Grant Deed,1,1309,556
-2024-000004,03-187-7226,2024-04-04,336500,Sam Hendricks,Frank Sanchez,Quit Claim Deed,0,1285,580
-2024-000086,10-275-3655,2024-04-05,1248500,Wendy Achebe,Lorraine Johansson,Warranty Deed,1,1267,3
-2024-000177,01-269-1155,2024-04-06,1314000,Janet Thompson,Gordon Rossi,Warranty Deed,1,1294,809
-2024-000223,09-375-9935,2024-04-14,783000,Leonard Ueda,Goldie Chen,Quit Claim Deed,0,1316,535
-2024-000171,02-195-7235,2024-04-16,381500,Grace McFly,Otis O'Brien,Warranty Deed,1,1272,577
-2024-000143,07-364-2916,2024-04-21,424500,Wendy Parker,Keith Clayton,Warranty Deed,1,1119,401
-2024-000127,07-329-9663,2024-04-25,314500,Clara Anderson,Clara Rossi,Warranty Deed,1,1335,138
-2024-000037,08-169-1351,2024-04-27,322000,Victor McFly,Theresa Tannen,Warranty Deed,1,1120,411
-2024-000160,07-451-8807,2024-04-30,408500,Leonard Silva,Wendy Hendricks,Warranty Deed,1,1395,31
-2024-000232,10-367-5203,2024-05-01,609000,Stella Von Braun,Curtis Yamada,Warranty Deed,1,1169,814
-2024-000082,11-476-9683,2024-05-03,392500,George Baines,Gordon Von Braun,Warranty Deed,1,1417,847
-2024-000093,09-348-1289,2024-05-06,384500,Clara McFly,Keith Clayton,Warranty Deed,1,1249,680
-2024-000203,05-181-3305,2024-05-09,296000,Irene Achebe,Frank Moreau,Warranty Deed,1,1181,573
-2024-000212,05-421-1406,2024-05-14,836000,Frank Johansson,Gordon Kowalski,Warranty Deed,1,1249,832
-2024-000096,08-356-5814,2024-05-23,566500,Linda Tannen,Rita Johansson,Warranty Deed,1,1442,644
-2024-000135,09-205-3962,2024-05-23,225000,Jennifer Peabody,Neil Rossi,Sheriff's Deed,0,1475,742
-2024-000141,10-311-8161,2024-06-05,1015000,Karen Johansson,Grace Clayton,Warranty Deed,1,1255,320
-2024-000022,07-327-6534,2024-06-06,881500,Elaine Patel,Goldie Brown,Grant Deed,1,1323,194
-2024-000041,07-451-4995,2024-06-10,307500,Jennifer Parker,Patrick Quinn,Quit Claim Deed,0,1122,200
-2024-000188,07-202-7845,2024-06-12,623000,Joey Anderson,Milton Chen,Warranty Deed,1,1128,687
-2024-000154,11-173-6898,2024-06-14,310000,Helen Clayton,Jennifer Silva,Warranty Deed,1,1293,779
-2024-000078,03-136-5457,2024-06-16,396500,Rita Von Braun,Olive Silva,Grant Deed,1,1366,604
-2024-000175,03-409-2734,2024-06-17,631000,Curtis Caruthers,Dave Thompson,Warranty Deed,1,1284,610
-2024-000088,08-125-3351,2024-06-18,290500,Stella Bergeron,Grace Quinn,Grant Deed,1,1392,379
-2024-000015,01-194-4467,2024-06-19,1695500,Otis Baines,Marty Parker,Warranty Deed,1,1114,7
-2024-000167,07-324-7366,2024-06-20,527000,Olive Zielinski,Goldie Ibrahim,Warranty Deed,1,1316,89
-2024-000003,01-338-3990,2024-06-25,1622000,Linda Brown,Bonnie Chen,Warranty Deed,1,1473,548
-2024-000029,08-455-2582,2024-06-28,297500,Dave McFly,Elaine Quinn,Warranty Deed,1,1309,804
-2024-000005,06-163-6596,2024-06-29,1017000,Wendy Achebe,Carol Clayton,Warranty Deed,1,1205,201
-2024-000090,11-410-8488,2024-07-01,666500,Keith Nakamura,Keith Bennett,Grant Deed,1,1369,619
-2024-000184,10-282-2724,2024-07-04,405500,Wendy Tannen,Patrick Whitfield,Grant Deed,1,1217,213
-2024-000209,06-206-2000,2024-07-07,829000,Lorraine Kowalski,Bonnie Tannen,Warranty Deed,1,1368,698
-2024-000089,08-466-1131,2024-07-13,455000,Emmett Gagnon,Marvin Parker,Grant Deed,1,1267,780
-2024-000002,04-315-8902,2024-07-16,493000,Curtis Evans,Daniel Whitfield,Warranty Deed,1,1466,198
-2024-000114,09-243-6346,2024-07-21,604000,Keith Bergeron,Rita Baines,Warranty Deed,1,1462,58
-2024-000100,10-376-8449,2024-07-22,359000,Wendy Dubois,Fiona Wilson,Warranty Deed,1,1275,279
-2024-000094,05-115-2962,2024-07-23,698000,Keith O'Brien,Milton Bergeron,Warranty Deed,1,1393,518
-2024-000053,07-436-4438,2024-07-24,1373000,Joey Zielinski,Sam Ibrahim,Warranty Deed,1,1294,347
-2024-000023,12-289-7607,2024-07-29,338500,Jack Peabody,Olive Johansson,Warranty Deed,1,1419,628
-2024-000180,11-466-8454,2024-08-06,248000,Otis Moreau,Gerald Lindqvist,Warranty Deed,1,1302,704
-2024-000162,08-131-4763,2024-08-07,414000,Frank Yamada,Curtis Silva,Warranty Deed,1,1355,855
-2024-000164,09-133-7666,2024-08-09,340000,Frank Achebe,Alan Achebe,Warranty Deed,1,1137,776
-2024-000218,02-466-3979,2024-08-13,187000,Goldie Yamada,Jack Ueda,Warranty Deed,1,1447,777
-2024-000215,05-142-6490,2024-08-19,1226500,Irene Moreau,Patrick Bennett,Warranty Deed,1,1430,503
-2024-000048,11-434-1751,2024-08-23,445500,Jack Silva,Marcia Tannen,Warranty Deed,1,1383,407
-2024-000244,04-128-3886,2024-08-24,415500,Edward Sanchez,Curtis Vasquez,Warranty Deed,1,1312,585
-2024-000206,08-440-8910,2024-08-25,384500,Joey Gagnon,Alan Bennett,Warranty Deed,1,1372,323
-2024-000027,12-416-1527,2024-09-01,270000,Goldie Silva,Lorraine Yamada,Quit Claim Deed,0,1228,8
-2024-000026,12-103-5654,2024-09-02,362500,Jennifer Dubois,Neil Achebe,Grant Deed,1,1425,857
-2024-000011,01-243-6903,2024-09-04,707500,Carol Sanchez,Clara Baines,Warranty Deed,1,1318,521
-2024-000091,05-426-3356,2024-09-06,879500,Helen Brown,Emmett Bennett,Quit Claim Deed,0,1278,510
-2024-000047,10-321-7298,2024-09-07,509500,Marcia Statler,Edward Ueda,Warranty Deed,1,1350,203
-2024-000147,07-308-6136,2024-09-09,546000,Lorraine Fletcher,Daniel Tannen,Warranty Deed,1,1101,672
-2024-000191,05-176-1030,2024-09-10,355000,Arthur Yamada,Leonard Statler,Warranty Deed,1,1249,406
-2024-000228,06-482-5159,2024-09-12,373500,Marcia Anderson,Emmett Strickland,Warranty Deed,1,1315,788
-2024-000070,02-233-2769,2024-09-18,830500,Dave Lindqvist,Curtis Ibrahim,Warranty Deed,1,1407,252
-2024-000145,09-416-6746,2024-09-24,438000,Beverly Ueda,Daniel Wilson,Warranty Deed,1,1382,489
-2024-000242,06-183-5820,2024-10-02,1590500,Marty Achebe,Helen Quinn,Warranty Deed,1,1167,96
-2024-000020,06-276-5668,2024-10-06,878000,Alan Evans,Victor Clayton,Quit Claim Deed,0,1299,485
-2024-000071,06-202-3758,2024-10-08,969500,Curtis Nakamura,Beverly Silva,Quit Claim Deed,0,1220,576
-2024-000101,10-480-1427,2024-10-12,711000,Diane Caruthers,Fiona Zielinski,Quit Claim Deed,0,1219,808
-2024-000235,01-343-5627,2024-10-12,554000,Beverly Thompson,Ivan Clayton,Grant Deed,1,1316,896
-2024-000173,11-199-6739,2024-10-16,826000,Dave Zielinski,Bonnie Statler,Sheriff's Deed,0,1452,27
-2024-000194,09-123-1896,2024-10-20,1220500,Harold Thompson,Emmett Brown,Warranty Deed,1,1316,316
-2024-000137,12-323-9412,2024-10-27,1132500,Otis Vasquez,Jennifer Achebe,Warranty Deed,1,1100,29
-2024-000061,10-241-7060,2024-10-31,359500,Helen Von Braun,Patrick Peabody,Warranty Deed,1,1449,576
-2024-000080,02-374-2811,2024-11-02,561500,Marcia Patel,Karen Johansson,Warranty Deed,1,1201,835
-2024-000213,02-305-9635,2024-11-13,610000,Edward Fletcher,Curtis Parker,Warranty Deed,1,1193,410
-2024-000121,10-363-7524,2024-11-24,1167000,Lorraine Lindqvist,Jack Brown,Warranty Deed,1,1332,367
-2024-000225,04-361-8805,2024-11-25,1196000,Janet Ibrahim,Wendy Evans,Warranty Deed,1,1269,746
-2024-000185,03-212-3730,2024-11-27,1571000,Diane Nakamura,Jack Peabody,Warranty Deed,1,1446,859
-2024-000109,01-321-6038,2024-11-28,314000,Curtis Chen,Rita Lindqvist,Quit Claim Deed,0,1374,68
-2024-000214,11-284-1511,2024-11-30,1601500,Clara Sanchez,Ivan Dubois,Warranty Deed,1,1393,855
-2024-000035,12-249-3145,2024-12-02,155000,Edward Nakamura,Gordon Clayton,Quit Claim Deed,0,1399,215
-2024-000172,09-262-8499,2024-12-03,360500,Fiona Nakamura,Arthur Anderson,Grant Deed,1,1461,294
-2024-000074,02-429-8340,2024-12-14,997000,Linda Peabody,Irene Tannen,Warranty Deed,1,1134,228
-2024-000153,05-296-7375,2024-12-18,331500,Olive Vasquez,Karen Vasquez,Warranty Deed,1,1362,217
-2024-000152,04-195-4483,2024-12-26,1416500,Emmett Wilson,Gordon Vasquez,Warranty Deed,1,1348,279
-2024-000013,03-188-3770,2024-12-27,358500,Irene Whitfield,Carol Yamada,Warranty Deed,1,1301,448
-2024-000168,02-181-1182,2024-12-27,1635500,Stella Brown,Daniel Johansson,Warranty Deed,1,1454,309
-2025-000186,10-144-4879,2025-01-02,291000,Jack Moreau,Theresa Quinn,Warranty Deed,1,1343,671
-2025-000025,02-426-5441,2025-01-09,1454000,Neil Silva,Alan Bergeron,Grant Deed,1,1410,196
-2025-000018,02-409-3790,2025-01-11,345500,Fiona Yamada,Jennifer Caruthers,Quit Claim Deed,0,1133,294
-2025-000076,02-124-3247,2025-01-11,540500,Fiona Yamada,Alan Von Braun,Warranty Deed,1,1212,732
-2025-000033,02-246-9413,2025-01-15,490500,Rita Bergeron,Janet Zielinski,Warranty Deed,1,1455,692
-2025-000128,12-289-9808,2025-01-15,433500,Frank Bennett,Otis Hendricks,Warranty Deed,1,1272,294
-2025-000179,02-424-4609,2025-01-15,1499500,Leonard Fletcher,Alan Thompson,Grant Deed,1,1346,850
-2025-000083,10-358-1215,2025-01-16,1033000,Gerald Strickland,Linda Thompson,Warranty Deed,1,1337,853
-2025-000158,11-277-4076,2025-01-20,438500,George Hendricks,Gordon Sanchez,Grant Deed,1,1185,293
-2025-000081,08-436-1016,2025-01-25,1282500,Jennifer Statler,Gerald Ibrahim,Grant Deed,1,1393,83
-2025-000146,04-118-3755,2025-01-26,1130500,Fiona Achebe,Goldie Statler,Warranty Deed,1,1397,510
-2025-000103,07-144-4708,2025-01-27,923000,Linda Kowalski,Helen Peabody,Warranty Deed,1,1473,884
-2025-000119,03-125-4637,2025-01-31,2099000,Patrick Clayton,Sam Nakamura,Warranty Deed,1,1266,850
-2025-000231,03-303-8398,2025-01-31,707000,Marty Bennett,Lorraine Vasquez,Warranty Deed,1,1255,352
-2025-000084,04-387-9501,2025-02-01,407500,Gerald Bergeron,Diane Sanchez,Warranty Deed,1,1261,705
-2025-000095,06-152-2746,2025-02-03,496500,Alan Strickland,George Rossi,Warranty Deed,1,1250,460
-2025-000139,04-440-2920,2025-02-05,1480000,Curtis Silva,Linda Caruthers,Warranty Deed,1,1428,81
-2025-000151,08-474-2878,2025-02-05,1630000,Joey Bergeron,Diane Wilson,Executor's Deed,0,1118,383
-2025-000189,04-194-8568,2025-02-08,242500,Fiona Gagnon,Fiona Anderson,Warranty Deed,1,1188,547
-2025-000238,03-399-4255,2025-02-09,255500,Dave Wilson,Edward Brown,Warranty Deed,1,1306,477
-2025-000150,10-209-1505,2025-02-10,1133000,Frank Rossi,Harold Kowalski,Warranty Deed,1,1254,154
-2025-000144,10-479-9674,2025-02-13,295000,Lorraine Quinn,Rita McFly,Warranty Deed,1,1384,577
-2025-000132,09-428-6832,2025-02-16,531500,Alan Whitfield,Jack Thompson,Warranty Deed,1,1138,857
-2025-000031,04-144-7668,2025-02-17,488500,Frank Bergeron,Grace Fletcher,Warranty Deed,1,1479,197
-2025-000237,09-170-5015,2025-02-23,296000,Gordon Parker,Keith Wilson,Warranty Deed,1,1219,749
-2025-000190,08-347-3900,2025-02-27,247500,Marcia Clayton,Emmett Johansson,Warranty Deed,1,1184,386
-2025-000052,03-209-5800,2025-03-09,1326500,Fiona Fletcher,Harold Zielinski,Warranty Deed,1,1399,853
-2025-000097,01-434-2398,2025-03-12,300000,Karen Fletcher,Fiona Quinn,Warranty Deed,1,1463,166
-2025-000197,11-168-3099,2025-03-13,399000,Patrick Anderson,Arthur Rossi,Warranty Deed,1,1215,566
-2025-000040,05-486-4741,2025-03-14,936000,Lorraine Bennett,Irene Parker,Warranty Deed,1,1471,421
-2025-000417,04-127-3891,2025-03-14,437000,Gerald Strickland,Biff Tannen,Warranty Deed,1,1402,318
-2025-000063,08-193-7156,2025-03-15,233500,Lorraine Vasquez,Irene Anderson,Warranty Deed,1,1395,654
-2025-000234,06-292-9545,2025-03-17,1019500,Patrick Sanchez,Grace Wilson,Executor's Deed,0,1177,26
-2025-000030,06-406-5788,2025-03-22,1266500,Emmett Ibrahim,Olive Parker,Warranty Deed,1,1385,105
-2025-000133,04-349-8683,2025-03-22,451500,Curtis Baines,Diane McFly,Warranty Deed,1,1228,612
-2025-000079,02-194-5198,2025-04-01,807000,Emmett Wilson,Theresa Evans,Warranty Deed,1,1417,338
-2025-000028,03-191-6132,2025-04-02,416000,Stella O'Brien,Lorraine Baines,Grant Deed,1,1192,374
-2025-000021,08-157-9107,2025-04-06,401000,Fiona Brown,Grace Gagnon,Warranty Deed,1,1302,588
-2025-000113,04-384-6108,2025-04-07,306500,Diane Chen,Wendy Vasquez,Quit Claim Deed,0,1437,557
-2025-000112,01-104-2162,2025-04-09,675000,Keith Whitfield,Leonard Bennett,Warranty Deed,1,1384,878
-2025-000016,10-353-1374,2025-04-13,287500,Jack Achebe,Goldie Gagnon,Warranty Deed,1,1446,452
-2025-000034,04-323-2660,2025-04-15,241000,Alan Nakamura,Goldie Tannen,Quit Claim Deed,0,1214,785
-2025-000233,01-245-9482,2025-04-17,688000,Emmett Anderson,Arthur Johansson,Grant Deed,1,1377,493
-2025-000126,09-257-6490,2025-04-19,1070000,Daniel Baines,Dave Dubois,Warranty Deed,1,1298,713
-2025-000008,01-269-5286,2025-04-22,375000,Jack Baines,Marvin Strickland,Warranty Deed,1,1210,560
-2025-000204,06-471-9700,2025-04-25,1541500,Victor Dubois,Carol Ueda,Warranty Deed,1,1366,130
-2025-000049,09-326-6807,2025-04-27,1137500,Keith Bergeron,Diane Vasquez,Warranty Deed,1,1429,415
-2025-000163,07-230-9818,2025-04-28,426500,Elaine O'Brien,Theresa Ueda,Warranty Deed,1,1452,253
-2025-000130,02-221-3506,2025-04-30,925000,Victor Clayton,Leonard Sanchez,Warranty Deed,1,1295,104
-2025-000198,01-272-7052,2025-04-30,587500,Karen Bergeron,George Parker,Warranty Deed,1,1472,496
-2025-000182,05-313-3393,2025-05-01,312000,Edward Evans,Gerald Silva,Warranty Deed,1,1313,346
-2025-000123,08-318-8216,2025-05-15,773000,Joey Statler,Wendy Anderson,Grant Deed,1,1168,493
-2025-000111,07-259-3033,2025-05-16,653000,Curtis Bennett,Curtis Chen,Sheriff's Deed,0,1173,239
-2025-000156,09-324-8113,2025-05-16,1304500,Sam Ueda,Helen Moreau,Warranty Deed,1,1350,529
-2025-000149,04-162-1910,2025-05-19,1226000,Otis Achebe,Theresa Whitfield,Warranty Deed,1,1345,540
-2025-000229,05-453-4552,2025-05-25,807500,Linda Bennett,Olive Achebe,Warranty Deed,1,1453,872
-2025-000201,01-261-1977,2025-05-26,1,Edward Fletcher,Wendy Quinn,Interfamily Transfer,0,1289,546
-2025-000241,09-239-3110,2025-05-26,349000,Bonnie Caruthers,Marcia Gagnon,Warranty Deed,1,1204,447
-2025-000125,02-244-7523,2025-05-28,926500,Theresa Tannen,George Clayton,Warranty Deed,1,1224,368
-2025-000224,09-224-6293,2025-05-29,424000,Emmett O'Brien,Wendy Bergeron,Warranty Deed,1,1201,194
-2025-000200,09-203-1890,2025-05-31,320000,George Peabody,Neil Anderson,Warranty Deed,1,1470,280
-2025-000161,03-221-9022,2025-06-03,1233000,Arthur Gagnon,Sam Yamada,Warranty Deed,1,1421,394
-2025-000208,07-233-8885,2025-06-05,1038000,Marvin Kowalski,Jennifer Rossi,Warranty Deed,1,1411,410
-2025-000199,09-200-2520,2025-06-06,785000,Goldie Patel,Beverly Bennett,Quit Claim Deed,0,1242,51
-2025-000210,04-368-7369,2025-06-07,100,Helen Sanchez,Karen Strickland,Interfamily Transfer,0,1336,836
-2025-000044,05-482-2226,2025-06-08,358000,Leonard Chen,Daniel Ibrahim,Warranty Deed,1,1433,255
-2025-000236,09-349-3979,2025-06-08,1059000,Beverly Silva,Emmett Ueda,Warranty Deed,1,1462,506
-2025-000065,07-209-8691,2025-06-11,911500,Keith Quinn,Helen Kowalski,Warranty Deed,1,1293,518
-2025-000220,10-467-9121,2025-06-14,611000,Edward O'Brien,Diane Yamada,Grant Deed,1,1447,733
-2025-000056,01-358-3679,2025-06-17,289500,Clara Brown,Bonnie Thompson,Executor's Deed,0,1382,494
-2025-000057,02-338-7114,2025-06-18,1738500,Keith Clayton,Bonnie Anderson,Executor's Deed,0,1253,717
-2025-000118,11-133-8975,2025-06-22,502000,Irene Baines,Edward Peabody,Warranty Deed,1,1391,8
-2025-000178,03-166-2152,2025-06-25,625000,Fiona Sanchez,Emmett Parker,Warranty Deed,1,1248,809
-2025-000222,07-257-8483,2025-06-25,1,Patrick O'Brien,Fiona Kowalski,Interfamily Transfer,0,1247,613
-2025-000007,09-315-7716,2025-06-26,1808500,George Ibrahim,Helen Bergeron,Warranty Deed,1,1109,63
-2025-000075,02-262-1837,2025-06-30,1083000,Rita Brown,Harold McFly,Warranty Deed,1,1267,162
-2025-000067,07-390-7906,2025-07-04,345500,Otis Patel,Stella Yamada,Warranty Deed,1,1387,102
-2025-000062,01-407-2341,2025-07-06,566000,Keith Peabody,Carol Baines,Grant Deed,1,1421,721
-2025-000115,06-212-7106,2025-07-08,177500,Olive Vasquez,Curtis Thompson,Sheriff's Deed,0,1257,485
-2025-000122,08-401-4237,2025-07-08,426000,Dave Wilson,Emmett Hendricks,Quit Claim Deed,0,1349,416
-2025-000120,02-299-6428,2025-07-09,1291000,Clara Von Braun,Diane Ueda,Warranty Deed,1,1390,175
-2025-000219,05-151-8248,2025-07-10,439500,Ivan Quinn,Marcia Strickland,Warranty Deed,1,1231,177
-2025-000077,01-273-1303,2025-07-11,255500,Carol Vasquez,Dave Brown,Warranty Deed,1,1261,468
-2025-000069,12-393-7896,2025-07-12,647000,George Rossi,Frank Yamada,Warranty Deed,1,1238,779
-2025-000117,08-334-6966,2025-07-14,766500,Sam Johansson,Fiona O'Brien,Warranty Deed,1,1270,84
-2025-000032,06-489-7041,2025-07-17,982500,Keith Chen,Harold Statler,Warranty Deed,1,1101,200
-2025-000098,05-145-7911,2025-07-26,329500,Diane Nakamura,Fiona Chen,Sheriff's Deed,0,1416,427
-2025-000174,07-222-5942,2025-07-28,321000,Janet O'Brien,Arthur Gagnon,Warranty Deed,1,1192,610
-2025-000217,09-343-6145,2025-07-28,473000,George Yamada,Jack Strickland,Warranty Deed,1,1366,559
-2025-000001,05-224-1517,2025-08-05,486500,Harold Caruthers,Marcia Thompson,Warranty Deed,1,1326,428
-2025-000104,06-483-3258,2025-08-06,814500,Beverly Ibrahim,Curtis Von Braun,Grant Deed,1,1224,136
-2025-000136,09-233-8454,2025-08-08,281500,Harold Yamada,Bonnie Statler,Warranty Deed,1,1405,747
-2025-000054,02-445-8378,2025-08-09,486000,Sam Silva,Goldie Thompson,Grant Deed,1,1267,106
-2025-000196,06-346-6525,2025-08-10,1582000,Sam Statler,Keith Lindqvist,Warranty Deed,1,1341,520
-2025-000148,11-430-6207,2025-08-13,335000,Jack Clayton,Jack Dubois,Warranty Deed,1,1109,236
-2025-000159,12-354-1541,2025-08-21,1221500,Daniel Kowalski,Fiona Vasquez,Warranty Deed,1,1322,438
-2025-000195,04-365-8762,2025-08-21,1240000,Janet Strickland,Curtis Patel,Warranty Deed,1,1380,97
-2025-000205,11-125-5430,2025-08-22,391500,Lorraine Von Braun,Stephen Von Braun,Warranty Deed,1,1378,495
-2025-000106,04-399-3458,2025-08-29,975500,Neil Fletcher,Marty Chen,Grant Deed,1,1424,728
-2025-000045,03-480-5302,2025-08-30,1160000,Janet Achebe,Helen Whitfield,Grant Deed,1,1318,658
-2025-000116,10-374-7641,2025-09-01,1338000,Frank Baines,Clara Bennett,Warranty Deed,1,1252,677
-2025-000192,07-427-7407,2025-09-03,1295500,Curtis Ibrahim,Wendy Rossi,Grant Deed,1,1292,181
-2025-000202,09-330-5117,2025-09-07,288500,Beverly Silva,Alan Evans,Warranty Deed,1,1184,20
-2025-000230,12-142-5449,2025-09-08,532500,Jack Wilson,Elaine Ueda,Quit Claim Deed,0,1188,94
-2025-000006,08-199-9820,2025-09-10,315000,George Ibrahim,Fiona Patel,Warranty Deed,1,1394,21
-2025-000085,09-483-4968,2025-09-15,1341500,Marty Hendricks,Irene Quinn,Grant Deed,1,1155,794
-2025-000038,10-242-9099,2025-09-16,422000,Gerald Strickland,Clara Strickland,Warranty Deed,1,1324,242
-2025-000050,01-110-2660,2025-09-18,1599000,Carol Achebe,Victor Brown,Warranty Deed,1,1368,378
-2025-000055,04-412-9452,2025-09-27,349000,Harold Bennett,Rita Fletcher,Warranty Deed,1,1124,702
-2025-000129,08-286-4693,2025-09-27,359000,Diane Wilson,Frank Nakamura,Warranty Deed,1,1167,744
-2025-000193,03-186-8908,2025-09-29,288000,Milton Nakamura,Carol Ueda,Quit Claim Deed,0,1275,300
-2025-000124,02-407-6080,2025-09-30,932000,Arthur Thompson,Daniel Sanchez,Warranty Deed,1,1381,52
-2025-000072,07-124-6981,2025-10-04,602000,Joey Ueda,Elaine Ueda,Warranty Deed,1,1382,274
-2025-000092,05-216-2605,2025-10-09,1405500,Ivan Achebe,Olive Strickland,Warranty Deed,1,1236,853
-2025-000066,02-442-3795,2025-10-12,1340500,Arthur Brown,Ivan Lindqvist,Warranty Deed,1,1151,43
-2025-000157,05-159-2079,2025-10-13,1309500,Wendy Baines,Linda Strickland,Warranty Deed,1,1263,466
-2025-000105,02-145-3416,2025-10-16,858000,Olive Strickland,Marty Yamada,Warranty Deed,1,1171,223
-2025-000165,09-434-7003,2025-10-22,800500,Goldie Brown,Karen Johansson,Warranty Deed,1,1338,365
-2025-000239,06-378-6244,2025-10-30,300500,Neil Quinn,Milton Clayton,Warranty Deed,1,1311,857
-2025-000110,05-125-6368,2025-11-03,1368500,Frank Tannen,Elaine Clayton,Warranty Deed,1,1115,563
-2025-000176,05-317-2044,2025-11-03,727500,Neil Kowalski,Carol Whitfield,Warranty Deed,1,1406,732
-2025-000240,05-484-1194,2025-11-06,1240500,Elaine Statler,Gordon Sanchez,Warranty Deed,1,1273,489
-2025-000102,11-313-1449,2025-11-07,545000,Frank Clayton,Victor Gagnon,Sheriff's Deed,0,1109,43
-2025-000059,07-190-4709,2025-11-12,388500,Marty Quinn,Stella Von Braun,Warranty Deed,1,1299,313
-2025-000170,09-182-7463,2025-11-28,1167000,Marcia Whitfield,Goldie Patel,Warranty Deed,1,1349,236
-2025-000087,10-186-5876,2025-12-02,483500,Elaine Clayton,Bonnie Statler,Warranty Deed,1,1436,565
-2025-000010,12-246-4032,2025-12-06,160500,Stella Chen,Clara Tannen,Warranty Deed,1,1323,62
-2025-000024,04-294-7390,2025-12-13,478500,Olive Baines,Marcia Bennett,Warranty Deed,1,1215,463
-2025-000169,10-473-4047,2025-12-18,532000,Sam Peabody,Goldie Dubois,Warranty Deed,1,1134,238
-2025-000108,12-182-5608,2025-12-21,454000,Elaine Sanchez,Jack Quinn,Quit Claim Deed,0,1292,311
-2025-000017,12-307-6053,2025-12-25,292000,Beverly Fletcher,Marvin Ibrahim,Warranty Deed,1,1110,450
-2025-000099,08-425-1625,2025-12-28,374000,Theresa Chen,Frank Rossi,Warranty Deed,1,1387,585
-2025-000051,05-219-8662,2025-12-30,266000,Victor Ueda,Edward Bergeron,Warranty Deed,1,1258,418
-2025-000138,04-328-9407,2025-12-31,459000,Diane McFly,Frank Evans,Warranty Deed,1,1461,178
+instrument_number,parcel_id,recorded_date,sale_price,grantor,grantee,deed_type,arms_length,book,page,corrected_on
+2024-000042,04-490-2882,2024-01-12,378000,Marvin Evans,Milton Clayton,Warranty Deed,1,1269,799,
+2024-000043,07-112-1379,2024-01-16,948000,Karen Nakamura,Linda Ibrahim,Warranty Deed,1,1242,743,
+2024-000060,04-221-5588,2024-01-20,1028000,Gerald Kowalski,Rita Parker,Warranty Deed,1,1457,385,
+2024-000046,04-305-5290,2024-01-26,1041000,Ivan Evans,Clara Gagnon,Grant Deed,1,1407,751,
+2024-000064,04-195-6294,2024-01-30,1488500,Harold O'Brien,Victor Patel,Warranty Deed,1,1186,672,
+2024-000140,10-144-2947,2024-02-01,1084500,Joey Ueda,Clara Anderson,Warranty Deed,1,1402,871,
+2024-000068,09-357-5765,2024-02-04,272500,Helen Ibrahim,Wendy Baines,Warranty Deed,1,1403,422,
+2024-000243,07-134-2220,2024-02-04,1738000,Edward Caruthers,Linda Rossi,Warranty Deed,1,1201,14,
+2024-000183,04-238-5689,2024-02-08,497000,Goldie Lindqvist,Karen Statler,Warranty Deed,1,1327,111,
+2024-000107,01-133-3269,2024-02-10,358000,Patrick Peabody,Olive O'Brien,Warranty Deed,1,1280,441,
+2024-000131,11-470-1710,2024-02-10,1092500,Frank Bennett,Otis Bennett,Quit Claim Deed,0,1424,285,
+2024-000181,02-140-7114,2024-02-12,1029500,Rita Evans,Harold Whitfield,Warranty Deed,1,1466,703,
+2024-000058,12-165-4712,2024-02-15,1676000,Otis Fletcher,Joey Zielinski,Warranty Deed,1,1146,189,
+2024-000211,09-347-2788,2024-02-19,371500,Curtis Statler,Beverly Lindqvist,Warranty Deed,1,1248,669,
+2024-000019,11-346-8048,2024-02-21,486500,Frank Ibrahim,Irene Yamada,Grant Deed,1,1269,685,
+2024-000036,07-139-1887,2024-02-22,367000,Rita Baines,Joey Rossi,Warranty Deed,1,1146,319,
+2024-000073,03-457-5217,2024-02-25,596500,Curtis Ibrahim,Curtis Quinn,Warranty Deed,1,1284,179,
+2024-000227,11-422-1232,2024-02-28,869000,Edward Anderson,Stephen Yamada,Warranty Deed,1,1209,30,
+2024-000226,01-277-4047,2024-02-29,575500,Emmett Moreau,Marcia Patel,Warranty Deed,1,1192,858,
+2024-000012,12-106-7227,2024-03-05,705000,Frank Chen,Victor Wilson,Warranty Deed,1,1478,22,
+2024-000039,07-182-2153,2024-03-05,566000,Marvin Gagnon,Alan Strickland,Sheriff's Deed,0,1427,579,
+2024-000155,07-445-3526,2024-03-06,381000,Stella O'Brien,Wendy Evans,Grant Deed,1,1154,545,
+2024-000187,06-451-7579,2024-03-08,513500,Marvin Evans,Sam Peabody,Grant Deed,1,1362,893,
+2024-000166,04-128-2377,2024-03-09,1084000,Harold Caruthers,Janet Kowalski,Warranty Deed,1,1445,8,
+2024-000142,04-256-6881,2024-03-13,1512000,Gerald Whitfield,Janet O'Brien,Warranty Deed,1,1479,305,
+2024-000009,01-230-3765,2024-03-24,302000,Arthur Bennett,Rita Quinn,Warranty Deed,1,1114,591,
+2024-000216,08-294-2386,2024-03-25,1696000,Neil Yamada,Edward Anderson,Warranty Deed,1,1269,631,
+2024-000014,06-482-6968,2024-03-29,100,Carol Statler,Edward Hendricks,Interfamily Transfer,0,1242,384,
+2024-000134,08-238-1196,2024-04-01,456500,Leonard O'Brien,Ivan Ibrahim,Warranty Deed,1,1419,318,
+2024-000207,10-392-6866,2024-04-02,489000,Daniel Parker,Janet Wilson,Grant Deed,1,1309,556,
+2024-000004,03-187-7226,2024-04-04,275000,Sam Hendricks,Frank Sanchez,Quit Claim Deed,0,1285,580,
+2024-000086,10-275-3655,2024-04-05,1449500,Wendy Achebe,Lorraine Johansson,Warranty Deed,1,1267,3,
+2024-000177,01-269-1155,2024-04-06,1313500,Janet Thompson,Gordon Rossi,Warranty Deed,1,1294,809,
+2024-000223,09-375-9935,2024-04-14,783000,Leonard Ueda,Goldie Chen,Quit Claim Deed,0,1316,535,
+2024-000171,02-195-7235,2024-04-16,381500,Grace McFly,Otis O'Brien,Warranty Deed,1,1272,577,
+2024-000143,07-364-2916,2024-04-21,424500,Wendy Parker,Keith Clayton,Warranty Deed,1,1119,401,
+2024-000127,07-329-9663,2024-04-25,243000,Clara Anderson,Clara Rossi,Warranty Deed,1,1335,138,
+2024-000037,08-169-1351,2024-04-27,262000,Victor McFly,Theresa Tannen,Warranty Deed,1,1120,411,
+2024-000160,07-451-8807,2024-04-30,468000,Leonard Silva,Wendy Hendricks,Warranty Deed,1,1395,31,
+2024-000232,10-367-5203,2024-05-01,738500,Stella Von Braun,Curtis Yamada,Warranty Deed,1,1169,814,
+2024-000082,11-476-9683,2024-05-03,392500,George Baines,Gordon Von Braun,Warranty Deed,1,1417,847,
+2024-000093,09-348-1289,2024-05-06,384500,Clara McFly,Keith Clayton,Warranty Deed,1,1249,680,
+2024-000203,05-181-3305,2024-05-09,320500,Irene Achebe,Frank Moreau,Warranty Deed,1,1181,573,
+2024-000212,05-421-1406,2024-05-14,836000,Frank Johansson,Gordon Kowalski,Warranty Deed,1,1249,832,
+2024-000096,08-356-5814,2024-05-23,628000,Linda Tannen,Rita Johansson,Warranty Deed,1,1442,644,
+2024-000135,09-205-3962,2024-05-23,225000,Jennifer Peabody,Neil Rossi,Sheriff's Deed,0,1475,742,
+2024-000141,10-311-8161,2024-06-05,1051500,Karen Johansson,Grace Clayton,Warranty Deed,1,1255,320,
+2024-000022,07-327-6534,2024-06-06,890500,Elaine Patel,Goldie Brown,Grant Deed,1,1323,194,
+2024-000041,07-451-4995,2024-06-10,307500,Jennifer Parker,Patrick Quinn,Quit Claim Deed,0,1122,200,
+2024-000188,07-202-7845,2024-06-12,623000,Joey Anderson,Milton Chen,Warranty Deed,1,1128,687,
+2024-000154,11-173-6898,2024-06-14,310000,Helen Clayton,Jennifer Silva,Warranty Deed,1,1293,779,
+2024-000078,03-136-5457,2024-06-16,396500,Rita Von Braun,Olive Silva,Grant Deed,1,1366,604,
+2024-000175,03-409-2734,2024-06-17,617000,Curtis Caruthers,Dave Thompson,Warranty Deed,1,1284,610,
+2024-000088,08-125-3351,2024-06-18,290500,Stella Bergeron,Grace Quinn,Grant Deed,1,1392,379,
+2024-000015,01-194-4467,2024-06-19,1695500,Otis Baines,Marty Parker,Warranty Deed,1,1114,7,
+2024-000167,07-324-7366,2024-06-20,527000,Olive Zielinski,Goldie Ibrahim,Warranty Deed,1,1316,89,
+2024-000003,01-338-3990,2024-06-25,1580000,Linda Brown,Bonnie Chen,Warranty Deed,1,1473,548,
+2024-000029,08-455-2582,2024-06-28,297500,Dave McFly,Elaine Quinn,Warranty Deed,1,1309,804,
+2024-000005,06-163-6596,2024-06-29,1017000,Wendy Achebe,Carol Clayton,Warranty Deed,1,1205,201,
+2024-000090,11-410-8488,2024-07-01,666500,Keith Nakamura,Keith Bennett,Grant Deed,1,1369,619,
+2024-000184,10-282-2724,2024-07-04,405500,Wendy Tannen,Patrick Whitfield,Grant Deed,1,1217,213,
+2024-000209,06-206-2000,2024-07-07,829000,Lorraine Kowalski,Bonnie Tannen,Warranty Deed,1,1368,698,
+2024-000089,08-466-1131,2024-07-13,448500,Emmett Gagnon,Marvin Parker,Grant Deed,1,1267,780,
+2024-000002,04-315-8902,2024-07-16,493000,Curtis Evans,Daniel Whitfield,Warranty Deed,1,1466,198,
+2024-000114,09-243-6346,2024-07-21,680500,Keith Bergeron,Rita Baines,Warranty Deed,1,1462,58,
+2024-000100,10-376-8449,2024-07-22,359000,Wendy Dubois,Fiona Wilson,Warranty Deed,1,1275,279,
+2024-000094,05-115-2962,2024-07-23,678000,Keith O'Brien,Milton Bergeron,Warranty Deed,1,1393,518,
+2024-000053,07-436-4438,2024-07-24,1179500,Joey Zielinski,Sam Ibrahim,Warranty Deed,1,1294,347,
+2024-000023,12-289-7607,2024-07-29,373000,Jack Peabody,Olive Johansson,Warranty Deed,1,1419,628,
+2024-000180,11-466-8454,2024-08-06,248000,Otis Moreau,Gerald Lindqvist,Warranty Deed,1,1302,704,
+2024-000162,08-131-4763,2024-08-07,414000,Frank Yamada,Curtis Silva,Warranty Deed,1,1355,855,
+2024-000164,09-133-7666,2024-08-09,436500,Frank Achebe,Alan Achebe,Warranty Deed,1,1137,776,
+2024-000218,02-466-3979,2024-08-13,218000,Goldie Yamada,Jack Ueda,Warranty Deed,1,1447,777,
+2024-000215,05-142-6490,2024-08-19,919000,Irene Moreau,Patrick Bennett,Warranty Deed,1,1430,503,
+2024-000048,11-434-1751,2024-08-23,628500,Jack Silva,Marcia Tannen,Warranty Deed,1,1383,407,
+2024-000244,04-128-3886,2024-08-24,415500,Edward Sanchez,Curtis Vasquez,Warranty Deed,1,1312,585,
+2024-000206,08-440-8910,2024-08-25,238000,Joey Gagnon,Alan Bennett,Warranty Deed,1,1372,323,
+2024-000027,12-416-1527,2024-09-01,270000,Goldie Silva,Lorraine Yamada,Quit Claim Deed,0,1228,8,
+2024-000026,12-103-5654,2024-09-02,464500,Jennifer Dubois,Neil Achebe,Grant Deed,1,1425,857,
+2024-000011,01-243-6903,2024-09-04,707500,Carol Sanchez,Clara Baines,Warranty Deed,1,1318,521,
+2024-000091,05-426-3356,2024-09-06,902000,Helen Brown,Emmett Bennett,Quit Claim Deed,0,1278,510,
+2024-000047,10-321-7298,2024-09-07,509500,Marcia Statler,Edward Ueda,Warranty Deed,1,1350,203,
+2024-000147,07-308-6136,2024-09-09,598000,Lorraine Fletcher,Daniel Tannen,Warranty Deed,1,1101,672,
+2024-000191,05-176-1030,2024-09-10,355000,Arthur Yamada,Leonard Statler,Warranty Deed,1,1249,406,
+2024-000228,06-482-5159,2024-09-12,373500,Marcia Anderson,Emmett Strickland,Warranty Deed,1,1315,788,
+2024-000070,02-233-2769,2024-09-18,820500,Dave Lindqvist,Curtis Ibrahim,Warranty Deed,1,1407,252,
+2024-000145,09-416-6746,2024-09-24,438000,Beverly Ueda,Daniel Wilson,Warranty Deed,1,1382,489,
+2024-000242,06-183-5820,2024-10-02,1590500,Marty Achebe,Helen Quinn,Warranty Deed,1,1167,96,
+2024-000020,06-276-5668,2024-10-06,878000,Alan Evans,Victor Clayton,Quit Claim Deed,0,1299,485,
+2024-000071,06-202-3758,2024-10-08,969500,Curtis Nakamura,Beverly Silva,Quit Claim Deed,0,1220,576,
+2024-000101,10-480-1427,2024-10-12,728500,Diane Caruthers,Fiona Zielinski,Quit Claim Deed,0,1219,808,
+2024-000235,01-343-5627,2024-10-12,615500,Beverly Thompson,Ivan Clayton,Grant Deed,1,1316,896,
+2024-000173,11-199-6739,2024-10-16,826000,Dave Zielinski,Bonnie Statler,Sheriff's Deed,0,1452,27,
+2024-000194,09-123-1896,2024-10-20,1220500,Harold Thompson,Emmett Brown,Warranty Deed,1,1316,316,
+2024-000137,12-323-9412,2024-10-27,1132500,Otis Vasquez,Jennifer Achebe,Warranty Deed,1,1100,29,
+2024-000061,10-241-7060,2024-10-31,374500,Helen Von Braun,Patrick Peabody,Warranty Deed,1,1449,576,
+2024-000080,02-374-2811,2024-11-02,561500,Marcia Patel,Karen Johansson,Warranty Deed,1,1201,835,
+2024-000213,02-305-9635,2024-11-13,487500,Edward Fletcher,Curtis Parker,Warranty Deed,1,1193,410,
+2024-000121,10-363-7524,2024-11-24,1167000,Lorraine Lindqvist,Jack Brown,Warranty Deed,1,1332,367,
+2024-000225,04-361-8805,2024-11-25,1299000,Janet Ibrahim,Wendy Evans,Warranty Deed,1,1269,746,
+2024-000185,03-212-3730,2024-11-27,1571000,Diane Nakamura,Jack Peabody,Warranty Deed,1,1446,859,
+2024-000109,01-321-6038,2024-11-28,314000,Curtis Chen,Rita Lindqvist,Quit Claim Deed,0,1374,68,
+2024-000214,11-284-1511,2024-11-30,1791500,Clara Sanchez,Ivan Dubois,Warranty Deed,1,1393,855,
+2024-000035,12-249-3145,2024-12-02,140000,Edward Nakamura,Gordon Clayton,Quit Claim Deed,0,1399,215,
+2024-000172,09-262-8499,2024-12-03,374500,Fiona Nakamura,Arthur Anderson,Grant Deed,1,1461,294,
+2024-000074,02-429-8340,2024-12-14,1280000,Linda Peabody,Irene Tannen,Warranty Deed,1,1134,228,
+2024-000153,05-296-7375,2024-12-18,331500,Olive Vasquez,Karen Vasquez,Warranty Deed,1,1362,217,
+2024-000152,04-195-4483,2024-12-26,1341500,Emmett Wilson,Gordon Vasquez,Warranty Deed,1,1348,279,
+2024-000013,03-188-3770,2024-12-27,424000,Irene Whitfield,Carol Yamada,Warranty Deed,1,1301,448,
+2024-000168,02-181-1182,2024-12-27,1410000,Stella Brown,Daniel Johansson,Warranty Deed,1,1454,309,
+2025-000186,10-144-4879,2025-01-02,326500,Jack Moreau,Theresa Quinn,Warranty Deed,1,1343,671,
+2025-000025,02-426-5441,2025-01-09,1454000,Neil Silva,Alan Bergeron,Grant Deed,1,1410,196,
+2025-000018,02-409-3790,2025-01-11,345500,Fiona Yamada,Jennifer Caruthers,Quit Claim Deed,0,1133,294,
+2025-000076,02-124-3247,2025-01-11,610000,Fiona Yamada,Alan Von Braun,Warranty Deed,1,1212,732,
+2025-000033,02-246-9413,2025-01-15,490500,Rita Bergeron,Janet Zielinski,Warranty Deed,1,1455,692,
+2025-000128,12-289-9808,2025-01-15,506000,Frank Bennett,Otis Hendricks,Warranty Deed,1,1272,294,
+2025-000179,02-424-4609,2025-01-15,1499500,Leonard Fletcher,Alan Thompson,Grant Deed,1,1346,850,
+2025-000083,10-358-1215,2025-01-16,870500,Gerald Strickland,Linda Thompson,Warranty Deed,1,1337,853,
+2025-000158,11-277-4076,2025-01-20,438500,George Hendricks,Gordon Sanchez,Grant Deed,1,1185,293,
+2025-000081,08-436-1016,2025-01-25,1198500,Jennifer Statler,Gerald Ibrahim,Grant Deed,1,1393,83,
+2025-000146,04-118-3755,2025-01-26,1130500,Fiona Achebe,Goldie Statler,Warranty Deed,1,1397,510,
+2025-000103,07-144-4708,2025-01-27,1025500,Linda Kowalski,Helen Peabody,Warranty Deed,1,1473,884,
+2025-000119,03-125-4637,2025-01-31,1717000,Patrick Clayton,Sam Nakamura,Warranty Deed,1,1266,850,
+2025-000231,03-303-8398,2025-01-31,556500,Marty Bennett,Lorraine Vasquez,Warranty Deed,1,1255,352,
+2025-000084,04-387-9501,2025-02-01,407500,Gerald Bergeron,Diane Sanchez,Warranty Deed,1,1261,705,
+2025-000095,06-152-2746,2025-02-03,672000,Alan Strickland,George Rossi,Warranty Deed,1,1250,460,
+2025-000139,04-440-2920,2025-02-05,1548000,Curtis Silva,Linda Caruthers,Warranty Deed,1,1428,81,
+2025-000151,08-474-2878,2025-02-05,1630000,Joey Bergeron,Diane Wilson,Executor's Deed,0,1118,383,
+2025-000189,04-194-8568,2025-02-08,242500,Fiona Gagnon,Fiona Anderson,Warranty Deed,1,1188,547,
+2025-000238,03-399-4255,2025-02-09,315500,Dave Wilson,Edward Brown,Warranty Deed,1,1306,477,
+2025-000150,10-209-1505,2025-02-10,1341500,Frank Rossi,Harold Kowalski,Warranty Deed,1,1254,154,
+2025-000144,10-479-9674,2025-02-13,359000,Lorraine Quinn,Rita McFly,Warranty Deed,1,1384,577,
+2025-000132,09-428-6832,2025-02-16,531500,Alan Whitfield,Jack Thompson,Warranty Deed,1,1138,857,
+2025-000031,04-144-7668,2025-02-17,488500,Frank Bergeron,Grace Fletcher,Warranty Deed,1,1479,197,
+2025-000237,09-170-5015,2025-02-23,387500,Gordon Parker,Keith Wilson,Warranty Deed,1,1219,749,
+2025-000190,08-347-3900,2025-02-27,345500,Marcia Clayton,Emmett Johansson,Warranty Deed,1,1184,386,
+2025-000052,03-209-5800,2025-03-09,1326500,Fiona Fletcher,Harold Zielinski,Warranty Deed,1,1399,853,
+2025-000097,01-434-2398,2025-03-12,300000,Karen Fletcher,Fiona Quinn,Warranty Deed,1,1463,166,
+2025-000197,11-168-3099,2025-03-13,399000,Patrick Anderson,Arthur Rossi,Warranty Deed,1,1215,566,
+2025-000040,05-486-4741,2025-03-14,936000,Lorraine Bennett,Irene Parker,Warranty Deed,1,1471,421,
+2025-000417,04-127-3891,2025-03-14,437000,Gerald Strickland,Biff Tannen,Warranty Deed,1,1402,318,
+2025-000063,08-193-7156,2025-03-15,233500,Lorraine Vasquez,Irene Anderson,Warranty Deed,1,1395,654,
+2025-000234,06-292-9545,2025-03-17,1019500,Patrick Sanchez,Grace Wilson,Executor's Deed,0,1177,26,
+2025-000030,06-406-5788,2025-03-22,1266500,Emmett Ibrahim,Olive Parker,Warranty Deed,1,1385,105,
+2025-000133,04-349-8683,2025-03-22,451500,Curtis Baines,Diane McFly,Warranty Deed,1,1228,612,
+2025-000079,02-194-5198,2025-04-01,722000,Emmett Wilson,Theresa Evans,Warranty Deed,1,1417,338,
+2025-000028,03-191-6132,2025-04-02,416000,Stella O'Brien,Lorraine Baines,Grant Deed,1,1192,374,
+2025-000021,08-157-9107,2025-04-06,415000,Fiona Brown,Grace Gagnon,Warranty Deed,1,1302,588,
+2025-000113,04-384-6108,2025-04-07,324500,Diane Chen,Wendy Vasquez,Quit Claim Deed,0,1437,557,
+2025-000112,01-104-2162,2025-04-09,675000,Keith Whitfield,Leonard Bennett,Warranty Deed,1,1384,878,
+2025-000016,10-353-1374,2025-04-13,287500,Jack Achebe,Goldie Gagnon,Warranty Deed,1,1446,452,
+2025-000034,04-323-2660,2025-04-15,241000,Alan Nakamura,Goldie Tannen,Quit Claim Deed,0,1214,785,
+2025-000233,01-245-9482,2025-04-17,688000,Emmett Anderson,Arthur Johansson,Grant Deed,1,1377,493,
+2025-000126,09-257-6490,2025-04-19,897500,Daniel Baines,Dave Dubois,Warranty Deed,1,1298,713,
+2025-000008,01-269-5286,2025-04-22,333000,Jack Baines,Marvin Strickland,Warranty Deed,1,1210,560,
+2025-000204,06-471-9700,2025-04-25,1392500,Victor Dubois,Carol Ueda,Warranty Deed,1,1366,130,
+2025-000049,09-326-6807,2025-04-27,967000,Keith Bergeron,Diane Vasquez,Warranty Deed,1,1429,415,
+2025-000163,07-230-9818,2025-04-28,359000,Elaine O'Brien,Theresa Ueda,Warranty Deed,1,1452,253,
+2025-000130,02-221-3506,2025-04-30,844500,Victor Clayton,Leonard Sanchez,Warranty Deed,1,1295,104,
+2025-000198,01-272-7052,2025-04-30,587500,Karen Bergeron,George Parker,Warranty Deed,1,1472,496,
+2025-000182,05-313-3393,2025-05-01,314000,Edward Evans,Gerald Silva,Warranty Deed,1,1313,346,
+2025-000123,08-318-8216,2025-05-15,660000,Joey Statler,Wendy Anderson,Grant Deed,1,1168,493,
+2025-000111,07-259-3033,2025-05-16,716000,Curtis Bennett,Curtis Chen,Sheriff's Deed,0,1173,239,
+2025-000156,09-324-8113,2025-05-16,1304500,Sam Ueda,Helen Moreau,Warranty Deed,1,1350,529,
+2025-000149,04-162-1910,2025-05-19,1226000,Otis Achebe,Theresa Whitfield,Warranty Deed,1,1345,540,
+2025-000229,05-453-4552,2025-05-25,735500,Linda Bennett,Olive Achebe,Warranty Deed,1,1453,872,
+2025-000201,01-261-1977,2025-05-26,1,Edward Fletcher,Wendy Quinn,Interfamily Transfer,0,1289,546,
+2025-000241,09-239-3110,2025-05-26,309000,Bonnie Caruthers,Marcia Gagnon,Warranty Deed,1,1204,447,
+2025-000125,02-244-7523,2025-05-28,926500,Theresa Tannen,George Clayton,Warranty Deed,1,1224,368,
+2025-000224,09-224-6293,2025-05-29,529500,Emmett O'Brien,Wendy Bergeron,Warranty Deed,1,1201,194,
+2025-000200,09-203-1890,2025-05-31,320000,George Peabody,Neil Anderson,Warranty Deed,1,1470,280,
+2025-000161,03-221-9022,2025-06-03,1233000,Arthur Gagnon,Sam Yamada,Warranty Deed,1,1421,394,
+2025-000208,07-233-8885,2025-06-05,1093000,Marvin Kowalski,Jennifer Rossi,Warranty Deed,1,1411,410,
+2025-000199,09-200-2520,2025-06-06,785000,Goldie Patel,Beverly Bennett,Quit Claim Deed,0,1242,51,
+2025-000210,04-368-7369,2025-06-07,100,Helen Sanchez,Karen Strickland,Interfamily Transfer,0,1336,836,
+2025-000044,05-482-2226,2025-06-08,389000,Leonard Chen,Daniel Ibrahim,Warranty Deed,1,1433,255,
+2025-000236,09-349-3979,2025-06-08,1059000,Beverly Silva,Emmett Ueda,Warranty Deed,1,1462,506,
+2025-000065,07-209-8691,2025-06-11,938000,Keith Quinn,Helen Kowalski,Warranty Deed,1,1293,518,
+2025-000220,10-467-9121,2025-06-14,611000,Edward O'Brien,Diane Yamada,Grant Deed,1,1447,733,
+2025-000056,01-358-3679,2025-06-17,228000,Clara Brown,Bonnie Thompson,Executor's Deed,0,1382,494,
+2025-000057,02-338-7114,2025-06-18,1738500,Keith Clayton,Bonnie Anderson,Executor's Deed,0,1253,717,
+2025-000118,11-133-8975,2025-06-22,502000,Irene Baines,Edward Peabody,Warranty Deed,1,1391,8,
+2025-000178,03-166-2152,2025-06-25,497500,Fiona Sanchez,Emmett Parker,Warranty Deed,1,1248,809,
+2025-000222,07-257-8483,2025-06-25,1,Patrick O'Brien,Fiona Kowalski,Interfamily Transfer,0,1247,613,
+2025-000007,09-315-7716,2025-06-26,1808500,George Ibrahim,Helen Bergeron,Warranty Deed,1,1109,63,
+2025-000075,02-262-1837,2025-06-30,1099000,Rita Brown,Harold McFly,Warranty Deed,1,1267,162,
+2025-000067,07-390-7906,2025-07-04,345500,Otis Patel,Stella Yamada,Warranty Deed,1,1387,102,
+2025-000062,01-407-2341,2025-07-06,566000,Keith Peabody,Carol Baines,Grant Deed,1,1421,721,
+2025-000115,06-212-7106,2025-07-08,298500,Olive Vasquez,Curtis Thompson,Sheriff's Deed,0,1257,485,
+2025-000122,08-401-4237,2025-07-08,426000,Dave Wilson,Emmett Hendricks,Quit Claim Deed,0,1349,416,
+2025-000120,02-299-6428,2025-07-09,1291000,Clara Von Braun,Diane Ueda,Warranty Deed,1,1390,175,
+2025-000219,05-151-8248,2025-07-10,449000,Ivan Quinn,Marcia Strickland,Warranty Deed,1,1231,177,
+2025-000077,01-273-1303,2025-07-11,255500,Carol Vasquez,Dave Brown,Warranty Deed,1,1261,468,
+2025-000069,12-393-7896,2025-07-12,647000,George Rossi,Frank Yamada,QUIT CLAIM,0,1238,779,2026-03-04
+2025-000117,08-334-6966,2025-07-14,780500,Sam Johansson,Fiona O'Brien,Warranty Deed,1,1270,84,
+2025-000032,06-489-7041,2025-07-17,1191500,Keith Chen,Harold Statler,Warranty Deed,1,1101,200,
+2025-000098,05-145-7911,2025-07-26,329500,Diane Nakamura,Fiona Chen,Sheriff's Deed,0,1416,427,
+2025-000174,07-222-5942,2025-07-28,298500,Janet O'Brien,Arthur Gagnon,Warranty Deed,1,1192,610,
+2025-000217,09-343-6145,2025-07-28,564500,George Yamada,Jack Strickland,Warranty Deed,1,1366,559,
+2025-000001,05-224-1517,2025-08-05,486500,Harold Caruthers,Marcia Thompson,Warranty Deed,1,1326,428,
+2025-000104,06-483-3258,2025-08-06,939000,Beverly Ibrahim,Curtis Von Braun,Grant Deed,1,1224,136,
+2025-000136,09-233-8454,2025-08-08,287000,Harold Yamada,Bonnie Statler,Warranty Deed,1,1405,747,
+2025-000054,02-445-8378,2025-08-09,486000,Sam Silva,Goldie Thompson,Grant Deed,1,1267,106,
+2025-000196,06-346-6525,2025-08-10,1582000,Sam Statler,Keith Lindqvist,Warranty Deed,1,1341,520,
+2025-000148,11-430-6207,2025-08-13,395500,Jack Clayton,Jack Dubois,Warranty Deed,1,1109,236,
+2025-000159,12-354-1541,2025-08-21,1353000,Daniel Kowalski,Fiona Vasquez,Warranty Deed,1,1322,438,
+2025-000195,04-365-8762,2025-08-21,1240000,Janet Strickland,Curtis Patel,Warranty Deed,1,1380,97,
+2025-000205,11-125-5430,2025-08-22,391500,Lorraine Von Braun,Stephen Von Braun,Warranty Deed,1,1378,495,
+2025-000106,04-399-3458,2025-08-29,1199500,Neil Fletcher,Marty Chen,Grant Deed,1,1424,728,
+2025-000045,03-480-5302,2025-08-30,1160000,Janet Achebe,Helen Whitfield,Grant Deed,1,1318,658,
+2025-000116,10-374-7641,2025-09-01,1538500,Frank Baines,Clara Bennett,Warranty Deed,1,1252,677,
+2025-000192,07-427-7407,2025-09-03,1295500,Curtis Ibrahim,Wendy Rossi,Grant Deed,1,1292,181,
+2025-000202,09-330-5117,2025-09-07,288500,Beverly Silva,Alan Evans,Warranty Deed,1,1184,20,
+2025-000230,12-142-5449,2025-09-08,472500,Jack Wilson,Elaine Ueda,Quit Claim Deed,0,1188,94,
+2025-000006,08-199-9820,2025-09-10,323000,George Ibrahim,Fiona Patel,Warranty Deed,1,1394,21,
+2025-000085,09-483-4968,2025-09-15,1341500,Marty Hendricks,Irene Quinn,Grant Deed,1,1155,794,
+2025-000038,10-242-9099,2025-09-16,422000,Gerald Strickland,Clara Strickland,Warranty Deed,1,1324,242,
+2025-000050,01-110-2660,2025-09-18,1533500,Carol Achebe,Victor Brown,Warranty Deed,1,1368,378,
+2025-000055,04-412-9452,2025-09-27,349000,Harold Bennett,Rita Fletcher,Warranty Deed,1,1124,702,
+2025-000129,08-286-4693,2025-09-27,359000,Diane Wilson,Frank Nakamura,Warranty Deed,1,1167,744,
+2025-000193,03-186-8908,2025-09-29,324000,Milton Nakamura,Carol Ueda,Quit Claim Deed,0,1275,300,
+2025-000124,02-407-6080,2025-09-30,1099000,Arthur Thompson,Daniel Sanchez,Warranty Deed,1,1381,52,
+2025-000072,07-124-6981,2025-10-04,602000,Joey Ueda,Elaine Ueda,Warranty Deed,1,1382,274,
+2025-000092,05-216-2605,2025-10-09,1367500,Ivan Achebe,Olive Strickland,Warranty Deed,1,1236,853,
+2025-000066,02-442-3795,2025-10-12,1340500,Arthur Brown,Ivan Lindqvist,Warranty Deed,1,1151,43,
+2025-000157,05-159-2079,2025-10-13,1309500,Wendy Baines,Linda Strickland,Warranty Deed,1,1263,466,
+2025-000105,02-145-3416,2025-10-16,1276500,Olive Strickland,Marty Yamada,Warranty Deed,1,1171,223,
+2025-000165,09-434-7003,2025-10-22,1027000,Goldie Brown,Karen Johansson,Warranty Deed,1,1338,365,
+2025-000239,06-378-6244,2025-10-30,300500,Neil Quinn,Milton Clayton,Warranty Deed,1,1311,857,
+2025-000110,05-125-6368,2025-11-03,1368500,Frank Tannen,Elaine Clayton,Warranty Deed,1,1115,563,
+2025-000176,05-317-2044,2025-11-03,727500,Neil Kowalski,Carol Whitfield,Warranty Deed,1,1406,732,
+2025-000240,05-484-1194,2025-11-06,1240500,Elaine Statler,Gordon Sanchez,Warranty Deed,1,1273,489,
+2025-000102,11-313-1449,2025-11-07,545000,Frank Clayton,Victor Gagnon,Sheriff's Deed,0,1109,43,
+2025-000059,07-190-4709,2025-11-12,388500,Marty Quinn,Stella Von Braun,Warranty Deed,1,1299,313,
+2025-000170,09-182-7463,2025-11-28,1167000,Marcia Whitfield,Goldie Patel,Warranty Deed,1,1349,236,
+2025-000087,10-186-5876,2025-12-02,483500,Elaine Clayton,Bonnie Statler,Warranty Deed,1,1436,565,
+2025-000010,12-246-4032,2025-12-06,160500,Stella Chen,Clara Tannen,Warranty Deed,1,1323,62,
+2025-000024,04-294-7390,2025-12-13,478500,Olive Baines,Marcia Bennett,Warranty Deed,1,1215,463,
+2025-000169,10-473-4047,2025-12-18,541500,Sam Peabody,Goldie Dubois,Warranty Deed,1,1134,238,
+2025-000108,12-182-5608,2025-12-21,454000,Elaine Sanchez,Jack Quinn,Quit Claim Deed,0,1292,311,
+2025-000017,12-307-6053,2025-12-25,292000,Beverly Fletcher,Marvin Ibrahim,Warranty Deed,1,1110,450,
+2025-000099,08-425-1625,2025-12-28,374000,Theresa Chen,Frank Rossi,Warranty Deed,1,1387,585,
+2025-000051,05-219-8662,2025-12-30,215500,Victor Ueda,Edward Bergeron,Warranty Deed,1,1258,418,
+2025-000138,04-328-9407,2025-12-31,386500,Diane McFly,Frank Evans,Warranty Deed,1,1461,178,

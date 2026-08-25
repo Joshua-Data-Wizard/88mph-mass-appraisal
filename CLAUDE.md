@@ -189,14 +189,24 @@ a *different* IAAO test so §7 has three distinct findings:
 
 | Neighborhood | Median | COD | PRD | Demonstrates |
 |---|---:|---:|---:|---|
-| Riverside Heights | **0.807** | 6.27 | 0.999 | level failure |
-| Courthouse Square | 0.938 | **22.20** | 1.022 | uniformity failure |
-| Hilldale | 0.902 | 13.72 | **1.041** | equity / regressivity |
-| **Countywide** | 0.921 | 12.41 | 1.025 | **all three pass** |
+| Riverside Heights | **0.807** | 6.27 | 1.002 | level failure |
+| Courthouse Square | 0.938 | **22.20** | 1.026 | uniformity failure |
+| Hilldale | 0.930 | 13.59 | **1.042** | equity / regressivity |
+| **Countywide** | 0.927 | 12.37 | 1.027 | **all three pass** |
+
+Residential only (`property_class IN ('R01','R02')`), which is how IAAO
+stratifies and what `verify()` in the generator reports. Run it across every
+class and the verdicts are identical, the figures move in the third decimal.
 
 That last row is the payload: the county looks healthy in aggregate while half
 its neighborhoods have real problems. **If you regenerate or retune the data,
 re-verify that row still passes** — the §7 narration depends on it.
+
+⚠️ **Anything that changes how often `rng` is called moves every number after
+it.** Bounding the map scatter (below) swapped two `rng.gauss` calls for two
+others and shifted Hilldale's median from 0.902 to 0.930. The three planted
+failures still landed and the county still passed, because the generator
+prints the whole table on every run — but nothing warns you, so read it.
 
 **`04-127-3891` is the hero parcel and threads the whole talk.** §2 already
 tokenized that exact string; §10 asks whether it can be split. Biff Tannen,
@@ -206,6 +216,15 @@ and Policy 4.2 bars a split over any balance. Lot ✅, ownership ✅, taxes ❌.
 The agent must consult all three systems *and* the policy corpus, then name the
 specific blocking reason. Its assessed value ($412,500) is also the number §2's
 model does bad arithmetic on.
+
+**Neighborhoods are contiguous, and that took a second attempt.** Parcels were
+originally scattered with `rng.gauss(0, 0.0075)` around each neighborhood
+centre. A gaussian has no edge, and that spread was wider than the gaps
+between the six centres — Hilldale's outline ended up containing the centres
+of three other neighborhoods. Every statistic was still exactly right; the
+county map was an unreadable blob. Parcels are now sampled inside a bounded
+disc (`NEIGHBORHOOD_RADIUS = 0.0038`, about 420 m) and `verify_geography()`
+asserts on every run that no two neighborhoods touch. Tightest gap: 0.10 km.
 
 **The generator is seeded (`SEED = 1985`) and byte-identical on re-run** —
 verified. That is what lets committed notebook outputs match an attendee's
@@ -227,7 +246,7 @@ both so an attendee can drop in their own office's real PDFs.
 | 4 | Running out of Plutonium | 3 | ✅ **DONE** — `03_plutonium_{local,api}.ipynb` + shared app |
 | 5 | Introducing Mr. Fusion | — | slides: Reason → Act → Observe |
 | 6 | The Hoverboard | 4 | ✅ **DONE** — `04_hoverboard_{local,api}.ipynb` + shared app tab 1 |
-| 7 | Reaching 88 MPH | 5 | `05_88mph` — SQL + ratio study (COD, PRD) + mapping |
+| 7 | Reaching 88 MPH | 5 | ✅ **DONE** — `05_88mph_{local,api}.ipynb` + `app/05_88mph_Valuation_Review_local_Streamlit.py` |
 | 8 | Grays Sports Almanac | 6 | ✅ **DONE** — `06_almanac_{local,api}.ipynb` + shared app tab 2 |
 | 9 | The DeLorean Engine | 7 | `07_delorean_engine` — **local only**, an API variant defeats the point |
 | 10 | The Universal Adapter | 8 | `mcp_server/` + `08_universal_adapter` — **the parcel-split scenario**, see below |
@@ -399,7 +418,7 @@ has no `multiselect` and its text widgets already use `key=` + a seed.
 4. ~~**§2 The Flux Capacitor**~~ — **done**: local notebook, API notebook, Streamlit app
 5. ~~Synthetic `data/` — three office systems + policy corpus~~ — **done**, flaws verified
 6. ~~§3 + §4 — shared app + four notebooks~~ — **done**, all executed with outputs
-7. Remaining demos in outline order: **§6 → next** → §7 → §8 → §9 → §10 → §11
+7. Remaining demos in outline order: ~~§6~~ → ~~§7~~ → ~~§8~~ → **§9 → next** → §10 → §11
 7. Model comparison writeup (registry → attendee-facing doc)
 8. Full dry run against the 90-minute clock
 
@@ -933,3 +952,160 @@ list and merges them into that parameter.
 This never showed up until an `_api` notebook called `respond()` with a system
 message, because nothing else exercised that path. **Any new responder must be
 tested with a system prompt, not just a bare question.**
+
+### 🐛 `st.html()` silently deletes every SVG (fixed)
+
+Reported from the running §7 app: the map card drew its title, its parcel
+count and its legend, and had **a hole where the map should be**. No error, no
+warning, nothing in the console.
+
+**Cause.** `st.html()` sanitises with DOMPurify configured
+`USE_PROFILES: {html: true}`. That profile allows HTML elements and **strips
+the SVG namespace entirely**. Confirmed in the shipped bundle:
+
+```
+streamlit/static/static/js/Html.*.js
+    var s={USE_PROFILES:{html:!0},FORCE_BODY:!0}
+```
+
+The server sends the markup intact — verified, 75 KB with 1,200 `<circle>`
+elements — and the browser throws the drawing away on arrival. The surrounding
+`<div>` chrome survives, which is what makes it look like your own layout bug
+rather than a sanitiser.
+
+**It was hitting two things, not one.** The bug was reported against the map;
+the speedometer was equally blank and had simply not been mentioned.
+
+**Fix: `st.iframe(markup, height=N)`.** An iframe is not sanitised.
+`st.components.v1.html()` works too but is deprecated in favour of `st.iframe`.
+
+**Pass a real number for `height`, not `'content'`.** Auto-measure is tidier
+right until it measures zero, and that failure looks identical to the bug
+being fixed. Both §7 pictures cap their width (`viz.SPEEDOMETER_MAX_WIDTH`,
+`viz.MAP_MAX_WIDTH`) so the height is arithmetic — see `viz.map_frame_height()`.
+
+**Only `speedometer_html` and `parcel_map_html` emit SVG.** Every other
+`viz.py` builder is divs and tables, so §2, §3/§4 and §6/§8 were never
+affected. Check this before adding SVG to any shared builder.
+
+**Notebooks are unaffected** — `IPython.display.HTML` sanitises nothing.
+So a visual can work perfectly in Jupyter and vanish in Streamlit, which is
+the reverse of the usual direction and worth remembering.
+
+⚠️ **`AppTest` cannot catch this.** The element is present and correct in the
+proto either way; the stripping happens in the browser. The test now asserts
+the SVG rides in an `iframe` element rather than an `html` one, which is a
+proxy — the only real check is looking at the running app.
+
+### Model output does not go into an HTML string
+
+The §7 answer panel originally interpolated the model's reply into a styled
+`<div>` via `unsafe_allow_html=True`. Two problems, and the second is the one
+that showed up immediately: the model **writes markdown** — given no ratio
+tool it returns a full markdown table — which inside a `<div>` renders as raw
+pipes and dashes. And model output is untrusted text that should not be
+concatenated into markup in a repository other offices are told to copy.
+
+Now `st.container(border=True)` + `st.markdown(answer)`. Renders tables
+properly and nothing is interpolated.
+
+### The §7 map: three rules, each learned by getting it wrong
+
+`viz.parcel_map_html()` is hand-drawn SVG. The reasoning lives in its
+docstring; these are the rules not to undo.
+
+**1. No mapping library.** folium renders **ten** external resources and
+`leaflet.js` is one of them — on dead conference wifi you get no map at all,
+not a map missing its streets. It would also stop committed notebook outputs
+drawing on GitHub, which is most of why we commit them.
+
+**2. The frame fits the SELECTION, not the county, and nothing outlines a
+neighborhood.** Parcels are sampled inside a disc, so convex hulls came out as
+six near-perfect circles — which is not what a county looks like to anyone who
+values property for a living. **The outline was the problem, not the dots:** a
+scatter reads as a cluster, but a boundary drawn round it reads as a *claim*
+about a shape, and that claim was false. Asked to map Riverside Heights, the
+map now shows Riverside Heights filling the frame. Nothing is asserted about
+where a neighborhood ends because nothing needs to be — the name is in the
+title. Parcels in shot but not selected are drawn as small grey dots, so a
+selection sits among its neighbours instead of floating.
+
+**3. A grid, a scale bar and a north arrow — never a fake basemap.** Inventing
+streets under invented parcels doubles the fiction and invites "what road is
+that?". A plain grid says *coordinate space*.
+
+⚠️ **The scale bar is not decoration.** Once the frame fits whatever was
+selected, 36 sales across 800 m and 244 across 5 km fill it identically.
+Measured: the bar adapts 100 m → 200 m → 500 m → 2 km across the demo's
+selections. Remove it and two maps at a sevenfold difference in scale look the
+same, to a room full of people who read scaled maps professionally.
+
+A minimum span (~250 m) stops a single-parcel selection zooming to infinity.
+
+**`NEIGHBORHOOD_RADIUS` still matters even though hulls are gone** — it is what
+keeps neighborhoods contiguous rather than interleaved, which is what makes
+"the sales in Riverside Heights" a coherent place. `verify_geography()` checks
+it on every generator run.
+
+### §7 notebooks — what they establish
+
+**§7 is the first demo whose twins CONVERGE, and that is the finding.**
+Sections 4 and 6 both ended with the hosted model and the local one behaving
+differently, and we wrote that up as an honest trade-off. Here they agree,
+because `ratio_study` computes the statistics either way — the model never
+touches them. Verified mechanically: the two notebooks differ in **exactly one
+code cell** (the model-construction cell) plus three markdown cells that point
+at each other.
+
+That convergence is the strongest argument in this repository for putting
+domain knowledge in tools, and it is the natural set-up for §9: **a small
+model is not worse at arithmetic it never does.**
+
+### ⚠️ Act 4 — measured, and it changed the whole act
+
+The plan was to have the model attempt a ratio study in SQL and fail loudly.
+Measuring it produced something better and much more uncomfortable.
+
+| Asked | Qwen3.5-4B | Haiku 4.5 |
+|---|---|---|
+| *"Run the ratio study by neighborhood"* (vague) | `AVG(assessed_value / sale_price)` → SQLite integer division → Riverside Heights reads **0.000** | **declines** — "the available tools don't include a ratio_study function… what would you like me to calculate?" |
+| *"Using SQL, work out the average assessment ratio…"* (directive) | `AVG(ratio)` | `AVG(ratio)` — **byte-identical output** |
+
+So the notebook uses the **directive** phrasing, and both twins print the same
+six numbers. The lesson lands harder that way:
+
+- The numbers are **plausible** — 0.79 to 0.98, exactly where a ratio belongs.
+  Riverside Heights even comes out lowest, which is correct.
+- They are still wrong: an **average, not a median** (Twin Pines Ranch is off
+  by 0.036), and **no COD and no PRD at all**. Two of the three IAAO tests
+  quietly cease to exist.
+- **It is not a small-model failure.** Both models wrote the same query. It
+  does not go away by spending more money, because it is a *domain-knowledge*
+  failure — and domain knowledge belongs somewhere the model cannot get it
+  wrong.
+
+The integer-division result is preserved as a **quoted aside** rather than an
+executed cell, because reproducing it needs the vague phrasing, which makes
+Haiku decline and breaks the twin. *"That one you would catch. The table above
+is the one you would not."*
+
+⚠️ **Do not "fix" the twins by making Act 4 diverge.** The convergence is the
+point, and it was measured rather than hoped for.
+
+### `ratio.summarize()` lives in ratio.py, not in the tool
+
+The one-sentence verdict (*"Meets all three IAAO standards on 210 sales…"*)
+was originally `_summary()` inside `tools/review.py`. It moved to `ratio.py`
+and `ratio_stats()` now fills in `result["summary"]` itself, so an attendee
+running `ratio_stats()` on their own sales gets the same wording the agent
+reports. Found because the notebook printed `result["summary"]` and raised
+`KeyError` — the maths module had no such key.
+
+### The explore section runs on data that is not Hill Valley
+
+The "point it at your own county" cell uses twenty invented sales from a
+made-up two-neighborhood county, and reproduces the whole section in
+miniature: **together they meet every IAAO standard; split in two, Southside
+sits at 0.82 of market.** Tuned deliberately — the first attempt had six sales,
+which failed COD as "suspiciously tight" and reported NOT ENOUGH SALES for
+both groups, teaching the wrong thing entirely.
