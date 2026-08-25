@@ -26,7 +26,7 @@ heading — do not write a script against those sections.
 | **4** | **Running out of Plutonium** | **3** | same app, tab 3 | ✅ built |
 | 5 | Introducing Mr. Fusion | 7 | slides — Reason → Act → Observe | — |
 | 6 | The Hoverboard | 10 | office-assistant app, tab 1 | ⬜ planned |
-| 7 | Reaching 88 MPH | 15 | TBD | ⬜ planned |
+| 7 | Reaching 88 MPH | 15 | `app/05_88mph_Valuation_Review_local_Streamlit.py` | ✅ built |
 | 8 | Grays Sports Almanac | 8 | office-assistant app, tab 2 | ⬜ planned |
 | 9 | The DeLorean Engine | 5 | local-only | ⬜ planned |
 | 10 | The Universal Adapter | 10 | `mcp_server/` | ⬜ planned |

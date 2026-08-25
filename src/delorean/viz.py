@@ -812,3 +812,793 @@ def show_trace(trace: Sequence[dict], *, answer: str = "",
                question: str | None = None) -> None:
     """Display a finished agent run in a notebook."""
     show_html(trace_html(trace, answer=answer, question=question))
+
+
+# ═════════════════════════════════════════════════════════════════════════
+#  Section 7 — the valuation review
+# ═════════════════════════════════════════════════════════════════════════
+#
+# The colours below are measured, not chosen by eye, and one of them is a
+# deliberate departure from the palette used elsewhere in this file.
+#
+# A pass/fail badge in green and red is the obvious design and it is the
+# wrong one. Run the repo's existing green (#15803d) against its red
+# (#b91c1c) through a deuteranopia simulation and they land 4.2 apart in
+# OKLab -- which is to say a red-green colourblind reader, roughly one man in
+# twelve in that Calgary audience, cannot tell PASS from FAIL. On the one
+# visual Section 7 rests on.
+#
+# Swapping the green for teal takes that separation to 11.9, comfortably past
+# the 8.0 target, and costs nothing an appraiser would notice.
+#
+# The colour is still only ever the SECOND signal. Every badge carries a tick
+# or a cross and the word itself, so the meaning survives a monochrome
+# printout, a washed-out projector and any kind of colour vision.
+
+#: Verdict colours. Teal rather than green -- see above.
+STATUS_PASS = "#0f766e"
+STATUS_FAIL = "#b91c1c"
+
+#: The map's three bands, which are the IAAO bands and not a smooth gradient.
+#: A ratio study asks a categorical question -- is this parcel under the
+#: standard, inside it, or over it -- so the map answers that question rather
+#: than shading a continuum nobody can read off a legend.
+#:
+#: Two hues around a neutral grey midpoint, which is what a diverging scale
+#: is supposed to be. The grey is deliberately low-chroma so the parcels that
+#: are FINE recede and the problems come forward. Worst-pair separation under
+#: simulated colourblindness is 20.7 -- these three are never confusable.
+RATIO_UNDER = "#1d4ed8"    # assessed below the IAAO range -- we are low
+RATIO_WITHIN = "#94a3b8"   # inside 0.90 - 1.10, nothing to see
+RATIO_OVER = "#c2410c"     # assessed above the IAAO range -- we are high
+
+#: Where the IAAO acceptance range sits, for the dial and the map legend.
+IAAO_LOW, IAAO_HIGH = 0.90, 1.10
+
+
+def ratio_band(value: float | None) -> tuple[str, str]:
+    """Which of the three bands a ratio falls in: (colour, plain English)."""
+    if value is None:
+        return "#cbd5e1", "no sale on file"
+    if value < IAAO_LOW:
+        return RATIO_UNDER, "assessed below the IAAO range"
+    if value > IAAO_HIGH:
+        return RATIO_OVER, "assessed above the IAAO range"
+    return RATIO_WITHIN, "within the IAAO range"
+
+
+def _verdict_style(verdict: str) -> tuple[str, str]:
+    """(colour, glyph) for a verdict. The glyph is not decoration."""
+    if verdict == "PASS":
+        return STATUS_PASS, "&#10003;"      # tick
+    if verdict == "FAIL":
+        return STATUS_FAIL, "&#10007;"      # cross
+    return "#64748b", "&#8212;"             # em dash -- not judged
+
+
+def verdict_badge_html(verdict: str, *, small: bool = False) -> str:
+    """A verdict as colour AND glyph AND word. Never fewer than three."""
+    colour, glyph = _verdict_style(verdict)
+    pad = "1px 7px" if small else "3px 11px"
+    size = "11px" if small else "13px"
+    return (
+        f"<span style='display:inline-block; background:{colour}; "
+        f"color:#ffffff; border-radius:999px; padding:{pad}; "
+        f"font-size:{size}; font-weight:700; letter-spacing:.03em; "
+        f"white-space:nowrap;'>{glyph}&nbsp;{html.escape(verdict)}</span>")
+
+
+# ─────────────────────────────────────────────────────────────────────────
+#  The speedometer
+# ─────────────────────────────────────────────────────────────────────────
+#
+# One dial, showing one number: the median assessment ratio.
+#
+# It is a real instrument, not a mascot. An appraiser reads a median ratio
+# the way a driver reads a speedometer -- what matters is not the digits but
+# whether the needle is inside the safe band, and you want to know that
+# without doing any arithmetic. The IAAO acceptance range is painted onto the
+# dial, so "are we alright?" is answered by where the needle points.
+#
+# The theme earns its keep here rather than decorating: a perfect ratio of
+# 1.00 is marked 88, because 1.00 is exactly where you want to be.
+#
+# Only the median goes on the dial. COD and PRD are equally important and
+# measure completely different things, and putting three needles on one arc
+# would imply they share a scale. They get the scorecard instead.
+
+_DIAL_LOW, _DIAL_HIGH = 0.70, 1.30
+
+
+def _polar(cx: float, cy: float, r: float, degrees: float) -> tuple[float, float]:
+    """A point on a circle. 0 degrees is due east, 180 due west."""
+    import math
+
+    angle = math.radians(degrees)
+    return cx + r * math.cos(angle), cy - r * math.sin(angle)
+
+
+def _arc_path(cx: float, cy: float, r: float, deg_from: float,
+              deg_to: float) -> str:
+    """An SVG arc between two angles on a circle."""
+    x1, y1 = _polar(cx, cy, r, deg_from)
+    x2, y2 = _polar(cx, cy, r, deg_to)
+    large = 1 if abs(deg_to - deg_from) > 180 else 0
+    sweep = 1 if deg_to < deg_from else 0
+    return (f"M {x1:.2f} {y1:.2f} A {r:.2f} {r:.2f} 0 {large} {sweep} "
+            f"{x2:.2f} {y2:.2f}")
+
+
+def _dial_angle(value: float) -> float:
+    """Where on the dial a ratio sits. Values off the scale peg at the end."""
+    clamped = min(max(value, _DIAL_LOW), _DIAL_HIGH)
+    span = _DIAL_HIGH - _DIAL_LOW
+    return 180.0 - (clamped - _DIAL_LOW) / span * 180.0
+
+
+#: How wide the dial is allowed to get. Fixed rather than fluid because
+#: Streamlit has to be told the exact height of the frame it goes in -- see
+#: `svg_card()` in the Section 7 app.
+SPEEDOMETER_MAX_WIDTH = 430
+
+# Wide enough for the dial, tall enough for the reading to sit UNDERNEATH it.
+# The first version put the number in the middle of the face, which is where
+# every real speedometer puts it -- and on a real speedometer the needle is
+# not free to sweep through the digits. Here it is, and at any ratio near 1.00
+# it drew straight over them.
+SPEEDOMETER_VIEWBOX = (460, 312)
+
+
+def speedometer_frame_height(max_width: int = SPEEDOMETER_MAX_WIDTH) -> int:
+    """How tall a rendered dial card is, in pixels.
+
+    Streamlit has to be told the height of the frame these go in, and getting
+    it wrong is not cosmetic: too small and the caption is behind a scrollbar,
+    which is how this was first shipped.
+
+    So it is computed rather than typed in. The svg keeps its viewBox aspect
+    once the width is capped, and the rest is the card around it -- padding,
+    the caption, the subtitle line, borders and margins. Space for the
+    subtitle is always reserved even when there is not one, so the header does
+    not jump every time a question is asked.
+    """
+    box_w, box_h = SPEEDOMETER_VIEWBOX
+    dial = max_width * box_h / box_w
+    chrome = 36 + 20 + 20 + 12 + 2      # padding, caption, subtitle, margin, border
+    return int(dial + chrome) + 12      # a little headroom for font differences
+
+
+def speedometer_html(value: float | None = None, *,
+                     caption: str = "Median assessment ratio",
+                     subtitle: str = "") -> str:
+    """The header instrument: one needle against the IAAO acceptance range.
+
+    Pass `None` before anything has been asked, and the dial sits dark with
+    the needle at rest -- an instrument waiting, rather than an empty box.
+    """
+    # The hub sits high enough to leave the bottom third of the box free for
+    # the reading. Nothing the needle can reach goes below y = cy.
+    cx, cy, r = 230.0, 208.0, 148.0
+    live = value is not None
+
+    # The face
+    parts = [
+        f"<path d='{_arc_path(cx, cy, r, 180, 0)}' fill='none' "
+        f"stroke='#e2e8f0' stroke-width='26' stroke-linecap='round'/>",
+        # The IAAO acceptance range, painted onto the dial.
+        f"<path d='{_arc_path(cx, cy, r, _dial_angle(IAAO_LOW), _dial_angle(IAAO_HIGH))}' "
+        f"fill='none' stroke='{STATUS_PASS}' stroke-width='26' "
+        f"opacity='{0.85 if live else 0.35}'/>",
+    ]
+
+    # Ticks and their labels.
+    for tick in (0.70, 0.80, 0.90, 1.00, 1.10, 1.20, 1.30):
+        angle = _dial_angle(tick)
+        inner = _polar(cx, cy, r - 17, angle)
+        outer = _polar(cx, cy, r + 15, angle)
+        edge = tick in (IAAO_LOW, IAAO_HIGH)
+        parts.append(
+            f"<line x1='{inner[0]:.1f}' y1='{inner[1]:.1f}' "
+            f"x2='{outer[0]:.1f}' y2='{outer[1]:.1f}' "
+            f"stroke='{'#334155' if edge else '#94a3b8'}' "
+            f"stroke-width='{2.5 if edge else 1.5}'/>")
+        label = _polar(cx, cy, r + 31, angle)
+
+        # 1.00 is 88 miles per hour -- a ratio of exactly one is the reading
+        # you are aiming for, so the dial is marked there rather than putting
+        # the joke somewhere it has to be explained. Everything inside the arc
+        # belongs to the needle; anything parked in there gets driven over.
+        if tick == 1.00:
+            parts.append(
+                f"<text x='{label[0]:.1f}' y='{label[1]:.1f}' "
+                f"text-anchor='middle' dominant-baseline='middle' "
+                f"font-size='21' font-weight='800' font-style='italic' "
+                f"fill='{STATUS_PASS}' "
+                f"opacity='{0.95 if live else 0.32}'>88</text>")
+            continue
+
+        parts.append(
+            f"<text x='{label[0]:.1f}' y='{label[1]:.1f}' text-anchor='middle' "
+            f"dominant-baseline='middle' font-size='13' "
+            f"fill='{'#334155' if edge else '#94a3b8'}' "
+            f"font-weight='{700 if edge else 500}'>{tick:.2f}</text>")
+
+    # The needle.
+    if live:
+        angle = _dial_angle(float(value))
+        tip = _polar(cx, cy, r - 30, angle)
+        left = _polar(cx, cy, 11, angle + 90)
+        right = _polar(cx, cy, 11, angle - 90)
+        colour, _ = ratio_band(float(value))
+        parts.append(
+            f"<polygon points='{tip[0]:.1f},{tip[1]:.1f} "
+            f"{left[0]:.1f},{left[1]:.1f} {right[0]:.1f},{right[1]:.1f}' "
+            f"fill='#0f172a'/>")
+        parts.append(f"<circle cx='{cx}' cy='{cy}' r='13' fill='#0f172a'/>")
+        parts.append(f"<circle cx='{cx}' cy='{cy}' r='5.5' fill='{colour}'/>")
+    else:
+        parts.append(f"<circle cx='{cx}' cy='{cy}' r='13' fill='#cbd5e1'/>")
+
+    # The number itself, which is what anybody actually reads. It lives INSIDE
+    # the svg so it scales with the dial -- positioned with a pixel margin it
+    # drifted off the face the moment the container changed width.
+    # Below the dial, clear of everything the needle can reach.
+    if live:
+        colour, meaning = ratio_band(float(value))
+        parts.append(
+            f"<text x='{cx}' y='262' text-anchor='middle' "
+            f"dominant-baseline='middle' font-size='48' font-weight='800' "
+            f"fill='#0f172a' letter-spacing='-1'>{float(value):.3f}</text>")
+        parts.append(
+            f"<text x='{cx}' y='294' text-anchor='middle' font-size='13' "
+            f"font-weight='700' fill='{colour}'>{html.escape(meaning)}</text>")
+    else:
+        parts.append(
+            f"<text x='{cx}' y='268' text-anchor='middle' "
+            f"dominant-baseline='middle' font-size='21' font-weight='600' "
+            f"fill='#94a3b8'>waiting for a question</text>")
+
+    reading_label = "no reading yet" if not live else f"{float(value):.3f}"
+    body = (
+        f"<div style='text-align:center;'>"
+        f"<svg viewBox='0 0 {SPEEDOMETER_VIEWBOX[0]} {SPEEDOMETER_VIEWBOX[1]}' "
+        f"width='100%' style='max-width:{SPEEDOMETER_MAX_WIDTH}px;' "
+        f"role='img' aria-label='{html.escape(caption)}: {reading_label}'>"
+        f"{''.join(parts)}</svg>"
+        f"<div style='font-size:12px; color:#64748b; margin-top:4px; "
+        f"letter-spacing:.06em; text-transform:uppercase;'>"
+        f"{html.escape(caption)}</div>"
+        + (f"<div style='font-size:12.5px; color:#475569; margin-top:3px;'>"
+           f"{html.escape(subtitle)}</div>" if subtitle else "")
+        + "</div>")
+
+    return f"<div style='{CARD}'>{body}</div>"
+
+
+def show_speedometer(value: float | None = None, **kwargs) -> None:
+    """Display the dial in a notebook."""
+    show_html(speedometer_html(value, **kwargs))
+
+
+# ─────────────────────────────────────────────────────────────────────────
+#  The scorecard — one study, three tests
+# ─────────────────────────────────────────────────────────────────────────
+
+def scorecard_html(result: dict, *, title: str = "IAAO ratio study") -> str:
+    """The three IAAO tests as three cards, each with its own verdict.
+
+    Three separate cards rather than one table, because the three tests are
+    genuinely independent and the layout should say so. Level, uniformity and
+    equity can pass and fail in any combination, and an office that reads them
+    as a single score has thrown away the only useful thing about them: WHICH
+    one failed tells you what to go and fix.
+    """
+    tests = result.get("tests") or []
+    if not tests:
+        return note_html(
+            "Not enough sales",
+            html.escape(str(result.get("note", "Nothing to report."))),
+            kind="warn")
+
+    cards = []
+    for test in tests:
+        colour, glyph = _verdict_style(test["verdict"])
+        failed = test["verdict"] == "FAIL"
+        cards.append(
+            f"<div style='flex:1 1 190px; min-width:190px; "
+            f"border:1px solid {colour if failed else '#e2e8f0'}; "
+            f"border-top:4px solid {colour}; border-radius:9px; "
+            f"padding:14px 16px; background:{'#fffafa' if failed else '#ffffff'};'>"
+            f"<div style='font-size:11px; letter-spacing:.07em; "
+            f"text-transform:uppercase; color:#64748b; font-weight:700;'>"
+            f"{html.escape(test['test'])}</div>"
+            f"<div style='font-size:13px; color:#475569; margin:2px 0 9px;'>"
+            f"{html.escape(test['metric'])}</div>"
+            f"<div style='font-size:33px; font-weight:800; color:#0f172a; "
+            f"line-height:1;'>{test['value']}</div>"
+            f"<div style='font-size:11.5px; color:#64748b; margin:7px 0 10px;'>"
+            f"standard {html.escape(test['standard'])}</div>"
+            f"{verdict_badge_html(test['verdict'], small=True)}"
+            + (f"<div style='font-size:11.5px; color:{colour}; margin-top:9px; "
+               f"font-weight:600; line-height:1.35;'>"
+               f"{html.escape(test.get('meaning', ''))}</div>" if failed else "")
+            + f"<div style='font-size:11px; color:#94a3b8; margin-top:9px; "
+              f"line-height:1.35;'>{html.escape(test.get('asks', ''))}</div>"
+            f"</div>")
+
+    overall = result.get("verdict", "")
+    used = result.get("sales_used", 0)
+    excluded = result.get("sales_excluded_not_arms_length", 0)
+
+    head = (
+        f"<div style='display:flex; align-items:center; gap:12px; "
+        f"flex-wrap:wrap; margin-bottom:14px;'>"
+        f"<span style='font-weight:800; font-size:16px; color:#0f172a;'>"
+        f"{html.escape(title)}</span>"
+        f"{verdict_badge_html(overall)}"
+        f"<span style='font-size:12.5px; color:#64748b;'>"
+        f"{used} qualified sales</span></div>")
+
+    # The exclusion line is not housekeeping. It is the tool applying a
+    # professional standard the model never had to know about, and saying so.
+    footer = ""
+    if excluded:
+        footer = (
+            f"<div style='margin-top:14px; padding:10px 13px; "
+            f"background:#f8fafc; border-left:3px solid #94a3b8; "
+            f"border-radius:0 6px 6px 0; font-size:12.5px; color:#475569; "
+            f"line-height:1.45;'><b>{excluded} sales excluded</b> as not "
+            f"arm's length &mdash; foreclosures and transfers between family "
+            f"members are not evidence of market value, so IAAO leaves them "
+            f"out.</div>")
+
+    if result.get("stratification_note"):
+        footer += (
+            f"<div style='margin-top:8px; padding:10px 13px; "
+            f"background:#fffbeb; border-left:3px solid #f59e0b; "
+            f"border-radius:0 6px 6px 0; font-size:12.5px; color:#78350f; "
+            f"line-height:1.45;'>"
+            f"{html.escape(result['stratification_note'])}</div>")
+
+    return (f"<div style='{CARD}'>{head}"
+            f"<div style='display:flex; gap:11px; flex-wrap:wrap;'>"
+            f"{''.join(cards)}</div>{footer}</div>")
+
+
+def show_scorecard(result: dict, **kwargs) -> None:
+    """Display an IAAO scorecard in a notebook."""
+    show_html(scorecard_html(result, **kwargs))
+
+
+# ─────────────────────────────────────────────────────────────────────────
+#  The neighborhood table — Section 7's whole argument, in one picture
+# ─────────────────────────────────────────────────────────────────────────
+
+def ratio_table_html(groups: Sequence[dict], *, group_by: str = "neighborhood",
+                     title: str = "") -> str:
+    """One ratio study per group, with the FAILING CELL marked.
+
+    The design decision here is small and it is the entire point.
+
+    The obvious thing is to shade the failing ROW red: three red rows, three
+    problems, job done. It is also the wrong thing, because it throws away the
+    finding. Hill Valley County's three troubled neighborhoods do not share a
+    problem -- one is assessed too low, one is inconsistent, one is unfair
+    between cheap and expensive homes. Three different afternoons of work.
+
+    Mark the failing CELL instead and the red lands in three DIFFERENT columns.
+    Nobody has to say "and notice they fail for different reasons" -- the table
+    has already said it, and an appraiser reads it in about two seconds.
+
+    The county line goes at the bottom, passing everything, which is the twist:
+    the aggregate is healthy while half the neighborhoods are not.
+    """
+    groups = list(groups)
+    if not groups:
+        return note_html("No results", "Nothing to show.", kind="warn")
+
+    metrics = [m for m in ("Median ratio", "COD", "PRD") if m in groups[0]]
+
+    header = (
+        f"<th style='text-align:left; padding:9px 12px; font-size:11px; "
+        f"letter-spacing:.07em; text-transform:uppercase; color:#64748b;'>"
+        f"{html.escape(group_by)}</th>"
+        f"<th style='text-align:right; padding:9px 8px; font-size:11px; "
+        f"letter-spacing:.07em; text-transform:uppercase; color:#64748b;'>"
+        f"sales</th>")
+    for metric in metrics:
+        header += (
+            f"<th style='text-align:right; padding:9px 12px; font-size:11px; "
+            f"letter-spacing:.07em; text-transform:uppercase; color:#64748b; "
+            f"white-space:nowrap;'>{html.escape(metric)}</th>")
+    header += (
+        "<th style='text-align:center; padding:9px 12px; font-size:11px; "
+        "letter-spacing:.07em; text-transform:uppercase; color:#64748b;'>"
+        "verdict</th>")
+
+    rows = []
+    for group in groups:
+        cells = (
+            f"<td style='padding:11px 12px; font-weight:700; font-size:14px; "
+            f"color:#0f172a; white-space:nowrap;'>"
+            f"{html.escape(str(group.get(group_by, '')))}</td>"
+            f"<td style='padding:11px 8px; text-align:right; font-size:13px; "
+            f"color:#64748b; font-family:{MONO};'>"
+            f"{group.get('sales_used', '')}</td>")
+
+        for metric in metrics:
+            failed = group.get(metric + " verdict") == "FAIL"
+            value = group.get(metric)
+            shown = f"{value:.3f}" if metric != "COD" else f"{value:.2f}"
+            if failed:
+                cells += (
+                    f"<td style='padding:11px 12px; text-align:right; "
+                    f"font-family:{MONO}; font-size:14.5px; font-weight:800; "
+                    f"color:#ffffff; background:{STATUS_FAIL};' "
+                    f"title='fails the IAAO standard for {html.escape(metric)}'>"
+                    f"&#10007;&nbsp;{shown}</td>")
+            else:
+                cells += (
+                    f"<td style='padding:11px 12px; text-align:right; "
+                    f"font-family:{MONO}; font-size:14px; color:#334155;'>"
+                    f"{shown}</td>")
+
+        cells += (f"<td style='padding:11px 12px; text-align:center;'>"
+                  f"{verdict_badge_html(group.get('verdict', ''), small=True)}"
+                  f"</td>")
+        rows.append(f"<tr style='border-top:1px solid #e2e8f0;'>{cells}</tr>")
+
+    failing = [g for g in groups if g.get("verdict") == "FAIL"]
+    head = ""
+    if title:
+        head = (f"<div style='font-weight:800; font-size:16px; color:#0f172a; "
+                f"margin-bottom:4px;'>{html.escape(title)}</div>")
+    head += (
+        f"<div style='font-size:13px; color:#475569; margin-bottom:13px;'>"
+        f"<b>{len(failing)} of {len(groups)}</b> fail at least one IAAO "
+        f"standard &mdash; and they do not fail the same one.</div>")
+
+    legend = (
+        f"<div style='margin-top:12px; font-size:11.5px; color:#64748b; "
+        f"display:flex; gap:16px; flex-wrap:wrap; align-items:center;'>"
+        f"<span><span style='display:inline-block; width:11px; height:11px; "
+        f"background:{STATUS_FAIL}; border-radius:2px; "
+        f"vertical-align:-1px;'></span> &#10007; outside the IAAO standard"
+        f"</span>"
+        f"<span>Level 0.90&ndash;1.10 &nbsp;&middot;&nbsp; COD 5&ndash;15 "
+        f"&nbsp;&middot;&nbsp; PRD 0.98&ndash;1.03</span></div>")
+
+    return (f"<div style='{CARD}'>{head}"
+            f"<div style='overflow-x:auto;'>"
+            f"<table style='width:100%; border-collapse:collapse; "
+            f"min-width:520px;'>"
+            f"<thead><tr>{header}</tr></thead><tbody>{''.join(rows)}</tbody>"
+            f"</table></div>{legend}</div>")
+
+
+def show_ratio_table(groups: Sequence[dict], **kwargs) -> None:
+    """Display the grouped ratio study in a notebook."""
+    show_html(ratio_table_html(groups, **kwargs))
+
+
+# ─────────────────────────────────────────────────────────────────────────
+#  The county map — drawn by hand, on purpose
+# ─────────────────────────────────────────────────────────────────────────
+#
+# This started as folium, and folium turned out to be the wrong tool here for
+# a reason worth writing down, because it will catch somebody else.
+#
+# A folium map pulls in ten external resources from CDNs -- and not just the
+# background tiles. Leaflet ITSELF is one of them. On conference wifi that has
+# given up you do not get a map missing its streets; you get no map at all. It
+# would also mean the committed notebook outputs could not draw on GitHub,
+# which is most of the reason we commit them.
+#
+# So the map is inline SVG, like everything else in this file. No network, no
+# dependency, and it renders identically in JupyterLab, in Streamlit and on
+# GitHub. What that costs is pan and zoom, which nobody wants in the middle of
+# a fifteen-minute slot anyway.
+#
+# There is a second reason and it is the better one. These parcels are
+# invented. Drawing invented parcels on top of real Calgary streets quietly
+# claims they are real properties at real addresses, which is precisely what
+# this repository promises not to do. An abstract map reads as Hill Valley
+# County, which is what it is.
+
+
+def _convex_hull(points):
+    """The outline enclosing a set of points -- Andrew's monotone chain.
+
+    Fifteen lines and no scipy. Used to sketch each neighborhood's boundary so
+    the county has a shape instead of being a cloud of loose dots.
+    """
+    pts = sorted(set(points))
+    if len(pts) < 3:
+        return pts
+
+    def cross(o, a, b):
+        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+    lower = []
+    for p in pts:
+        while len(lower) >= 2 and cross(lower[-2], lower[-1], p) <= 0:
+            lower.pop()
+        lower.append(p)
+
+    upper = []
+    for p in reversed(pts):
+        while len(upper) >= 2 and cross(upper[-2], upper[-1], p) <= 0:
+            upper.pop()
+        upper.append(p)
+
+    return lower[:-1] + upper[:-1]
+
+
+#: Same reason as the dial: a host that has to reserve a frame needs to know
+#: how tall the picture will be, and that is only knowable if the width stops
+#: somewhere.
+MAP_MAX_WIDTH = 780
+
+
+def map_frame_height(markup: str, max_width: int = MAP_MAX_WIDTH) -> int:
+    """How tall a rendered map card will be, in pixels.
+
+    The svg keeps its viewBox aspect, so once the width is capped the height
+    follows. The constant on the end is the card itself -- title, count line,
+    legend, padding.
+    """
+    found = re.search(r"viewBox='0 0 (\d+) (\d+)'", markup)
+    if not found:
+        return 700
+    box_w, box_h = int(found.group(1)), int(found.group(2))
+    # Title, the count line (which wraps to two lines on a narrow window),
+    # the legend, card padding, margins and borders. Generous on purpose:
+    # a frame that is slightly too tall costs a little whitespace, one that
+    # is slightly too short puts the legend behind a scrollbar.
+    chrome = 26 + 40 + 30 + 36 + 12 + 2
+    return int(max_width * box_h / box_w) + chrome
+
+
+def parcel_map_html(frame, *, color_by: str = "ratio", context=None,
+                    title: str = "", width: int = 720,
+                    height: int | None = None) -> str:
+    """Draw the selected parcels on a map, zoomed to fit them.
+
+    `frame` is what the agent asked to see. `context` is every parcel in the
+    county; whatever part of it falls inside the frame is drawn faintly
+    underneath, so a selection sits among its neighbours rather than floating.
+
+    **The frame fits the SELECTION, not the county.** That is a deliberate
+    reversal of how this first worked, and the reason is worth keeping.
+
+    The first version drew the whole county every time and outlined each
+    neighborhood with a convex hull. Because parcels are sampled inside a
+    disc, those hulls came out as six near-perfect circles -- which is not
+    what a county looks like to anybody who values property for a living. The
+    outline was doing the damage: a scatter of dots reads as a cluster, but a
+    boundary drawn around it reads as a CLAIM about a shape, and that claim
+    was false.
+
+    So there are no neighborhood outlines. Asked to map the sales in Riverside
+    Heights, this shows the sales in Riverside Heights, filling the frame,
+    which is both what was asked for and what an appraiser expects to get.
+    Nothing is asserted about where the neighborhood ends, because nothing
+    needs to be.
+
+    What replaces the outlines is a plain grid, a scale bar and a north arrow
+    -- the grid says "coordinate space" without inventing streets that do not
+    exist, and the scale bar is not decoration: once the frame fits whatever
+    was selected, 36 sales across 800 metres and 244 across five kilometres
+    fill it identically. Without a scale they are indistinguishable.
+    """
+    import math
+
+    if frame is None or len(frame) == 0:
+        return note_html("Nothing to map",
+                         "That selection had no parcels with coordinates "
+                         "on file.", kind="warn")
+
+    pad = 52
+
+    mid_lat = sum(frame["latitude"]) / len(frame)
+    # Longitude degrees get narrower the further north you go. Without this
+    # correction the map comes out stretched sideways.
+    squeeze = math.cos(math.radians(mid_lat))
+
+    xs = [lon * squeeze for lon in frame["longitude"]]
+    ys = [-lat for lat in frame["latitude"]]
+    x_lo, x_hi = min(xs), max(xs)
+    y_lo, y_hi = min(ys), max(ys)
+
+    # A single parcel, or a row of them along one street, would otherwise ask
+    # for infinite magnification. Never show less than about 250 metres.
+    floor = 0.0022
+    if x_hi - x_lo < floor:
+        middle = (x_hi + x_lo) / 2
+        x_lo, x_hi = middle - floor / 2, middle + floor / 2
+    if y_hi - y_lo < floor:
+        middle = (y_hi + y_lo) / 2
+        y_lo, y_hi = middle - floor / 2, middle + floor / 2
+
+    # A little air around the edge, so nothing sits on the border.
+    breathe = 0.08
+    x_lo -= (x_hi - x_lo) * breathe
+    x_hi += (x_hi - x_lo) * breathe
+    y_lo -= (y_hi - y_lo) * breathe
+    y_hi += (y_hi - y_lo) * breathe
+
+    span_x = (x_hi - x_lo) or 1e-6
+    span_y = (y_hi - y_lo) or 1e-6
+
+    # Shape the canvas to what is being shown, within reason.
+    if height is None:
+        ideal = (width - 2 * pad) * (span_y / span_x) + 2 * pad
+        height = int(min(max(ideal, 340), 620))
+
+    # One scale for both axes, so nothing is distorted.
+    scale = min((width - 2 * pad) / span_x, (height - 2 * pad) / span_y)
+    off_x = (width - span_x * scale) / 2
+    off_y = (height - span_y * scale) / 2
+
+    def project(lat, lon):
+        return (off_x + (lon * squeeze - x_lo) * scale,
+                off_y + (-lat - y_lo) * scale)
+
+    layers = []
+
+    # -- A plain grid. Not streets; we are not inventing streets. ------------
+    layers.append(f"<rect x='0' y='0' width='{width}' height='{height}' "
+                  f"fill='#fbfcfd'/>")
+    for gx in range(0, width + 1, 64):
+        layers.append(f"<line x1='{gx}' y1='0' x2='{gx}' y2='{height}' "
+                      f"stroke='#eef2f6' stroke-width='1'/>")
+    for gy in range(0, height + 1, 64):
+        layers.append(f"<line x1='0' y1='{gy}' x2='{width}' y2='{gy}' "
+                      f"stroke='#eef2f6' stroke-width='1'/>")
+
+    # -- Neighbouring parcels that happen to be in shot ----------------------
+    visible_hoods: set[str] = set()
+    if context is not None and len(context):
+        chosen = set(frame["parcel_id"]) if "parcel_id" in frame else set()
+        for pid, la, lo, hood in zip(context["parcel_id"], context["latitude"],
+                                     context["longitude"],
+                                     context["neighborhood"]):
+            if pid in chosen:
+                continue
+            x, y = project(la, lo)
+            if not (0 <= x <= width and 0 <= y <= height):
+                continue        # outside the frame; clipped rather than drawn
+            visible_hoods.add(str(hood))
+            layers.append(f"<circle cx='{x:.1f}' cy='{y:.1f}' r='1.6' "
+                          f"fill='#cbd5e1'/>")
+
+    # -- The selection, on top ----------------------------------------------
+    values = None
+    if color_by == "assessed_value" and "assessed_value" in frame:
+        values = [v for v in frame["assessed_value"] if v is not None]
+    lo_v = min(values) if values else 0
+    hi_v = max(values) if values else 1
+
+    for row in frame.to_dict(orient="records"):
+        x, y = project(row["latitude"], row["longitude"])
+
+        if color_by == "assessed_value":
+            # Sequential: one hue, light to dark. Never a rainbow.
+            value = row.get("assessed_value") or lo_v
+            t = (value - lo_v) / ((hi_v - lo_v) or 1)
+            fill = (f"rgb({int(219 - 189 * t)},{int(234 - 156 * t)},"
+                    f"{int(254 - 138 * t)})")
+            meaning = f"assessed ${value:,.0f}"
+        else:
+            fill, meaning = ratio_band(row.get("ratio"))
+
+        address = row.get("situs_address")
+        tip = str(row.get("parcel_id", ""))
+        if address:
+            tip += f" - {address}"
+        tip += f"\n{row.get('neighborhood', '')}"
+        tip += f"\nassessed ${row.get('assessed_value') or 0:,.0f}"
+        if row.get("sale_price"):
+            tip += f"\nsold ${row['sale_price']:,.0f}"
+        if row.get("ratio") is not None:
+            tip += f"\nratio {row['ratio']:.3f} - {meaning}"
+
+        layers.append(
+            f"<circle cx='{x:.1f}' cy='{y:.1f}' r='5.2' fill='{fill}' "
+            f"stroke='#ffffff' stroke-width='1.6'/>")
+
+        # A second, invisible circle twice the size, carrying the tooltip.
+        # The visible dot is about ten pixels across, which is a fiddly thing
+        # to keep a pointer on -- and hovering a ten-pixel target is not a
+        # thing anybody is going to do from the back of a conference room. The
+        # bigger hit area costs nothing and makes it work when someone does
+        # try it on their own laptop later.
+        layers.append(
+            f"<circle cx='{x:.1f}' cy='{y:.1f}' r='11' fill='transparent'>"
+            f"<title>{html.escape(tip)}</title></circle>")
+
+    # -- Scale bar. Not decoration: see the docstring. -----------------------
+    #
+    # `scale` is pixels per degree of latitude, and a degree of latitude is
+    # 111.32 km anywhere on earth. Pick the largest tidy distance that fits in
+    # a third of the frame, so the bar is always a round number somebody can
+    # actually reason with rather than "0.37 km".
+    km_per_px = 111.32 / scale
+    for nice_km in (10, 5, 2, 1, 0.5, 0.2, 0.1, 0.05):
+        bar_px = nice_km / km_per_px
+        if bar_px <= (width - 2 * pad) / 3:
+            break
+    bar_label = (f"{nice_km:g} km" if nice_km >= 1
+                 else f"{int(nice_km * 1000)} m")
+    bar_x, bar_y = pad, height - 26
+    layers.append(
+        f"<line x1='{bar_x}' y1='{bar_y}' x2='{bar_x + bar_px:.1f}' "
+        f"y2='{bar_y}' stroke='#475569' stroke-width='2.5'/>")
+    for end in (bar_x, bar_x + bar_px):
+        layers.append(f"<line x1='{end:.1f}' y1='{bar_y - 4}' "
+                      f"x2='{end:.1f}' y2='{bar_y + 4}' "
+                      f"stroke='#475569' stroke-width='2.5'/>")
+    layers.append(
+        f"<text x='{bar_x + bar_px / 2:.1f}' y='{bar_y - 9}' "
+        f"text-anchor='middle' font-size='11.5' font-weight='700' "
+        f"fill='#475569'>{bar_label}</text>")
+
+    # -- North arrow. Cheap, and it reads as "map" instantly. ----------------
+    n_x, n_y = width - pad + 6, height - 30
+    layers.append(
+        f"<polygon points='{n_x},{n_y - 20} {n_x - 6},{n_y - 2} "
+        f"{n_x},{n_y - 7} {n_x + 6},{n_y - 2}' fill='#475569'/>")
+    layers.append(
+        f"<text x='{n_x}' y='{n_y + 12}' text-anchor='middle' font-size='11' "
+        f"font-weight='700' fill='#475569'>N</text>")
+
+    # -- Legend. The grey band is low contrast on purpose, so it is labelled --
+    if color_by == "assessed_value":
+        keys = [("#dbeafe", f"${lo_v:,.0f}"), ("#1e40af", f"${hi_v:,.0f}")]
+    else:
+        keys = [(RATIO_UNDER, "below 0.90 - assessed low"),
+                (RATIO_WITHIN, "0.90 to 1.10 - within standard"),
+                (RATIO_OVER, "above 1.10 - assessed high")]
+
+    legend = "".join(
+        f"<span style='display:inline-flex; align-items:center; gap:6px;'>"
+        f"<span style='width:11px; height:11px; border-radius:50%; "
+        f"background:{colour}; border:1.5px solid #ffffff; "
+        f"box-shadow:0 0 0 1px #cbd5e1;'></span>{html.escape(label)}</span>"
+        for colour, label in keys)
+
+    head = ""
+    if title:
+        head = (f"<div style='font-weight:800; font-size:16px; color:#0f172a; "
+                f"margin-bottom:3px;'>{html.escape(title)}</div>")
+
+    # Deliberately does NOT say "hover for details". Every dot does carry a
+    # tooltip, but a caption is a promise, and a promise that only pays out
+    # when you land a pointer on a small circle is not one worth making to a
+    # room. The colours, the legend and the scale bar always work.
+    hoods_shown = sorted(frame["neighborhood"].dropna().unique().tolist())
+    where = (hoods_shown[0] if len(hoods_shown) == 1
+             else f"{len(hoods_shown)} neighborhoods")
+    nearby = ""
+    if visible_hoods:
+        nearby = " Grey dots are other parcels in the same area."
+    head += (f"<div style='font-size:12.5px; color:#64748b; "
+             f"margin-bottom:10px;'>{len(frame)} parcels in "
+             f"{html.escape(where)}, coloured by how their assessment "
+             f"compares with what they sold for.{nearby}</div>")
+
+    return (
+        f"<div style='{CARD}'>{head}"
+        f"<svg viewBox='0 0 {width} {height}' width='100%' "
+        f"style='max-width:{MAP_MAX_WIDTH}px; background:#ffffff; "
+        f"border:1px solid #e2e8f0; border-radius:8px;' role='img' "
+        f"aria-label='Map of {len(frame)} parcels in Hill Valley County'>"
+        f"{''.join(layers)}</svg>"
+        f"<div style='margin-top:11px; font-size:12px; color:#475569; "
+        f"display:flex; gap:18px; flex-wrap:wrap;'>{legend}</div>"
+        f"</div>")
+
+
+def show_parcel_map(frame, **kwargs) -> None:
+    """Display the county map in a notebook."""
+    show_html(parcel_map_html(frame, **kwargs))

@@ -28,9 +28,11 @@ from .base import (REGISTRY, Tool, ToolCall, attempted_tool_call, dispatch,
 # means adding a line here.
 from . import parcel   # noqa: F401,E402  (imported for its side effect)
 from . import policy   # noqa: F401,E402
+from . import query    # noqa: F401,E402  (Section 7)
+from . import review   # noqa: F401,E402  (Section 7)
 
 __all__ = [
     "REGISTRY", "Tool", "ToolCall", "attempted_tool_call", "dispatch", "fail",
     "ok", "parse_tool_calls", "resolve_tool", "schemas", "strip_tool_calls",
-    "tool", "parcel", "policy",
+    "tool", "parcel", "policy", "query", "review",
 ]

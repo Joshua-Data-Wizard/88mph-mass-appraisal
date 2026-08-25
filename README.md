@@ -155,7 +155,7 @@ on stage, you can find it in about ten seconds. 👀
 | 4 | 🔋 **Running out of Plutonium** ✅<br/>[🖥️ local](notebooks/03_plutonium_local.ipynb) · [☁️ hosted](notebooks/03_plutonium_api.ipynb) · [🖱️ app ⑂](app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py) | Where it goes blind — and invents an ordinance to cover it |
 | 5 | 🗑️ **Introducing Mr. Fusion** | Agents & the ReAct loop: Reason → Act → Observe *(slides)* |
 | 6 | 🛹 **The Hoverboard** ✅<br/>[🖥️ local](notebooks/04_hoverboard_local.ipynb) · [☁️ hosted](notebooks/04_hoverboard_api.ipynb) · [🖱️ app ⑂](app/04_06_Office_Assistant_local_Streamlit.py) | A tool is a Python function *you* wrote — build one from nothing |
-| 7 | 🏎️ **Reaching 88 MPH** ⬜ | The mass valuation agent: parcels, ratio studies, maps |
+| 7 | 🏎️ **Reaching 88 MPH** ✅<br/>[🖥️ local](notebooks/05_88mph_local.ipynb) · [☁️ hosted](notebooks/05_88mph_api.ipynb) · [🖱️ app](app/05_88mph_Valuation_Review_local_Streamlit.py) | The valuation review agent — SQL it writes itself, IAAO ratio studies, maps |
 | 8 | 📖 **Grays Sports Almanac** ✅<br/>[🖥️ local](notebooks/06_almanac_local.ipynb) · [☁️ hosted](notebooks/06_almanac_api.ipynb) · [🖱️ app ⑂](app/04_06_Office_Assistant_local_Streamlit.py) | RAG in plain English — and it's just another tool |
 | 9 | ⚙️ **The DeLorean Engine** ⬜ | Small models: tiny, free, and surprisingly mighty |
 | 10 | 🔌 **The Universal Adapter** ⬜ | MCP — the "USB-C of AI" ⚡ |
@@ -242,6 +242,7 @@ Copy `.env.example` → `.env` and fill in your keys.
      02_time_circuits_{local,api}.ipynb    🎛️ §3  system prompts
      03_plutonium_{local,api}.ipynb        🔋 §4  where it goes blind
      04_hoverboard_{local,api}.ipynb       🛹 §6  tools, built from nothing
+     05_88mph_{local,api}.ipynb           🏎️ §7  ratio studies, SQL, maps
      06_almanac_{local,api}.ipynb          📖 §8  RAG as one more tool
 ✅ app/                      🖱️ clickable versions, for showing someone
      01_Flux_Capacitor_local_Streamlit.py                  ⚡ §2

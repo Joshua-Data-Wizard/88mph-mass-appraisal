@@ -207,6 +207,41 @@ def tax_df() -> "pd.DataFrame":
     return _frame(tax(), "SELECT * FROM tax_accounts")
 
 
+def sales_feed_df() -> "pd.DataFrame":
+    """The Appraiser's own copy of the Clerk's sales file — Section 7's table.
+
+    This is NOT the Clerk's live records. It is a snapshot the Appraiser's
+    office loaded on `feed_pulled_on()`, with our assessed value and the
+    parcel's characteristics already attached to each sale.
+
+    Two reasons it exists, and both matter:
+
+    1. A ratio study needs the sale price and the assessed value side by side,
+       and they live in two different offices. Every county solves that with a
+       periodic file transfer, so we solve it the same way.
+    2. It means the agent in Section 7 never has to write a JOIN. Small models
+       write joins that run and quietly return the wrong rows.
+
+    That it is a snapshot is the setup for Section 10 — see `feed_pulled_on`.
+    """
+    return _frame(cama(), "SELECT * FROM sales_feed")
+
+
+def feed_pulled_on() -> str:
+    """The date the Appraiser's office last loaded the Clerk's sales file.
+
+    Section 10 turns on this one string. The Clerk's records have kept moving
+    since this date, and nothing inside the Appraiser's office can tell you
+    what changed — that is what going live through MCP buys you.
+    """
+    con = cama()
+    try:
+        row = con.execute("SELECT feed_pulled_on FROM sales_feed LIMIT 1").fetchone()
+    finally:
+        con.close()
+    return row["feed_pulled_on"] if row else ""
+
+
 # ─────────────────────────────────────────────────────────────────────────
 #  Office policy documents — the Section 8 RAG corpus
 # ─────────────────────────────────────────────────────────────────────────
