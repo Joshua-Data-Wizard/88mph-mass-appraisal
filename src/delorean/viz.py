@@ -584,8 +584,17 @@ def raw_call_html(text: str, *, title: str = "What the model actually wrote") ->
     escaped = html.escape(text or "")
 
     # Light up the tool-call markup so the eye lands on it immediately.
+    #
+    # Three delimiter styles, because three models in the registry use three.
+    # Qwen and Nemotron write <tool_call><function=...>; SmolLM3 and Phi-4-mini
+    # write bare JSON with no markup to highlight; Gemma 4 puts the pipe INSIDE
+    # the bracket -- <|tool_call>call:name{...}<tool_call|> -- and fences its
+    # strings with <|"|>. Matching only the first style left Gemma's call
+    # rendered as flat grey text, which is the one thing this panel exists to
+    # prevent.
     escaped = re.sub(
-        r"(&lt;/?(?:tool_call|function|parameter)[^&]*?&gt;)",
+        r"(&lt;/?\|?(?:tool_call|tool_response|function|parameter)[^&]*?&gt;"
+        r"|&lt;\|&quot;\|&gt;)",
         r"<span style='color:#fbbf24;font-weight:700'>\1</span>",
         escaped,
     )
@@ -1602,3 +1611,148 @@ def parcel_map_html(frame, *, color_by: str = "ratio", context=None,
 def show_parcel_map(frame, **kwargs) -> None:
     """Display the county map in a notebook."""
     show_html(parcel_map_html(frame, **kwargs))
+
+
+# ─────────────────────────────────────────────────────────────────────────
+#  Section 10 — three offices, three servers
+#
+#  Deliberately built from divs and text, with NO <svg> anywhere. The map and
+#  the speedometer both learned that the hard way: `st.html()` sanitises with
+#  DOMPurify configured `USE_PROFILES: {html: true}`, which allows HTML
+#  elements and strips every SVG element silently, leaving a card frame with a
+#  hole in it. This panel is the centrepiece of Section 10 and has to render
+#  in a notebook, on GitHub and in Streamlit without a special case.
+#
+#  Status is never carried by colour alone. Every panel states its condition
+#  in a word and a glyph as well, which is the rule for anyone reading from
+#  the back of a room or through a colour vision deficiency.
+# ─────────────────────────────────────────────────────────────────────────
+
+#: One panel per office. "Answered" is teal, NOT green -- green against our
+#: red measures a CVD colour distance of 4.2, which a deuteranope cannot
+#: separate. Teal against the same red measures 11.9.
+_OFFICE_STATES = {
+    "idle":     ("#f8fafc", "#e2e8f0", "#64748b", "\u25cb", "not asked"),
+    "answered": ("#f0fdfa", STATUS_PASS, STATUS_PASS, "\u2713", "answered"),
+    "failed":   ("#fef2f2", STATUS_FAIL, STATUS_FAIL, "\u2715", "did not answer"),
+}
+
+
+def _office_chip(tool: str, used: bool, ink: str) -> str:
+    """One tool name inside an office panel."""
+    return (f"<div style='font-family:{MONO};font-size:11.5px;"
+            f"color:{ink if used else '#94a3b8'};"
+            f"font-weight:{'700' if used else '400'};margin-top:3px'>"
+            f"{'\u25b8' if used else '\u00b7'} {html.escape(tool)}</div>")
+
+
+def offices_html(catalogue: Sequence[dict], *,
+                 trace: Sequence[dict] | None = None,
+                 local: Sequence[str] | None = None,
+                 title: str = "The county offices this agent can reach") -> str:
+    """Draw one panel per office, lit up by what the agent actually called.
+
+    Section 10's argument is not that MCP is a clever protocol. It is that a
+    question an ordinary taxpayer asks at a counter -- *may I split my lot?* --
+    cannot be answered by any single office in the county, and that the only
+    thing joining them today is somebody making three phone calls.
+
+    So the picture is three buildings, not a list of tools. Watching the
+    Appraiser, then the Clerk, then the Tax Collector each answer in turn is
+    the demo; the protocol underneath is an implementation detail the room
+    does not need.
+
+    Args:
+        catalogue: rows from `Offices.catalogue()` -- office, icon, tool.
+                   Every one of them was published by the server that owns it,
+                   not written here.
+        trace:     the agent's trace so far, so panels light as calls land.
+                   Pass a partial trace while streaming and it animates.
+        local:     tools belonging to THIS office that did not come over MCP.
+                   Drawn in a separate dashed panel on purpose -- the
+                   difference between "my filing cabinet" and "somebody else's
+                   system" is the distinction the whole section rests on.
+        title:     heading above the row.
+    """
+    called: dict[str, bool] = {}
+    for step in (trace or []):
+        if step.get("step") == "act":
+            ok = bool((step.get("result") or {}).get("ok"))
+            # A tool asked twice counts as answered if it ever succeeded.
+            called[step["tool"]] = called.get(step["tool"], False) or ok
+
+    # Group by office, keeping the order the servers were listed in.
+    order: list[str] = []
+    by_office: dict[str, dict] = {}
+    for row in catalogue:
+        name = row.get("office", "?")
+        if name not in by_office:
+            order.append(name)
+            by_office[name] = {"icon": row.get("icon", "\U0001f3db\ufe0f"),
+                               "holds": row.get("holds", ""), "tools": []}
+        by_office[name]["tools"].append(row.get("tool", ""))
+
+    panels = []
+    for name in order:
+        office = by_office[name]
+        hits = [t for t in office["tools"] if t in called]
+        if not hits:
+            state = "idle"
+        elif any(called[t] for t in hits):
+            state = "answered"
+        else:
+            state = "failed"
+        bg, border, ink, glyph, word = _OFFICE_STATES[state]
+
+        chips = "".join(_office_chip(t, t in called, ink)
+                        for t in office["tools"])
+        panels.append(
+            f"<div style='flex:1 1 190px;min-width:190px;background:{bg};"
+            f"border:2px solid {border};border-radius:10px;padding:13px 15px'>"
+            f"<div style='font-size:22px;line-height:1'>{office['icon']}</div>"
+            f"<div style='font-weight:700;font-size:14px;margin-top:6px;"
+            f"color:#0f172a'>{html.escape(name)}</div>"
+            f"<div style='font-size:11px;color:#64748b;margin-top:2px;"
+            f"min-height:30px'>{html.escape(office['holds'])}</div>"
+            f"<div style='font-size:11px;font-weight:700;color:{ink};"
+            f"margin-top:7px'>{glyph} {word}</div>"
+            f"<div style='margin-top:6px'>{chips}</div>"
+            f"</div>")
+
+    if local:
+        used_any = any(t in called for t in local)
+        ink = STATUS_PASS if used_any else "#64748b"
+        chips = "".join(_office_chip(t, t in called, ink) for t in local)
+        panels.append(
+            f"<div style='flex:1 1 190px;min-width:190px;background:#ffffff;"
+            f"border:2px dashed {STATUS_PASS if used_any else '#cbd5e1'};"
+            f"border-radius:10px;padding:13px 15px'>"
+            f"<div style='font-size:22px;line-height:1'>\U0001f4d6</div>"
+            f"<div style='font-weight:700;font-size:14px;margin-top:6px;"
+            f"color:#0f172a'>This office</div>"
+            f"<div style='font-size:11px;color:#64748b;margin-top:2px;"
+            f"min-height:30px'>our own policy manual &mdash; a local tool, "
+            f"not MCP</div>"
+            f"<div style='font-size:11px;font-weight:700;color:{ink};"
+            f"margin-top:7px'>"
+            f"{'\u2713 answered' if used_any else '\u25cb not asked'}</div>"
+            f"<div style='margin-top:6px'>{chips}</div></div>")
+
+    n_tools = len(catalogue) + len(local or [])
+    return (
+        f"<div style='{CARD}'>"
+        f"<div style='font-size:10.5px;letter-spacing:.13em;"
+        f"text-transform:uppercase;color:#64748b;font-weight:700;"
+        f"margin-bottom:11px'>{html.escape(title)} &middot; "
+        f"{len(order)} offices &middot; {n_tools} tools</div>"
+        f"<div style='display:flex;flex-wrap:wrap;gap:10px'>"
+        f"{''.join(panels)}</div>"
+        f"<div style='font-size:11px;color:#64748b;margin-top:11px'>"
+        f"Every tool above was <b>published by the office that owns it</b>. "
+        f"Nothing in this list was written by the agent.</div>"
+        f"</div>")
+
+
+def show_offices(catalogue: Sequence[dict], **kwargs) -> None:
+    """Display the three-office panel in a notebook."""
+    show_html(offices_html(catalogue, **kwargs))

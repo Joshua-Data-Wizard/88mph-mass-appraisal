@@ -120,7 +120,7 @@ with st.sidebar:
 
     choice = st.selectbox(
         "Model",
-        options=list(models.REGISTRY),
+        options=models.selectable(),
         format_func=lambda k: f"{models.REGISTRY[k].label}  ({models.REGISTRY[k].params})",
         index=0,
         help="All of these run entirely on your own machine.",

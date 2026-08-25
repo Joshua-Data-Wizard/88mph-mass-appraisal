@@ -36,6 +36,41 @@ except ImportError:  # pragma: no cover
 _CACHE: dict[str, tuple[Any, Any]] = {}
 
 
+def unload(which: str | None = None) -> None:
+    """Drop cached models and give the VRAM back.
+
+    `load_local()` keeps every model it has loaded in `_CACHE`, which is right
+    for a notebook -- you do not want a re-run of one cell to reload three
+    gigabytes. It is wrong for anything that loads several models in one
+    process, because `del model` in the caller frees nothing while the cache
+    still holds a reference.
+
+    ⚠️ This was measured wrong before it was noticed. `scripts/compare_models.py`
+    reported SmolLM3 at 4.76 GB, Phi-4-mini at 7.45 GB and Gemma at 13.75 GB
+    -- each one carrying every model loaded before it. The true figures are
+    1.86, 2.69 and 6.30. The tell was that the numbers grew monotonically in
+    the order the models happened to run.
+
+    Args:
+        which: a registry key, or None to drop everything.
+    """
+    import torch
+
+    if which is None:
+        _CACHE.clear()
+    else:
+        spec = models.get(which)
+        for key in [k for k in _CACHE if k.startswith(spec.hf_id + ":")]:
+            del _CACHE[key]
+
+    import gc
+
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.reset_peak_memory_stats()
+
+
 # ── Local models ─────────────────────────────────────────────────────────────
 
 def load_local(
@@ -77,6 +112,21 @@ def load_local(
         "dtype": torch.float16 if has_cuda else torch.float32,
         "device_map": "cuda:0" if has_cuda else "cpu",
     }
+
+    # A guard for models advertising an enormous context when nothing here
+    # needs one. See models.ModelSpec.max_context -- and note that this is NOT
+    # what makes Nemotron work; that turned out to be an architectural limit
+    # no setting fixes.
+    if spec.max_context:
+        from transformers import AutoConfig
+
+        config = AutoConfig.from_pretrained(spec.hf_id)
+        target = getattr(config, "text_config", config)
+        target.max_position_embeddings = spec.max_context
+        kwargs["config"] = config
+        if verbose:
+            print(f"   context capped at {spec.max_context:,} tokens "
+                  f"(the model claims far more than anything here needs)")
 
     if use_4bit and has_cuda:
         from transformers import BitsAndBytesConfig

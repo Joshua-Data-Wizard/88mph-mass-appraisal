@@ -25,15 +25,16 @@ heading — do not write a script against those sections.
 | **3** | **Setting the Time Circuits** | **5** | `app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py` tabs 1–2 | ✅ built |
 | **4** | **Running out of Plutonium** | **3** | same app, tab 3 | ✅ built |
 | 5 | Introducing Mr. Fusion | 7 | slides — Reason → Act → Observe | — |
-| 6 | The Hoverboard | 10 | office-assistant app, tab 1 | ⬜ planned |
-| 7 | Reaching 88 MPH | 15 | `app/05_88mph_Valuation_Review_local_Streamlit.py` | ✅ built |
-| 8 | Grays Sports Almanac | 8 | office-assistant app, tab 2 | ⬜ planned |
-| 9 | The DeLorean Engine | 5 | local-only | ⬜ planned |
-| 10 | The Universal Adapter | 10 | `mcp_server/` | ⬜ planned |
-| 11 | The Dashboard | 5 | full Streamlit dashboard | ⬜ planned |
+| **6** | **The Hoverboard** | **10** | `app/04_06_Office_Assistant_local_Streamlit.py` tab 1 | ✅ built |
+| **7** | **Reaching 88 MPH** | **15** | `app/05_88mph_Valuation_Review_local_Streamlit.py` | ✅ built |
+| **8** | **Grays Sports Almanac** | **8** | same app, tab 2 | ✅ built |
+| **9** | **The DeLorean Engine** | **5** | slide reveal + `notebooks/07_delorean_smol.ipynb` | ✅ built |
+| **10** | **The Universal Adapter** | **10** | `app/08_09_Universal_Adapter_local_Streamlit.py` + `mcp_server/` | ✅ built |
+| **11** | **Putting a Bow On It** | **5** | no new artifact — the take-home close | ✅ decided |
 | 12 | Wrap Up & Q&A | 10 | slides | — |
 
-**Two apps exist today and they cover §2, §3 and §4 — 15 minutes of stage time.**
+**Five apps cover §2, §3, §4, §6, §7, §8 and §10 — 58 minutes of stage time, and every demo in them is measured.**
+**All nine live demos are built.** §11 needs no artifact; see its entry below.
 
 ---
 
@@ -42,11 +43,48 @@ heading — do not write a script against those sections.
 ```powershell
 uv run streamlit run app/01_Flux_Capacitor_local_Streamlit.py
 uv run streamlit run app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py
+uv run streamlit run app/04_06_Office_Assistant_local_Streamlit.py
+uv run streamlit run app/05_88mph_Valuation_Review_local_Streamlit.py
+uv run streamlit run app/08_09_Universal_Adapter_local_Streamlit.py
 ```
 
-- **Launch both apps before the session starts** and leave them running in
-  separate browser tabs. The §3/§4 app loads a 4 GB model on first run; you do
-  not want that happening in front of people.
+⚠️ **The last two cannot run at the same time.** Each loads its own copy of the
+4B model, and two will not fit on an 8 GB card. Stop one before starting the
+other — a cold start is about 15 seconds, so do it during the intro slides for
+whichever section is next. The §2 and §3/§4 apps are small enough to leave up.
+
+### 🤖 The model picker — and a live moment worth having ready
+
+Every app's sidebar now offers **five** models. The default is Qwen3.5-4B
+everywhere and you should not need to touch it — but the list is there for
+one specific question, which somebody in the room will ask:
+
+> *"Do I have to run a model from a company I've never heard of?"*
+
+**Change the dropdown to `Microsoft Phi-4 mini` or `Google Gemma 4 E2B`,
+and ask the question again.** It works. That is a far better answer than a
+slide, and it costs about fifteen seconds of model load.
+
+| Model | Peak VRAM | Note |
+|---|---|---|
+| Qwen3.5 4B ⭐ | 4.00 GB | the default, 6/6 on tools |
+| SmolLM3 3B | **2.77 GB** | smallest — this is §9's reveal |
+| Microsoft Phi-4 mini | 4.15 GB | MIT licence |
+| Google Gemma 4 E2B | **6.55 GB** | fastest, but the heaviest — see below |
+| Qwen3.5 0.8B | 1.44 GB | §2 only; cannot drive tools |
+
+⚠️ **Gemma needs 6.55 GB.** Fine on the presenter machine; on an 8 GB
+laptop it leaves about 1.5 GB, so close everything else first. And
+**NVIDIA Nemotron is deliberately not in the list** — it runs out of memory
+on Windows. The app says so rather than leaving an unexplained gap.
+
+🎤 *"The weights are a file on this disk. It makes no network calls — I
+could pull the ethernet cable and this keeps working. Where the file was
+trained doesn't change what it can reach, which is nothing."*
+
+- **Launch the apps you need before the session starts** and leave them running
+  in separate browser tabs. They load a model on first run; you do not want
+  that happening in front of people.
 - **Close everything else.** Desktop software holds 2–3 GB of GPU memory.
   `nvidia-smi` overstates usage on Windows — trust the "GPU memory free" metric
   in each app's sidebar.
@@ -269,10 +307,11 @@ audit. Both notebook twins report their own result truthfully.
 
 ---
 
-# 🛹 §6 + 📖 §8 — The Office Assistant  ✅ **APP BUILT**
+# 🛹 §6 + 📖 §8 — The Office Assistant  ✅ **APP + NOTEBOOKS BUILT**
 
 **`app/04_06_Office_Assistant_local_Streamlit.py`** · model: `Qwen3.5-4B`
-*(the four notebooks are still to come)*
+· notebooks: [`04_hoverboard`](notebooks/04_hoverboard_local.ipynb) ·
+[`06_almanac`](notebooks/06_almanac_local.ipynb) *(both with `_api` twins)*
 
 **One app whose toolbelt grows.** §7 sits between the two tabs, so you reopen it.
 
@@ -406,6 +445,470 @@ worth re-measuring before the dry run.
 
 ---
 
+# 🏎️ §7 — Reaching 88 MPH  ✅ **APP + BOTH NOTEBOOKS BUILT**
+
+**`app/05_88mph_Valuation_Review_local_Streamlit.py`** · model: `Qwen3.5-4B`
+· notebooks: [`05_88mph_local`](notebooks/05_88mph_local.ipynb) ·
+[`05_88mph_api`](notebooks/05_88mph_api.ipynb)
+
+**The longest section in the talk and the core IAAO payload.** Everything
+before this earns the right to show it; everything after it is a variation.
+
+**Start this app during the §7 intro slides.** Only one app can run at a time —
+two model copies will not fit on an 8 GB card — and a cold start takes about
+**15 seconds**. Stop the office-assistant app first, start this one while you
+are still talking, and it is warm by the time you turn to it.
+
+---
+
+## 🎯 The one thing the room should take away
+
+> ### The agent decides **what to ask**. The tool decides **what is correct**.
+
+Everything on screen is arranged to make that land. The agent writes its own
+SQL — visibly, checkably. The statistics are never its job.
+
+---
+
+## 🖥️ What is on screen
+
+| Where | What |
+|---|---|
+| **Header** | A **speedometer**. The needle is the median assessment ratio; the green arc is the IAAO acceptance range 0.90–1.10; **1.00 is marked "88"** — a perfect ratio is 88 miles per hour. |
+| **Middle** | The question box, then **three numbered buttons** for the story, then a separate *Also try* row. |
+| **Below** | The answer in plain English, then whatever the agent produced — scorecard, table, or map. |
+| **Bottom** | *"How it got there"* — collapsed. Opens to the full Reason → Act → Observe trace **and the SQL the model wrote**. |
+| **Sidebar** | The three tools, the system prompt, the whole schema the model is shown, and the GPU it is running on. |
+
+**This app deliberately leads with the finding, not the machinery** — that is
+what separates it from §6/§8, where the loop *is* the show. The trace runs live
+while it works, then folds itself away when the answer lands.
+
+---
+
+## 🖱️ The click order — three buttons, about 35 seconds of machine time
+
+### 1️⃣ *"How did the county do?"* — **12 s**
+
+Speedometer swings into the green. Three cards, three green ✓ PASS badges.
+
+> **The county passed all three IAAO standards on 210 sales: the median ratio
+> of 0.9268 indicates we are assessing slightly low overall, the COD of 12.2184
+> shows consistent assessment across properties, and the PRD of 1.0262 confirms
+> that cheap and expensive homes are treated equitably. Thirty-four sales were
+> excluded as not arm's length, per IAAO guidelines.**
+> — `Qwen3.5-4B`, verbatim
+
+🎤 *"That is a clean year. That is the number that goes in the annual report,
+and every word of it is true."*
+
+**Note the last sentence of its answer.** Nobody asked it about arm's-length
+sales — the tool excluded 34 of them and said so, and the model repeated it.
+That is professional judgment living in the tool, and it is worth pointing at.
+
+### 2️⃣ *"Break it down by neighborhood."* — **10 s**  ← **the moment**
+
+> **Three of the six neighborhoods fail IAAO standards. Courthouse Square fails
+> Uniformity (COD), Hilldale fails Equity (PRD), and Riverside Heights fails
+> Level (Median ratio). Eastwood Ravine, Lyon Estates, and Twin Pines Ranch
+> pass all three tests.**
+> — `Qwen3.5-4B`, verbatim
+
+🎤 *"Same sales. Same afternoon. Half the county is fine and half of it is not,
+and the countywide number would have sent you home."*
+
+### 3️⃣ *"Show me the sales in Riverside Heights on a map."* — **11 s**
+
+> **A map of 36 Riverside Heights parcels is displayed, colored by
+> assessment ratio. The majority (30) fall below the IAAO acceptable range,
+> while only 3 exceed it. This indicates a general trend
+> of under-assessment in the neighborhood.**
+> — `Qwen3.5-4B`, verbatim
+
+🎤 *"'Riverside Heights fails on level' is a sentence. Thirty dots in the wrong
+colour is a work order."*
+
+---
+
+## 🔴 The money visual — three reds, in three different columns
+
+This is the single most important image in the section. The table marks the
+**failing cell**, not the failing row:
+
+| Neighborhood | n | Median | COD | PRD | Verdict |
+|---|---:|---:|---:|---:|:---:|
+| Courthouse Square | 30 | 0.926 | **✕ 22.08** | 1.028 | ✕ FAIL |
+| Hilldale | 50 | 0.921 | 13.63 | **✕ 1.043** | ✕ FAIL |
+| Riverside Heights | 32 | **✕ 0.809** | 6.21 | 1.001 | ✕ FAIL |
+| Eastwood Ravine | 27 | 0.984 | 6.06 | 1.001 | ✓ PASS |
+| Lyon Estates | 42 | 0.948 | 6.04 | 1.001 | ✓ PASS |
+| Twin Pines Ranch | 29 | 0.929 | 9.33 | 1.002 | ✓ PASS |
+| **COUNTYWIDE** | **210** | **0.927** | **12.22** | **1.026** | **✓ PASS** |
+
+**The red runs diagonally.** Nobody has to say *"and notice they fail for
+different reasons"* — the table already said it.
+
+🎤 *"Three neighborhoods, three different problems, three different afternoons
+of work. One needs a revaluation. One needs the model rebuilt. One needs
+somebody to look at how the low end is being valued."*
+
+- **Riverside Heights — Level.** The market ran away and the roll did not
+  follow. Everyone else in the county is quietly covering their share.
+- **Courthouse Square — Uniformity.** The median is fine. The *spread* is
+  enormous. **This is the neighborhood generating your appeals.**
+- **Hilldale — Equity.** Cheaper homes carry a higher ratio than expensive
+  ones. Regressive, and invisible without running the numbers.
+
+---
+
+## ⚙️ It writes its own SQL, and you can read it
+
+Open *"How it got there"* and the query is right there:
+
+```sql
+SELECT parcel_id FROM sales_feed WHERE neighborhood = 'Riverside Heights'
+```
+
+**The objection arrives within four seconds of the room seeing that**, so have
+the answer ready — it is four real things, all in
+[`tools/query.py`](src/delorean/tools/query.py):
+
+1. **The connection is opened read-only.** Not "we check for the word DELETE" —
+   SQLite itself refuses to write.
+2. **One statement, and it must be a `SELECT`.** Anything else is refused with
+   an explanation before the database ever sees it.
+3. **Row counts are capped**, so nothing floods the screen or the context.
+4. **It can only see the Appraiser's own database.** The Clerk's records and
+   the Tax Collector's are not reachable from here — which is §10's whole
+   subject, arriving on cue.
+
+🎤 *"It is not guessing at your data. It is writing a query, and you can read
+the query."*
+
+---
+
+## 🎛️ Measured — the numbers behind the demo
+
+| | |
+|---|---|
+| Cold start (incl. model load) | **~15 s** |
+| Each of the three questions | **10–13 s** |
+| Model | `Qwen3.5-4B`, 4-bit NF4 — **2.90 GB** of weights, **4.00 GB** peak in use |
+| Tools offered | 3 — `run_sql`, `ratio_study`, `map_parcels` |
+| **Recall** (called the right tool when it needed one) | **6/6** |
+| **Restraint** (answered directly when it should) | **4/4** |
+
+**Restraint held at three tools** — the count that broke it in §6 — because of
+the guardrail prompt. Zero unnecessary tool calls on *"good morning"*, *"what
+does COD stand for"*, *"market value versus assessed value"* and *"why a median
+instead of an average"*.
+
+### ⏱️ The system prompt line worth stealing
+
+Adding one clause — *"keep every answer to three sentences; the figures are
+already on screen"* — took question ② from **39 seconds to 12**. Same tools,
+same answer, same accuracy.
+
+🎤 *"Section 3 was not a party trick. That prompt is doing three jobs here: it
+stops it reaching for a database to answer a definition, it stops it inventing
+statistics, and it made this demo twice as fast."*
+
+---
+
+## 🔧 The bonus row — *"With no ratio tool"*
+
+Sitting **off the story on purpose**, in the *Also try* row. Use it if the room
+asks *"why not just let it do the maths?"* — and frame it as **what the tool is
+doing for you**, never as *the model lies*.
+
+Clicking it re-runs question ② with `ratio_study` taken away. The model writes
+`AVG(assessed_value / sale_price)`, SQLite integer division rounds every ratio
+to a whole number first, and it returns this — sorted, totalled, confident:
+
+| Neighborhood | "avg ratio" | truth |
+|---|---:|---:|
+| Twin Pines Ranch | 0.379 | 0.929 |
+| Hilldale | 0.240 | 0.921 |
+| **Riverside Heights** | **0.000** | **0.809** |
+
+🎤 *"It assessed thirty-two properties at nothing at all, and handed me a tidy
+table about it. That is why the statistics are not in the prompt."*
+
+⚠️ **This is a real failure and it is not on the live path deliberately.** §4
+already spent three minutes on "you cannot trust it bare." §7 is the payoff
+section and should feel like power. Keep this in your pocket for Q&A.
+
+---
+
+## 📓 What the notebooks add that the app cannot
+
+The notebooks run the same engine, and **Act 4 contains the strongest single
+finding in this section.** Asked precisely — *"using SQL, work out the average
+assessment ratio for each neighborhood"* — the models write clean, sensible SQL
+and return this:
+
+| Neighborhood | model (average) | IAAO (median) | off by |
+|---|---:|---:|---:|
+| Twin Pines Ranch | 0.965 | 0.929 | **0.036** |
+| Hilldale | 0.937 | 0.921 | 0.016 |
+| Riverside Heights | 0.799 | 0.809 | 0.010 |
+
+Nothing looks wrong. The numbers sit exactly where a ratio belongs, and
+Riverside Heights even comes out lowest, which is correct. **But they are
+averages, not medians — and there is no COD and no PRD at all.** Two of the
+three IAAO tests have quietly ceased to exist.
+
+> 🎯 **The local 4B and hosted Haiku wrote *different* SQL and returned the
+> *same six numbers*, to the last decimal place.** Haiku aliases the column
+> `average_ratio` and adds an `ORDER BY`; Qwen does neither. Both reached
+> for an average, and neither produced a COD or a PRD.
+>
+> This is not a small-model failure and it does not go away by spending
+> more money. It is a *domain-knowledge* failure, and domain knowledge has
+> to live somewhere the model cannot get it wrong.
+
+**§7 is the first demo whose twins agree**, and that is the point: §4 and §6
+both ended with the two models behaving differently, but here `ratio_study`
+computed the numbers either way. Verified mechanically — the two notebooks
+differ in exactly **one code cell**.
+
+🎤 *"That is the argument for §9 before we get there: a small model is not worse
+at arithmetic it never does."*
+
+---
+
+## 🗺️ Two things worth saying out loud
+
+**The map makes no network request of any kind.** It is hand-drawn SVG — no
+tiles, no `leaflet.js`, nothing fetched. A `folium` map pulls ten external
+files, and leaflet itself is one of them, so on dead conference wifi you do not
+get a map missing its streets — you get no map. **This one cannot fail that
+way.** It also carries a scale bar and a north arrow, and it draws no
+neighborhood boundaries, because the parcels are invented and drawing invented
+parcels over real streets would claim they are real.
+
+**Nothing leaves the building.** The roll, the sales file, the model and the
+map are all on the machine on stage. The sidebar shows **426 of 426 weight
+tensors on the GPU** if anyone wants to check.
+
+---
+
+## 🚨 Fallbacks
+
+| If | Then |
+|---|---|
+| A question hangs or the model misbehaves | Press the button again — it is deterministic, and each question is independent. |
+| The app will not start | The notebooks are committed **with outputs**. Open `05_88mph_local.ipynb` and narrate from the saved run — every number in this section is in there. |
+| The GPU is out of memory | The office-assistant app is probably still running. Stop it; only one app fits at a time. |
+| Somebody asks for a slice you have not tried | The free-text box takes anything the tools can express. *Homes built after 1980* and *the five highest value parcels* are both verified working. |
+
+---
+
+### Takeaway
+> ### 🏎️ §7: "The county passed every standard while half its neighborhoods failed. One number was never going to tell you that — and the assistant found it in eleven seconds, on a laptop, without sending your roll anywhere."
+
+---
+
+# 🔌 §10 — The Universal Adapter  ✅ **APP + BOTH NOTEBOOKS BUILT**
+
+**`app/08_09_Universal_Adapter_local_Streamlit.py`** · model: `Qwen3.5-4B`
+· notebooks: [`08_universal_adapter_local`](notebooks/08_universal_adapter_local.ipynb) ·
+[`08_universal_adapter_api`](notebooks/08_universal_adapter_api.ipynb)
+
+**The finale, and the only section where the architecture diagram IS the demo.**
+Two live demos live in this one app.
+
+---
+
+## 🎯 The one thing the room should take away
+
+> ### The tool did not get easier to write. It stopped being ours to write.
+
+Section 6 cost us a function **and** a hand-written schema, per tool, forever.
+Here three programs describe themselves and the agent assembles its own
+toolbelt. **Nothing in this repository describes any of their tools.**
+
+---
+
+## 🖥️ What is on screen
+
+Four panels across the top — three county offices and, dashed and set apart,
+our own policy manual. They light up one at a time as each office answers.
+
+```
+🏛️ Appraiser          📜 Clerk of Courts     💰 Tax Collector      ┆📖 This office
+the roll — lot size    recorded deeds —       the ledger —         ┆our own policy
+and assessed value     who owns it, and how   what is still owed   ┆manual, not MCP
+✓ answered             ✓ answered             ✓ answered           ┆✓ answered
+▸ get_parcel           ▸ get_deeds            ▸ get_tax_status      ┆▸ search_policy
+· find_parcels         · corrections_since                          ┆
+```
+
+Under it: the question box, two numbered buttons, the answer, and *"How it got
+there"* collapsed — which lists **every office it walked into**.
+
+> 🎤 *"Three separate programs. You can see them in Task Manager. I did not
+> write a line of tool code for any of them — I asked each office what it had."*
+
+---
+
+## 🖱️ The click order — two buttons, about 40 seconds of machine time
+
+### 8️⃣ *"May Biff split his lot?"* — **26 s**
+
+The panels light 🏛️ → 📜 → 💰 → 📖.
+
+> **No, Biff Tannen may not split parcel 04-127-3891 because the Tax Collector
+> reports a total outstanding balance of $8,432.13, which bars the split under
+> policy §4.2. The Appraiser shows a lot size of 15,800 sq ft, and the Clerk of
+> Courts confirms Biff Tannen as the owner of record, but the delinquent tax
+> balance disqualifies the application.**
+> — `Qwen3.5-4B`, verbatim
+
+🎤 *"Lot size from the Appraiser. Ownership from the Clerk. The balance from
+the Tax Collector. The rule from our own manual. Today that is three phone
+calls and a week — and nobody would have written it down anywhere."*
+
+**Point at what it did NOT do.** It did not decide the lot was big enough, or
+that Biff owns it, or estimate the balance. **The model chose the questions;
+the offices supplied the facts.**
+
+### 9️⃣ *"Is our sales file still true?"* — **15 s**  ← **the uncomfortable one**
+
+> **Yes, the Clerk corrected one deed since 2026-01-15. The corrected deed is
+> instrument number 2025-000069 for parcel 12-393-7896, which was reclassified
+> as a QUIT CLAIM on 2026-03-04. This sale must be removed from any ratio study
+> using the sales file pulled on 2026-01-15.**
+> — `Qwen3.5-4B`, verbatim
+
+It drew that last sentence itself. Nothing in the prompt mentions ratio
+studies.
+
+---
+
+## 🔴 The money visual — Section 7, revisited
+
+The app then measures what that one deed cost, side by side:
+
+| Courthouse Square | Level | Uniformity (COD) | Equity (PRD) | Verdict |
+|---|---:|---:|---:|:---:|
+| **our sales file** `2026-01-15` | 0.9262 ✓ | **22.08 ✕** | 1.0278 ✓ | fails **one** |
+| **with the Clerk's correction** | 0.9146 ✓ | **20.31 ✕** | **1.0419 ✕** | fails **two** |
+
+**Removing a bad sale did not make it look better.** That $647,000 quit-claim
+was a high-ratio outlier on an expensive property, and its presence was
+propping the PRD up inside the standard.
+
+> 🎤 *"The stale feed was not merely out of date. It was flattering me. An
+> office would have signed off on an equity result that was not true, using a
+> file it had every reason to trust — and nothing in its own systems could
+> have told it otherwise."*
+
+⚠️ **This is the argument for MCP that costs money if you ignore it.** Not
+convenience, not fewer clicks — the difference between a number you can defend
+at a hearing and one you cannot.
+
+---
+
+## 🎛️ Measured
+
+| | |
+|---|---|
+| Three servers online | **5.5 s** |
+| App cold start (incl. model) | **~21 s** |
+| Demo 8 · local / hosted | **26 s / 36 s** |
+| Demo 9 · local / hosted | **15 s / 3 s** |
+| Sources consulted | **4 of 4**, both models |
+| Reproducibility | byte-identical across runs (greedy decoding) |
+| Robustness | 5 of 5 phrasings reach the right verdict — by address, as a taxpayer, with a mangled parcel number |
+| App test | `scripts/test_app_adapter.py` — **ALL PASS**, 103 s |
+
+### ⚠️ The capability ceiling — and it sits between §7 and §10
+
+**SmolLM3-3B runs the whole of Section 7 and cannot do this.** Measured on the
+same question: **1 office of 4**, and with the guided prompt it answered from
+memory and **invented a policy structure that does not exist**.
+
+> 🎤 *"The small model does the ratio study perfectly, because the arithmetic
+> is in a tool. It cannot hold a four-step plan across three systems. That is
+> where the money goes — and it is worth knowing which half of the job needs
+> it."*
+
+Use this if anyone asks whether §9's "run it on a 3B" claim covers everything.
+It does not, and saying so is worth more than the claim.
+
+---
+
+## 🔀 The twins converge, for a NEW reason
+
+Section 7's twins agreed because the **statistics** were in a tool. Section
+10's agree because the **facts** are in three servers. Same principle, one
+layer up — and the two notebooks differ in **exactly one code cell and one
+markdown cell**, the tightest pair in the repository.
+
+Haiku reads slightly further into the policy and adds *"payment plans do not
+satisfy this requirement"*. Same verdict, same figures.
+
+**The line to say when a hosted model touches county records:**
+
+> 🎤 *"The three county servers are still on this machine. Only the model is
+> remote. The databases never leave the building — the model is told the
+> answers, it is not given the keys."*
+
+---
+
+## 🚨 Fallbacks
+
+| If | Then |
+|---|---|
+| An office panel says **✕ did not answer** | That server died. The agent keeps going and says which office it could not reach — narrate that, it is the honest failure mode and it is designed in. |
+| The app will not start | Notebooks are committed **with outputs**. Open `08_universal_adapter_local.ipynb` and narrate from the saved run. |
+| The GPU is full | Another app is probably still up — only one fits. **And check for orphaned servers**: `nvidia-smi --query-gpu=memory.used --format=csv` should read ~1.1 GB idle. |
+| You Ctrl-C'd the app and restarted | Three MCP servers may still be running. Check before relaunching — see CLAUDE.md §13. |
+| Somebody asks a question you have not tried | The free-text box takes anything the three offices can answer. *"Who owns 1955 Hilldale Ct and do they owe anything?"* is verified working. |
+
+---
+
+### Takeaways
+> ### 🔌 §10 Demo 8: "A taxpayer asked a question no single office could answer, and got a correct, sourced, citable answer in twenty-five seconds — from three systems that have never been integrated, on a machine under a desk."
+> ### 🔌 §10 Demo 9: "Your sales file is a photograph of a filing cabinet that has since been rearranged. This is how you find out before the hearing does."
+
+---
+
+# 📊 §11 — Putting a Bow On It  *(5 min)*
+
+**No new artifact, and that is deliberate.** Decided 2026-08-25.
+
+The outline asks for *"a small Streamlit app running the Mass Valuation Agent…
+a clean, ChatGPT-like interface."* That is Section 7's engine with a different
+face — it was always a reprise, not a new product. Building a third app to
+follow §7 and §10 would end the talk on a **smaller** demo than the two before
+it, which is the wrong shape.
+
+So §11 spends its five minutes on the thing the presenters care most about:
+**how anybody in the room actually starts on Monday.**
+
+### What is on screen
+
+Reopen **either** finished app with the machinery collapsed — §7 for a single
+office, §10 for the cross-office one — and let it sit there answering a
+question while you talk over it. Then the repository itself.
+
+### The beats
+
+1. **"You have already seen the product."** Every app today is under 550 lines
+   and imports the same engine from `src/delorean/`.
+2. **"None of this needed a data scientist."** `uv sync`, one command, and
+   `scripts/check_setup.py` tells you whether your machine can do it.
+3. **"Take it home."** 15 notebooks, 5 apps, three MCP servers, and a county
+   of synthetic data that is safe to show anybody.
+4. **The four questions for choosing a model** — `07_delorean_smol.ipynb`.
+
+### Takeaway
+> ### 📊 §11: "Everything you watched today runs on a machine somebody in your office already owns, on data that never left the building. The hard part was never the technology. It was deciding to start."
+
+---
+
 # 🧵 The Spine
 
 **One parcel runs the entire 90 minutes.** If the script does nothing else,
@@ -420,11 +923,15 @@ it should follow this.
 | **4** | The model invents a zoning rule that would **deny** its split |
 | **4** | Invents comps for its street that do not exist |
 | **6** | The agent **looks it up correctly** — Biff Tannen, $412,500 |
+| **7** | Its neighborhood, **Hilldale, fails the equity test** — the roll is regressive around it. *("Who owns 04-127-3891?" is a one-click probe in the app)* |
 | **8** | The agent reads the policy manual and gets the lot rule **right** |
-| **10** | Three county systems + the policy → **"May Biff split this parcel?"** |
+| **10** | Three county systems + the policy → **"May Biff split this parcel?"** — answered in **26 seconds** |
 
-The §10 answer, for reference: lot size ✅ passes · ownership ✅ confirmed ·
-**taxes ❌ $8,432.13 delinquent across two years.** Policy 4.2 blocks it.
+The §10 answer, measured: lot size ✅ **15,800 sq ft, halves to 7,900 against a
+6,000 minimum** · ownership ✅ **Biff is grantee on the 2025 warranty deed** ·
+taxes ❌ **$8,432.13 delinquent across two years.** Policy 4.2 blocks it — and
+the same policy says how to cure it: pay in full, reinstate within 90 days, no
+new filing fee. **The assistant can tell the taxpayer that at the counter.**
 
 > **This is why the talk works.** The audience meets a parcel in minute 7, watches
 > a machine lie about it in minute 15, and watches the same machine get it right
@@ -454,6 +961,11 @@ matching their situation. Same lesson, one differs only in how the model is call
 | `01_flux_capacitor_{local,api}` | 2 | GPU / API key |
 | `02_time_circuits_{local,api}` | 3 | GPU / API key |
 | `03_plutonium_{local,api}` | 4 | GPU / API key + the county data |
+| `04_hoverboard_{local,api}` | 6 | GPU / API key + the county data |
+| **`05_88mph_{local,api}`** | **7** | GPU / API key + the county data |
+| `06_almanac_{local,api}` | 8 | GPU / API key + the policy corpus |
+| **`07_delorean_smol`** | **9** | GPU only — **1.86 GB** of weights, no API key, local only |
+| **`08_universal_adapter_{local,api}`** | **10** | GPU / API key + all three county databases |
 
 Point the audience here in §12. **This repo is the answer to "but how did you
 do that?"** — which is the reason it exists.

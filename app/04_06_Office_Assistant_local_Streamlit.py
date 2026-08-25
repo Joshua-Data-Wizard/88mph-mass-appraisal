@@ -203,7 +203,7 @@ with st.sidebar:
     st.caption("Sections 6 & 8 — tools, and then RAG as one more tool")
     st.divider()
 
-    keys = list(models.REGISTRY)
+    keys = models.selectable()
     choice = st.selectbox(
         "Model", options=keys,
         index=keys.index(DEFAULT_MODEL) if DEFAULT_MODEL in keys else 0,
@@ -218,6 +218,12 @@ with st.sidebar:
             "then switch back — the agent demos need a model that can think.",
             icon="⚠️",
         )
+
+    # Say what is missing from that list and why. A shorter dropdown with no
+    # explanation looks like we never tried the other model; we did, and the
+    # reason it is not here is worth more than the entry would have been.
+    for missing in models.blocked():
+        st.caption(f"⚠️ **{missing.label}** is not offered — {missing.blocked_reason}")
 
     st.divider()
 
