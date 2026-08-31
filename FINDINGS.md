@@ -31,6 +31,8 @@ looks impossible, or before you "fix" something that looks wrong on purpose.
 | Chroma downloads **79 MB on first use** unless you stop it | `rag.py` |
 | Model output **must not be interpolated into HTML** | every app |
 | **`nvidia-smi` overstates** on Windows — trust `torch.cuda.mem_get_info()` | before presenting |
+| `os.path.getsize()` **follows symlinks** — it double-counts a HF cache | measuring disk |
+| Windows **MAX_PATH 260** breaks a model download | a deep `HF_HOME` |
 
 ---
 
@@ -305,6 +307,67 @@ explicitly in `pyproject.toml`. Re-check on transformers upgrades.
 
 ---
 
+
+### 🐛 A measurement that followed its own symlinks (and invented a cause)
+
+**Claimed:** the six cached models occupy **70.12 GB** while reporting 40.25 GB,
+because Windows cannot symlink and HuggingFace copies each file twice.
+
+**Actual:** they occupy **40.25 GB**. They are symlinked — 7 to 21 links each.
+Nothing was ever duplicated.
+
+The bug is one function call. `os.path.getsize()` **follows a symlink and
+returns the target's size**, so walking a HuggingFace cache counts every file
+twice: once as the blob, once as the `snapshots/` link pointing at it.
+
+```python
+os.path.getsize(link)      # the TARGET's size — counted again
+os.path.islink(link)       # what the walk actually needed to ask
+```
+
+**The part worth keeping is not the fix.** It is that a wrong number arrived
+with a ready-made explanation attached. "Windows cannot symlink without
+Developer Mode, so HuggingFace copies" is *true*, it is *well known*, and it
+predicted exactly the doubling that had just been measured. It was written into
+`models.py`, into `ModelSpec.download_gb`, and reported to the presenter as a
+finding — and it was the wrong cause for a number that was itself wrong.
+
+The check that would have caught it in ten seconds:
+
+```powershell
+Get-ChildItem -Recurse <cache> | Where-Object { $_.LinkType } | Measure-Object
+```
+
+⚠️ **A plausible mechanism is not evidence.** This is the third time in this
+project — `ModelSpec.max_context` was added to fix a Nemotron OOM that matched
+a KV-cache theory to the byte and was not a KV cache; the §10 hang was blamed
+on orphaned child processes when the parent simply could not exit. In all three
+the story fit the symptom perfectly and named the wrong cause.
+
+**`_bytes_under()` now skips symlinks**, so `cache_size_gb()` measures real
+occupied disk rather than being right by accident. The doubling warning in
+`scripts/fetch_models.py` stays, because it is real *where it happens* — the
+script probes the filesystem instead of assuming either way.
+
+### 🪟 Windows MAX_PATH kills a model download
+
+Found while testing `fetch_models.py` against a temporary cache directory:
+
+```
+FileNotFoundError: [WinError 3] The system cannot find the path specified:
+  '..\blobs\f691cef...' -> '...\snapshots\2fc0636...\model.safetensors.index.json'
+```
+
+That path is **270 characters**. Windows caps a path at **260** unless long
+paths are enabled. A HuggingFace cache path is already long before a username
+and a 40-character revision hash are added, so a deep `HF_HOME` will fail —
+and it fails while *writing a file it is midway through*, which reads like
+corruption rather than a limit.
+
+The same download to `C:/Users/<name>/hfprobe` finished in **18 seconds**.
+
+`fetch_models.py` catches `WinError 3`/`206` and says so, with the fix:
+`HF_HOME=C:/hf` in `.env`.
 
 ## Streamlit — four things that fail silently
 

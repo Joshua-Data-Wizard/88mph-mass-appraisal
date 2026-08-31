@@ -330,7 +330,13 @@ def main() -> int:
         print("\n" + "-" * 68)
         print("  RESULT: Stages 1-3 passed. Stage 4 skipped (--quick).")
         print("  Re-run without --quick to confirm the 4B model fits.")
-        print("-" * 68 + "\n")
+        print("-" * 68)
+        # --quick skipped the 4B download, so the agent demos would fetch it
+        # mid-click. Better to know now.
+        print("\n  ⚠️  The 4B model every agent demo uses is NOT downloaded yet.")
+        print("  Get it in the terminal, where you can watch the progress:")
+        print("      uv run python scripts/fetch_models.py")
+        print()
         return 0
 
     if not stage_4_workhorse(total_vram):
@@ -342,7 +348,15 @@ def main() -> int:
     print("\n" + "-" * 68)
     print("  RESULT: All checks passed. Every local demo will run here.")
     print("  Your machine is ready. Let's see some serious speed.")
-    print("-" * 68 + "\n")
+    print("-" * 68)
+    # Stages 3 and 4 have just cached the two models the live demos use, so
+    # nothing else is required to start. Say that plainly -- the alternates
+    # are a 22 GB opt-in and nobody should discover that from a progress bar
+    # inside a Streamlit app.
+    print("\n  The two models the demos use are now downloaded.")
+    print("  For the alternates (SmolLM3, Phi-4-mini, Gemma 4):")
+    print("      uv run python scripts/fetch_models.py --list")
+    print()
     return 0
 
 

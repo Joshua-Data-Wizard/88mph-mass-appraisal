@@ -194,6 +194,7 @@ Document all three in the `_api` notebooks so an attendee can pick by budget. Ca
 │   └── tax_server.py            #   get_tax_status
 ├── scripts/
 │   ├── check_setup.py           # 4-stage machine check — run this first
+│   ├── fetch_models.py          # pre-download models; prove each one runs
 │   ├── generate_hill_valley_data.py   # seeded, deterministic, re-runnable
 │   ├── test_tools.py            # 20 parser checks, no model needed
 │   ├── eval_tools.py            # tool-use score against a live model
@@ -510,6 +511,8 @@ clearly; the script must never be drafted against something that does not exist.
 ```powershell
 uv sync                                                        # build the env
 uv run python scripts/check_setup.py                           # 4-stage machine check
+uv run python scripts/fetch_models.py                          # pre-download tiny + qwen
+uv run python scripts/fetch_models.py --list                   # what is cached
 uv run python scripts/generate_hill_valley_data.py             # rebuild data/ (deterministic)
 uv run jupyter lab                                             # notebooks
 uv run streamlit run app/01_Flux_Capacitor_local_Streamlit.py  # the §2 app

@@ -51,6 +51,22 @@ class ModelSpec:
     measured_vram_gb: float | None = None
     measured_speed: str | None = None
 
+    #: How much this model costs to download, in GB. Measured from a finished
+    #: cache, not read off a model card.
+    #:
+    #: Normally this is also what it occupies on disk. HuggingFace stores each
+    #: file once in `blobs/` and links to it from `snapshots/`.
+    #:
+    #: ⚠️ On a filesystem that cannot make symlinks — Windows without
+    #: Developer Mode, some network shares — it copies instead and the model
+    #: costs TWICE this. `scripts/fetch_models.py` probes for that before it
+    #: downloads rather than after you have run out of disk.
+    #:
+    #: (An earlier note here claimed the doubling was happening on the dev box.
+    #: It was not: the measurement was following its own symlinks. See
+    #: `_bytes_under`.)
+    download_gb: float | None = None
+
     #: Cap the context window at load time, or None to use the model's own.
     #:
     #: A sensible guard for a model advertising a 262,144-token context when
@@ -112,6 +128,7 @@ REGISTRY: dict[str, ModelSpec] = {
     "tiny": ModelSpec(
         key="tiny",
         hf_id="Qwen/Qwen3.5-0.8B",
+        download_gb=1.65,
         label="Qwen3.5 0.8B",
         params="0.8B",
         license="Apache 2.0",
@@ -132,6 +149,7 @@ REGISTRY: dict[str, ModelSpec] = {
     "qwen": ModelSpec(
         key="qwen",
         hf_id="Qwen/Qwen3.5-4B",
+        download_gb=8.7,
         label="Qwen3.5 4B",
         params="4B",
         license="Apache 2.0",
@@ -152,6 +170,7 @@ REGISTRY: dict[str, ModelSpec] = {
     "smol": ModelSpec(
         key="smol",
         hf_id="HuggingFaceTB/SmolLM3-3B",
+        download_gb=5.74,
         label="SmolLM3 3B",
         params="3B",
         license="Apache 2.0",
@@ -176,6 +195,7 @@ REGISTRY: dict[str, ModelSpec] = {
     "phi": ModelSpec(
         key="phi",
         hf_id="microsoft/Phi-4-mini-instruct",
+        download_gb=7.17,
         label="Microsoft Phi-4 mini",
         params="3.8B",
         license="MIT",
@@ -208,6 +228,7 @@ REGISTRY: dict[str, ModelSpec] = {
     "gemma": ModelSpec(
         key="gemma",
         hf_id="google/gemma-4-E2B-it",
+        download_gb=9.57,
         label="Google Gemma 4 E2B",
         params="2.3B",
         license="Apache 2.0 (check the linked Gemma terms)",
@@ -246,6 +267,7 @@ REGISTRY: dict[str, ModelSpec] = {
     "nemotron": ModelSpec(
         key="nemotron",
         hf_id="nvidia/NVIDIA-Nemotron-3-Nano-4B-BF16",
+        download_gb=7.42,
         label="NVIDIA Nemotron 3 Nano 4B",
         params="4B",
         license="NVIDIA Open Model License (not Apache — read it)",
@@ -326,27 +348,47 @@ def _folder_for(key: str):
 
 
 def _bytes_under(folder) -> int:
+    """Bytes actually occupied under a folder.
+
+    ⚠️ Symlinks are skipped, and that is the whole point of this function.
+    `os.path.getsize()` FOLLOWS a symlink and returns the target's size, so
+    walking a HuggingFace cache naively counts every file twice — once as the
+    blob and once as the snapshot link pointing at it.
+
+    Measured wrong that way, SmolLM3 came out at 11.47 GB and was written up
+    as "Windows copied it instead of linking". It is 5.74 GB and it is
+    properly linked. The double was our own arithmetic.
+    """
     import os
 
     total = 0
     for base, _dirs, files in os.walk(folder):
         for name in files:
+            path = os.path.join(base, name)
             try:
-                total += os.path.getsize(os.path.join(base, name))
+                if os.path.islink(path):
+                    continue        # the blob it points at is counted once
+                total += os.path.getsize(path)
             except OSError:
-                pass        # mid-download, or a broken symlink
+                pass                # mid-download, or a broken link
     return total
 
 
 def cache_size_gb(key: str) -> float:
     """How big this model is on disk, in GB. 0.0 if it is not here.
 
-    Reports the LARGER of `blobs/` and `snapshots/` rather than their sum, and
-    that is not fussiness -- on Windows without Developer Mode the cache
-    cannot make symlinks, so it copies, and a freshly downloaded model sits in
-    both directories at full size. Adding them reported SmolLM3 as 11.47 GB
-    when the model is 5.7 GB. Older entries have an empty `blobs/`, so taking
-    the maximum is right in both cases.
+    Reports the LARGER of `blobs/` and `snapshots/` rather than their sum,
+    which is correct in both of the layouts a cache can be in:
+
+      * **symlinked** (the normal case) — the bytes live in `blobs/` and
+        `snapshots/` holds links. `_bytes_under` skips links, so snapshots
+        measures ~0 and blobs carries the size.
+      * **copied** — Windows without Developer Mode cannot make the link, so
+        HuggingFace writes a real file in both places. Either directory gives
+        the true size; adding them would double it.
+
+    Some older entries have an empty `blobs/` entirely. Taking the maximum is
+    right in every one of these cases; summing is right in none of them.
     """
     folder = _folder_for(key)
     if not folder.exists():
