@@ -58,6 +58,7 @@ Three commands. That's the whole setup. ⏱️
 ```powershell
 uv sync                                    # ⚙️  build the environment
 uv run python scripts/check_setup.py       # 🔍  will this run on my machine?
+uv run python scripts/fetch_models.py      # ⬇️  get the models BEFORE you need them
 uv run jupyter lab                         # 📓  open the notebooks
 ```
 
@@ -67,6 +68,36 @@ uv run jupyter lab                         # 📓  open the notebooks
 
 `check_setup.py` tells you plainly whether your machine can run the local models —
 and exactly what to do instead if it can't. No guessing. ✅
+
+> ### ⬇️ Do the model download in a terminal, not in an app
+>
+> **A model is only fetched the first time something asks for it.** If that
+> first time is you clicking around a Streamlit app, several gigabytes start
+> arriving **with no progress shown anywhere on the page** — so a perfectly
+> healthy app sits there looking frozen for ten minutes, and the obvious
+> conclusion is that it is broken. It isn't. It's downloading.
+>
+> `fetch_models.py` does it in the terminal where you can watch the progress
+> bar, and then **loads each model onto your GPU and generates a few tokens**
+> so you know it actually runs on *your* hardware — not just that the files
+> arrived.
+>
+> ```powershell
+> uv run python scripts/fetch_models.py            # tiny + the 4B workhorse
+> uv run python scripts/fetch_models.py --list     # what exists, what you have
+> uv run python scripts/fetch_models.py --all      # every model, ~33 GB
+> uv run python scripts/fetch_models.py smol gemma # just these two
+> ```
+>
+> It checks free space first and tells you what it is about to cost. The
+> default is the two models the demos actually use — **`--all` is a 33 GB
+> download**, and only worth it if you want to compare models yourself (§9).
+>
+> ℹ️ *Note for Windows:* if your machine cannot create symlinks, HuggingFace
+> stores each model **twice** and the download costs double the disk. The
+> script probes for this and says so before starting. Turning on Developer
+> Mode fixes it — but it is a system setting your IT policy may not allow, and
+> **everything works fine without it**, just using more space.
 
 ---
 
@@ -396,6 +427,7 @@ Copy `.env.example` → `.env` and fill in your keys.
      08_09_Universal_Adapter_local_Streamlit.py            🔌 §10
 ✅ scripts/
      check_setup.py               🔍 run this first — can my machine do this?
+     fetch_models.py              ⬇️ download models before you need them
      generate_hill_valley_data.py 🏘️ rebuilds data/ from scratch, seeded
      test_tools.py                🛡️ can the tools survive a sloppy model?
      eval_tools.py                📊 does the model actually use them well?
@@ -513,6 +545,16 @@ problem we actually hit while building this — cloud-sync folders breaking inst
 half-written packages, VS Code doing surprising things, and the ever-popular
 `"Python was not found"` (which is harmless 😄).
 
+**"The app is stuck / nothing is happening."** It is almost certainly
+downloading a model with nowhere to show you a progress bar. Stop it, run
+`uv run python scripts/fetch_models.py --list` to see what you actually have,
+and fetch what is missing from the terminal.
+
+**"Cannot find the path specified" while downloading.** Windows caps a path at
+260 characters, and a HuggingFace cache path is long before your username and a
+40-character revision hash get added. Point the cache somewhere short by adding
+`HF_HOME=C:/hf` to your `.env`.
+
 When in doubt, the nuclear option is always safe:
 
 ```powershell
@@ -524,7 +566,7 @@ uv sync
 
 ## 📜 License
 
-**MIT** — see [LICENSE](LICENSE). Take it, fork it, break it, ship it at your office. 🚀
+**MIT** — see [LICENSE](LICENSE). Take it, fork it, break it. 🚀
 
 ---
 
