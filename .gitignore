@@ -98,3 +98,44 @@ tmp/
 temp/
 .pytest_cache/
 .ruff_cache/
+
+# ── Working notes — kept out of a clone, kept in history ─────
+# CLAUDE.md is the engineering working agreement and FINDINGS.md is the
+# measurement log behind it. Both are genuinely useful, and both are
+# deliberately NOT shipped in a clone: somebody who clones this repo should
+# see the demos, not four large documents about how they were built.
+#
+# They are NOT secret and were never removed from git history. To read them:
+#     git log --all --oneline -- CLAUDE.md
+#     git show <commit>:CLAUDE.md
+#
+# ⚠️ Claude Code reads CLAUDE.md from the working directory, so ignoring it
+# here does not stop it working locally — but a FRESH CLONE will not have it.
+# Recover it from history (above) before starting work on a new machine.
+CLAUDE.md
+FINDINGS.md
+
+# ── Local-only working folders ───────────────────────────────
+# Never shipped. Scratch space for planning and progress notes.
+Tracking/
+Plans/
+
+# ── Scratch & backups ────────────────────────────────────────
+scratchpad/
+notes/
+*.bak
+*.orig
+*.rej
+
+# ── Streamlit runtime ────────────────────────────────────────
+# Same pattern as .vscode above: exclude the CONTENTS so the negation
+# works, and share only the one file that makes the apps behave the same
+# way on everybody's machine.
+.streamlit/*
+!.streamlit/config.toml
+
+# ── More OS & tooling noise ──────────────────────────────────
+$RECYCLE.BIN/
+*.lnk
+.mypy_cache/
+.ipynb_checkpoints

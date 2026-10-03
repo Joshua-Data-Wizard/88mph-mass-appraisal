@@ -107,7 +107,7 @@ PERSONAS: dict[str, str] = {
     ),
 }
 
-DEFAULT_PERSONA = "🏛️ Senior appraiser"
+DEFAULT_PERSONA = "🤖 Plain assistant"
 
 QUESTIONS = [
     "My property assessment went up 15% this year. What should I do?",

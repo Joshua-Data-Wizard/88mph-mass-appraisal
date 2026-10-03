@@ -327,7 +327,9 @@ when it needed one; **restraint** = answered directly when it should have.
 | Google Gemma 4 E2B | 5/6 | 4/4 | **5/5** | **5.7** |
 
 **Every one of them answers "good morning" without hitting the database.** That
-is the number to watch as you add tools — see [CLAUDE.md](CLAUDE.md) §13.
+is the number to watch as you add tools: restraint measurably degrades once an
+agent has three of them, and a guardrail sentence in the system prompt buys it
+back. 🎛️
 
 ### 🔒 "I've never heard of these companies"
 
@@ -458,8 +460,6 @@ Copy `.env.example` → `.env` and fill in your keys.
      tax_server.py              💵 the ledger — what is still owed
 ✅ .streamlit/config.toml    ⚙️ shared app settings (see below)
 ✅ DEMOS.md                  🎬 what each demo shows + the takeaway line
-✅ CLAUDE.md                 🤖 the working agreement, if you build on this
-✅ FINDINGS.md               🔬 every measurement, and every bug that taught us one
 ✅ Presentation_Material/    🎤 the session outline (source of truth for scope)
 ```
 
