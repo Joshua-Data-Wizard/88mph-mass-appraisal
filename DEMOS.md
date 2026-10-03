@@ -36,6 +36,11 @@ heading — do not write a script against those sections.
 **Five apps cover §2, §3, §4, §6, §7, §8 and §10 — 58 minutes of stage time, and every demo in them is measured.**
 **All nine live demos are built.** §11 needs no artifact; see its entry below.
 
+> ### ⏱️ Dry-run measured: **75–80 minutes**, several runs, against a 90:00 slot.
+> Roughly ten minutes of headroom. **Spend it on the room** — a question that
+> runs long, a slow model load, an app that needs restarting — not on more
+> material.
+
 ---
 
 ## Before you present
@@ -864,7 +869,7 @@ satisfy this requirement"*. Same verdict, same figures.
 | An office panel says **✕ did not answer** | That server died. The agent keeps going and says which office it could not reach — narrate that, it is the honest failure mode and it is designed in. |
 | The app will not start | Notebooks are committed **with outputs**. Open `08_universal_adapter_local.ipynb` and narrate from the saved run. |
 | The GPU is full | Another app is probably still up — only one fits. **And check for orphaned servers**: `nvidia-smi --query-gpu=memory.used --format=csv` should read ~1.1 GB idle. |
-| You Ctrl-C'd the app and restarted | Three MCP servers may still be running. Check before relaunching — see CLAUDE.md §13. |
+| You Ctrl-C'd the app and restarted | Three MCP servers may still be running. Check with `nvidia-smi --query-gpu=memory.used --format=csv` — idle should read about 1.1 GB. |
 | Somebody asks a question you have not tried | The free-text box takes anything the three offices can answer. *"Who owns 1955 Hilldale Ct and do they owe anything?"* is verified working. |
 
 ---

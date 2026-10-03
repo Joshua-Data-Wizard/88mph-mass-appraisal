@@ -70,7 +70,7 @@ PRESET_QUESTIONS = [
     "Explain the difference between market value and assessed value.",
 ]
 
-DEFAULT_PREDICT = "An appraiser estimates the fair market"
+DEFAULT_PREDICT = "Location, location,"
 
 
 def set_field(key: str, value: str) -> None:

@@ -6,14 +6,19 @@ rerun where the bug lived.
 """
 import sys
 import time
+from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
 
 # The default Windows console codepage cannot encode the app's emoji.
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-APP = ("c:/Users/tajor/OneDrive/Documents/GitHub/88mph-mass-appraisal/"
-       "app/05_88mph_Valuation_Review_local_Streamlit.py")
+# Resolved from this file, never hardcoded. This was an absolute path with a
+# username in it until 2026-10-03, which meant the test ran on exactly one
+# machine in the world -- in a repository whose entire purpose is being handed
+# to somebody else.
+REPO = Path(__file__).resolve().parent.parent
+APP = str(REPO / "app" / "05_88mph_Valuation_Review_local_Streamlit.py")
 TIMEOUT = 400
 
 
