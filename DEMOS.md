@@ -340,7 +340,7 @@ The outline says *"watch it fail or hallucinate."* **Asked plainly, the model
 refuses — politely and correctly — every single time.** Weather, parcel lookup,
 recent sales, news. All honest declines.
 
-**What actually causes hallucination is the persona from §3.**
+**What actually causes hallucination is the persona from §4.**
 
 ### The demo: ask it both ways
 
@@ -1099,5 +1099,5 @@ matching their situation. Same lesson, one differs only in how the model is call
 | **`03_delorean_engine`** | **9** | GPU only — **1.86 GB** of weights, no API key, local only |
 | **`10_universal_adapter_{local,api}`** | **10** | GPU / API key + all three county databases |
 
-Point the audience here in §12. **This repo is the answer to "but how did you
+Point the audience here in §11. **This repo is the answer to "but how did you
 do that?"** — which is the reason it exists.

@@ -323,7 +323,7 @@ class Offices:
                 sessions[office.key] = session
 
                 # Ask it what it has. This is the line that replaces every
-                # hand-written schema in Section 6.
+                # hand-written schema in Section 7.
                 listed = await session.list_tools()
                 for spec in listed.tools:
                     if spec.name in self._tools:

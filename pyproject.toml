@@ -94,7 +94,7 @@ dependencies = [
     "mcp>=1.2",
 
     # ── Data and statistics ──────────────────────────────────────────────
-    # Section 7. Ratio studies, COD, PRD. Parcel storage is sqlite3, which
+    # Section 9. Ratio studies, COD, PRD. Parcel storage is sqlite3, which
     # ships with Python — no dependency needed and every IT shop knows it.
     "pandas>=2.2",
     "numpy>=1.26",

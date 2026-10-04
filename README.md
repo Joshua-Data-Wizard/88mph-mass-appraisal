@@ -236,7 +236,7 @@ made with dice instead of by hand, is all **temperature** is. Every demo in this
 repo takes first place every time, on purpose, so that what you rehearse is what
 you get.
 
-**😬 And then the part that should worry you — that's §4.** Ask it something only
+**😬 And then the part that should worry you — that's §5.** Ask it something only
 your county knows: *what is the minimum lot size to split an R-1 parcel?* With no
 persona it declines, honestly. Give it the confident expert persona from §4 and
 ask again:
@@ -414,7 +414,7 @@ models.compare()          # full strengths and weaknesses for each
 
 > 💡 **Demo 1 runs without a GPU** even in the local version — the 0.8B model is
 > small enough for an ordinary laptop. You only need the graphics card once we
-> get to the agent demos in §6.
+> get to the agent demos in §7.
 
 Copy `.env.example` → `.env` and fill in your keys.
 

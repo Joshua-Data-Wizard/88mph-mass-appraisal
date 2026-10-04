@@ -177,7 +177,7 @@ PROBES: dict[str, dict] = {
     },
 
     "📊 What does PRD stand for?": {
-        # ⚠️ 1.043 on purpose, and it must stay matched to §7.
+        # ⚠️ 1.043 on purpose, and it must stay matched to §9.
         #
         # Hilldale has two true PRDs depending on how you stratify:
         #   all arms-length sales (50)  -> 1.043   <- what §9's agent computes

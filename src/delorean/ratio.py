@@ -238,7 +238,7 @@ def ratio_stats(sales: "pd.DataFrame", *,
     column, if present, is honoured.
 
     Returns a plain dictionary rather than an object, because this result is
-    JSON-encoded straight back into a language model's context in Section 7.
+    JSON-encoded straight back into a language model's context in Section 9.
     It has to read well to something that has never seen this codebase.
 
     Non-arm's length sales are dropped BY DEFAULT and the count is reported.

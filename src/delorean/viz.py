@@ -29,7 +29,21 @@ CARD = (
     "border-radius:10px; padding:18px 20px; margin:6px 0;"
     "font-family:-apple-system,Segoe UI,Roboto,sans-serif;"
 )
-MONO = "ui-monospace,SFMono-Regular,Consolas,'Courier New',monospace"
+# ⚠️ DOUBLE quotes around "Courier New", and they must stay double.
+#
+# Every style attribute in this file is delimited with SINGLE quotes
+# (`style='...'`), so a single quote inside this string ends the attribute
+# early and the browser throws away everything after it:
+#
+#     style='…font-family:…Consolas,'      <- attribute ends HERE
+#     Courier New',monospace;color:#34e05a;…   <- silently discarded
+#
+# That is not hypothetical. It shipped, and it quietly dropped `color`,
+# `font-size`, `font-weight`, `text-shadow`, padding and borders from **12 of
+# this file's builders** — anything written after `font-family:` in the same
+# attribute. The DeLorean readouts rendered in default grey for weeks because
+# of it, while the row labels (whose font stack has no quotes) were fine.
+MONO = 'ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace'
 
 # Token chips alternate between these so you can see where one ends and the
 # next begins. That boundary is the entire point of the tokenizer view.
@@ -337,10 +351,18 @@ def time_circuits_html(
     for (label, color, glow), value in zip(_CIRCUIT_ROWS, values):
         shown = _clip(value, limit) or "—"
         dim = "" if value else "opacity:.35;"
+        # The label wears its own row's colour, which is both the DeLorean's
+        # own livery -- red destination, green present, amber last departed --
+        # and a straight legibility win. It used to be #7b7b7b, a mid grey on
+        # near-black: about 3.5:1, under the 4.5:1 needed for small text. Every
+        # one of the three row colours beats that against #0a0b0d, the red
+        # being the tightest at roughly 5.5:1. Bumped 9px -> 10px too, because
+        # uppercase at this letter-spacing was the smallest text in the app.
         rows.append(
             f"<div style='display:flex;align-items:center;gap:12px;padding:5px 0'>"
-            f"<div style='width:132px;flex:none;text-align:right;font-size:9px;"
-            f"letter-spacing:.16em;text-transform:uppercase;color:#7b7b7b;"
+            f"<div style='width:132px;flex:none;text-align:right;font-size:10px;"
+            f"letter-spacing:.16em;text-transform:uppercase;color:{color};"
+            f"font-weight:600;"
             f"font-family:-apple-system,Segoe UI,sans-serif'>{label}</div>"
             f"<div style='flex:1;min-width:0;background:#0d0d0d;border:1px solid #242424;"
             f"border-radius:4px;padding:9px 13px;font-family:{MONO};font-size:16px;"
@@ -573,7 +595,7 @@ def toolbelt_html(names: Sequence[str], *, active: str | None = None,
 def raw_call_html(text: str, *, title: str = "What the model actually wrote") -> str:
     """Show the literal text the model produced, tool-call markup and all.
 
-    This is the demystifying moment of Section 6. "Tool calling" sounds like
+    This is the demystifying moment of Section 7. "Tool calling" sounds like
     plumbing somebody clever built into the model. It is not. The model wrote
     some text, in a format it was trained to use, and about fifteen lines of
     our Python noticed and acted on it.

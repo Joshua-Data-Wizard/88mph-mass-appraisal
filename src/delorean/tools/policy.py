@@ -22,7 +22,7 @@ cannot act on an answer it cannot trace. That is not politeness -- Section 10
 depends on it, where the agent has to say *"Policy 4.2 bars the split"* and a
 human has to be able to go and check.
 
-It is also the direct answer to Section 4. There, the model invented an
+It is also the direct answer to Section 5. There, the model invented an
 ordinance and cited a Planning Commission that does not exist. Here it quotes a
 real section of a real document, and you can open the file yourself.
 """

@@ -540,27 +540,30 @@ with tab_stream:
     else:
         st.info("Press **⚡ Generate** to watch it happen.", icon="👆")
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-#  Footer
-# ─────────────────────────────────────────────────────────────────────────────
-
-st.divider()
-st.markdown(
-    "#### 🎬 That's Section 2\n"
-    "A language model is a **next-token guesser** — a very sophisticated one, "
-    "but a guesser. Two things to carry forward:\n\n"
-    "1. **It sees tokens, not words**, which is why identifiers and arithmetic "
-    "are a weak spot *(Section 5)*\n"
-    "2. **Every answer is a chain of bets**, which is why *confident* does not "
-    "mean *correct*\n\n"
-    "And notice what it never did: it had no idea who it was, or that it was "
-    "talking to an appraiser. **That's Section 3.**"
-)
-st.caption(
-    '"Your future hasn\'t been written yet. No one\'s has. '
-    'Your future is whatever you make it. So make it a good one." — Dr. Emmett Brown'
-)
+    # ── The wrap-up ─────────────────────────────────────────────────────────
+    #
+    # INSIDE tab 3, not under the whole app. A footer below the tab strip sits
+    # there announcing "that's Section 2" while the room is still on tab 1
+    # watching words turn into numbers — the conclusion arriving before the
+    # argument. It belongs at the end of the story, which is the end of the
+    # last tab.
+    st.divider()
+    st.markdown(
+        "#### 🎬 That's Section 2\n"
+        "A language model is a **next-token guesser** — a very sophisticated "
+        "one, but a guesser. Two things to carry forward:\n\n"
+        "1. **It sees tokens, not words**, which is why identifiers and "
+        "arithmetic are a weak spot *(Section 5)*\n"
+        "2. **Every answer is a chain of bets**, which is why *confident* does "
+        "not mean *correct*\n\n"
+        "And notice what it never did: it had no idea who it was, or that it "
+        "was talking to an appraiser. **That's Section 4.**"
+    )
+    st.caption(
+        '"Your future hasn\'t been written yet. No one\'s has. '
+        'Your future is whatever you make it. So make it a good one." '
+        "— Dr. Emmett Brown"
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
