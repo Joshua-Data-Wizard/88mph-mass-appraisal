@@ -62,17 +62,49 @@ neighborhood were assessed perfectly, the ratio study would find nothing and
 there would be no reason for an appraiser to want an assistant.
 
 So each neighborhood is built to fail a *different* IAAO test. These are the
-numbers the generator actually produces — not targets, measured output:
+numbers the generator actually produces — not targets, measured output.
+
+**Qualified residential sales only** — `arms_length = 1` and
+`property_class IN ('R01','R02')` — which is how IAAO stratifies and how
+`verify()` in the generator reports:
 
 | Neighborhood | n | Median | COD | PRD | Built to demonstrate |
 |---|---:|---:|---:|---:|---|
-| Lyon Estates | 40 | 0.947 | 6.06 | 1.000 | ✅ a healthy baseline |
-| Twin Pines Ranch | 28 | 0.935 | 9.60 | 1.005 | ✅ passes |
+| Lyon Estates | 40 | 0.948 | 6.07 | 1.002 | ✅ a healthy baseline |
+| Twin Pines Ranch | 28 | 0.935 | 9.60 | 1.002 | ✅ passes |
 | Eastwood Ravine | 27 | 0.984 | 6.06 | 1.001 | ✅ passes |
-| **Riverside Heights** | 31 | **0.807** | 6.27 | 0.999 | ❌ **LEVEL** — assessed 19% below market |
-| **Courthouse Square** | 29 | 0.938 | **22.20** | 1.022 | ❌ **UNIFORMITY** — inconsistent, COD over 15 |
-| **Hilldale** | 47 | 0.902 | 13.72 | **1.041** | ❌ **EQUITY** — regressive, PRD over 1.03 |
-| **COUNTYWIDE** | 202 | 0.921 | 12.41 | 1.025 | ⚠️ **every measure passes** |
+| **Riverside Heights** | 31 | **0.807** | 6.27 | 1.002 | ❌ **LEVEL** — assessed 19% below market |
+| **Courthouse Square** | 29 | 0.938 | **22.20** | 1.026 | ❌ **UNIFORMITY** — inconsistent, COD over 15 |
+| **Hilldale** | 47 | 0.930 | 13.59 | **1.042** | ❌ **EQUITY** — regressive, PRD over 1.03 |
+| **COUNTYWIDE** | 202 | 0.927 | 12.37 | 1.027 | ⚠️ **every measure passes** |
+
+> ### ⚠️ Section 7 shows slightly different figures, and both are right
+>
+> The §7 agent writes its own SQL and **does not filter by property class** —
+> it is handed the sales feed and asked a question. Across all classes every
+> verdict is identical and the numbers move in the third decimal:
+>
+> | | residential only | all classes |
+> |---|---:|---:|
+> | Hilldale PRD | 1.042 | **1.043** |
+> | Courthouse Square COD | 22.20 | **22.08** |
+> | Countywide *n* | 202 | **210** |
+>
+> **[DEMOS.md](../DEMOS.md) prints the all-classes table**, because that is
+> what the room actually sees on screen. Neither table is wrong — they answer
+> slightly different questions. **If you quote a figure anywhere, say which
+> one it is.** Not doing that is what let a third set of numbers survive in
+> this file until 2026-10-04.
+
+> ### 🔁 Re-verify these rather than trusting them
+>
+> `verify()` in
+> [`scripts/generate_hill_valley_data.py`](../scripts/generate_hill_valley_data.py)
+> prints this exact table on every run. ⚠️ **Anything that changes how often
+> the generator calls `rng` moves every number after it.** That has already
+> happened once — bounding the map scatter shifted Hilldale's median from
+> 0.902 to 0.930 — and this table kept the old figures until somebody
+> re-derived them. **Regenerate, read the output, update the table.**
 
 ### That last row is the whole lesson
 
@@ -104,10 +136,10 @@ the Section 7 agent is built to surface.
 
 | What | How much | Why it is there |
 |---|---|---|
-| Non-arm's-length deeds | 34 of 244 | Quit claims, sheriff's deeds, estate transfers, $1 interfamily gifts. **Section 7 must filter these** before computing anything — Policy 7.3. |
+| Non-arm's-length deeds | 35 of 244 | Quit claims, sheriff's deeds, estate transfers, $1 interfamily gifts. **Section 7 must filter these** before computing anything — Policy 7.3. |
 | Delinquent tax accounts | 37 of 1,200 (3.1%) | Section 10 needs real delinquencies, not just the one hero parcel. |
 | Partial payments | ~3.4% | `status = 'PARTIAL'` — a balance that is not zero but not a full delinquency either. An agent that only checks `status = 'DELINQUENT'` gets the wrong answer. |
-| Commercial + vacant parcels | ~7% | A ratio study is residential-improved only. Mixing classes is a classic beginner error, so the data makes it possible to commit. |
+| Commercial + vacant parcels | 91 of 1,200 (7.6%) | A ratio study is residential-improved only. Mixing classes is a classic beginner error, so the data makes it possible to commit. |
 
 ---
 
@@ -115,8 +147,9 @@ the Section 7 agent is built to surface.
 
 One parcel is hand-built and threads the entire talk.
 
-**Section 2** already showed the audience this exact string being chopped into
-13 tokens — proof that the model sees fragments, not an identifier. **Section 10**
+**Section 2** already showed the audience this parcel being chopped into
+tokens — `04-127-3891` on its own is **11**, and `parcel 04-127-3891` is
+**13** — proof that the model sees fragments, not an identifier. **Section 10**
 then asks whether it can be split. Same parcel, 80 minutes apart.
 
 | System | What it says |

@@ -120,6 +120,14 @@ The audience's first contact with the whole idea. Everything downstream —
 agents, tools, RAG, MCP — rests on one thing landing here: **an LLM is a
 next-word prediction engine, not a database and not a search engine.**
 
+**The header now says why the section is called what it is**, and it is worth
+reading out:
+
+> *"Doc Brown built one component and called it the thing that makes time
+> travel possible. This is that component. Agents, tools, document search, the
+> three county offices in Section 10 — all of it sits on top of what happens in
+> these three tabs."*
+
 ### Three tabs
 
 **Tab 1 — 🔢 Words become numbers**
@@ -143,6 +151,12 @@ Type text, watch it break into coloured token chips with their ID numbers undern
 The x-ray view. The model's actual odds over all **248,320** possible next
 tokens, drawn as bars. Verified figures:
 
+> 📌 **248,320 is Qwen3.5's vocabulary, which is what §2 runs on.** The app
+> reads it from whichever model is loaded, so it is correct on screen either
+> way — but if you switch models during this section, the figure on your slide
+> is the one that goes stale. SmolLM3 is 128,256; Phi-4-mini 200,064; Gemma 4
+> 262,144.
+
 | Prompt | Result |
 |---|---|
 | `Location, location,` | **81.1%** ` location` — the room knows it, so does the model |
@@ -157,10 +171,41 @@ times from the default builds: *"An appraiser estimates the fair market* →
 > ⚠️ **Do not use** `The capital of France is` — measured at only **12.9%** for
 > ` Paris`. It makes the model look ignorant, which is a §4 message, not a §2 one.
 
+### 🎲 The second and third place buttons — a free run at *temperature*
+
+Next to the winner are **② Take 2nd place** and **③ Take 3rd place**. They are
+the cheapest explanation of temperature in the whole talk, because the room
+watches *you* make the choice a sampler makes at random.
+
+From `Location, location,` the three candidates are ` location` **81.1%**,
+` and` **4.7%**, ` Location` **0.8%**. Press **②** and the sentence becomes
+*"Location, location, **and**"*, which then continues *"and location"* — a
+visibly different road from the same weights.
+
+**What to say:** *"every demo today takes first place every time — that is why
+you get the same answer twice. Turn that dial up and it starts taking the
+runner-up sometimes. That dial is called temperature."* The expander beneath
+the buttons says the same thing, and names the one line of code (`do_sample=False`)
+that this repo sets everywhere on purpose.
+
+⚠️ **Optional, and skippable.** It costs about twenty seconds and §2 has the
+budget, but if the room is already with you, the winner button alone makes the
+point.
+
 **Tab 3 — 🔁 Generation**
 
 A real appraisal question, streamed with visible token boundaries so the
 connection back to tab 1 is seen rather than asserted.
+
+Two captions land underneath, and the second is the §9 hook:
+
+> ⚡ *The DeLorean needed 1.21 gigawatts to make **one** jump. This made
+> **42 complete passes** through all 0.8B of the model's numbers to write one
+> paragraph — which is why Section 9 cares so much about how big the model is.*
+
+The pass count and the model size are both read live, so the sentence stays
+true if you switch models. 42 passes is typical for the default question at
+120 max tokens.
 
 ### Takeaway
 > ### 💡 "It looked at 248,320 options and picked one. Then it did it again. That's the whole trick."
@@ -289,6 +334,8 @@ Parcel 04-127-3891 — 1955 Hilldale Ct    15,800 sq ft → two lots of 7,900
 - **📊 PRD** — invents *"Property Revenue Distribution"*, and on a second run
   *"Property Reference Date."* Two different wrong expansions of a term everyone
   in that room uses weekly. **Best credibility-puncture for this audience.**
+  The question asks about **a PRD of 1.043**, which is Hilldale's real figure —
+  so you can say *"we will come back to this number in Section 7,"* and then do.
 - **🌦️ Weather** — the honest refusal. Useful contrast: it behaved *well* here.
 
 ### ⚠️ Two things to say out loud
@@ -319,6 +366,20 @@ audit. Both notebook twins report their own result truthfully.
 
 ### Takeaway
 > ### 💡 "A plausible answer and a correct answer look identical from the outside. The only reason we caught this is that we had the county's real records sitting next to it."
+
+### Closing the app — the hand-off to §5
+Tab 3 now opens by earning its own title, which is worth saying out loud:
+
+> *"The DeLorean needs plutonium to make the jump. Ask this model something
+> outside what it was trained on and it has none — **it cannot get there.**
+> What it does instead is the problem."*
+
+And **the app has a footer under the tabs** that wraps both sections and sets
+up §5 — the one sentence to land is *"the model is not short of intelligence
+here, it is short of **access**."* It closes on:
+
+> 🕰️ *"Roads? Where we're going, we don't need roads."* … but we are going to
+> need some tools.
 
 ### Timing
 ~15 s for both answers plus the truth-check panel.

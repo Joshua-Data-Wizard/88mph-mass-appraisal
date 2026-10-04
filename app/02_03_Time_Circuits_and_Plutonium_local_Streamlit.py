@@ -40,8 +40,10 @@ defaults to the 4B. Switch to the small one in the sidebar and watch it happen
 
 from __future__ import annotations
 
+import queue
 import sqlite3
 import sys
+import time
 from pathlib import Path
 from threading import Thread
 
@@ -70,6 +72,18 @@ DEFAULT_MODEL = "qwen"
 # personas at ~14 tok/s means this number is a wall-clock budget, not a
 # quality setting. 90 tokens is roughly 6 seconds per answer.
 ANSWER_TOKENS = 90
+
+# How long to wait for the next token before deciding something has gone wrong.
+# Generous: this is the gap between *consecutive* tokens, and the 4B produces
+# about fourteen a second. See the comment at the streamer for why it exists.
+STREAM_TIMEOUT = 60.0
+
+# Tab 2 tells you how long comparing N personas will take, which means it needs
+# a generation speed. This is only the starting guess -- Qwen3.5-4B at 4-bit on
+# an RTX 3080 -- because the sidebar offers five models and they are not close
+# to each other (the 0.8B is several times quicker). The first real answer
+# replaces it with a measurement of THIS model on THIS machine.
+TOKENS_PER_SEC_FALLBACK = 14.0
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -163,14 +177,25 @@ PROBES: dict[str, dict] = {
     },
 
     "📊 What does PRD stand for?": {
+        # ⚠️ 1.043 on purpose, and it must stay matched to §7.
+        #
+        # Hilldale has two true PRDs depending on how you stratify:
+        #   all arms-length sales (50)  -> 1.043   <- what §7's agent computes
+        #   residential R01/R02 (47)    -> 1.042   <- IAAO's stratification
+        # Both are correct. §7 does not filter by property class, so 1.043 is
+        # the figure the room sees later, and this probe says §7 will find it.
+        # Do not "correct" this to 1.042 without changing §7 too. It read
+        # 1.041 until 2026-10-04, which matched neither -- it was a figure that
+        # moved when the data was last regenerated and never got re-read.
         "question": (
             "In a ratio study, what does PRD stand for and what does a PRD of "
-            "1.041 tell you?"
+            "1.043 tell you?"
         ),
         "truth": (
             "Price Related Differential. Above 1.03 is regressive: lower-value "
             "properties are assessed at a higher percentage of value than "
-            "higher-value ones. 1.041 fails the IAAO standard."
+            "higher-value ones. 1.043 fails the IAAO standard — and it is "
+            "Hilldale's actual figure, which Section 7 finds for itself."
         ),
         "source": "data/policy/ratio_study_standards.md — Policy 9.4",
         "consequence": (
@@ -287,8 +312,16 @@ def stream_answer(model, tokenizer, system: str, question: str,
     text = llm.chat_prompt(tokenizer, messages)
     inputs = tokenizer(text, return_tensors="pt").to(model.device)
 
+    # ⚠️ `timeout` is not optional. Without it the queue read below blocks
+    # FOREVER. generate() runs on the thread further down, and if it raises --
+    # an out-of-memory error from a long prompt, a CUDA fault -- nothing ever
+    # calls `streamer.end()`. The loop then waits for a token that will never
+    # arrive, with no error on screen, and the only way out is restarting the
+    # server. In front of a room that is the worst failure available, so we
+    # give up after a while and say so instead.
     streamer = TextIteratorStreamer(
-        tokenizer, skip_prompt=True, skip_special_tokens=True
+        tokenizer, skip_prompt=True, skip_special_tokens=True,
+        timeout=STREAM_TIMEOUT,
     )
 
     kwargs = dict(
@@ -307,17 +340,45 @@ def stream_answer(model, tokenizer, system: str, question: str,
         with torch.no_grad():
             model.generate(**kwargs)
 
-    thread = Thread(target=generate)
+    # `daemon=True` matters now that the join below is bounded: a generation
+    # that has wedged must never be able to stop the interpreter exiting while
+    # still holding the graphics card.
+    thread = Thread(target=generate, daemon=True)
     thread.start()
 
     parts: list[str] = []
-    for chunk in streamer:
-        parts.append(chunk)
-        render("".join(parts), False)
-    thread.join()
+    stalled = False
+    started = time.time()
+    try:
+        for chunk in streamer:
+            parts.append(chunk)
+            render("".join(parts), False)
+    except queue.Empty:
+        stalled = True
+    elapsed = time.time() - started
+
+    # Remember how fast this model actually is, so tab 2's "roughly N seconds"
+    # stops being a guess after the first answer. The streamer yields one piece
+    # per token in practice, which is close enough to call tokens per second.
+    if not stalled and len(parts) > 5 and elapsed > 0.2:
+        st.session_state[f"tok_per_sec_{st.session_state.get('loaded_model')}"] = (
+            len(parts) / elapsed)
+
+    # By here the thread has either finished or died. Never wait on it without
+    # a limit -- that would reintroduce the hang the timeout exists to prevent.
+    thread.join(timeout=5)
 
     answer = "".join(parts).strip()
     render(answer, True)
+
+    if stalled:
+        st.error(
+            f"The model stopped producing text for {STREAM_TIMEOUT:.0f} seconds, "
+            f"so this gave up rather than freezing. The usual cause is a very long "
+            f"prompt filling the graphics card — shorten it, or switch to a "
+            f"smaller model in the sidebar.",
+            icon="⏱️",
+        )
     return answer
 
 
@@ -379,7 +440,12 @@ def comps_truth() -> str:
             f"  {addr[r['parcel_id']]} — ${r['sale_price']:,} on {r['recorded_date']}"
         )
 
-    lines += ["", f"Parcels addressed on Hilldale Ct anywhere in the county: "
+    # `street_addrs` is a SET, so this is distinct addresses, not parcels --
+    # there are 87 parcels on Hilldale Ct but only 84 different addresses, and
+    # calling 84 a parcel count would be wrong by three on screen. Distinct
+    # addresses is also the number that matters here: the question is whether
+    # the address the model invented exists at all.
+    lines += ["", f"Distinct addresses on Hilldale Ct anywhere in the county: "
                   f"{len(street_addrs)}."]
     invented = [a for a in ("1952 Hilldale Ct", "1948 Hilldale Ct")
                 if a not in street_addrs]
@@ -625,10 +691,17 @@ with tab1:
         accent = viz.PERSONA_COLORS[list(PERSONAS).index(name) % len(viz.PERSONA_COLORS)] \
             if name in PERSONAS else viz.PERSONA_COLORS[0]
 
+        # The card's heading uses the same label as the DESTINATION TIME row,
+        # not the raw preset name. Once you hand-edit the prompt, the preset
+        # name is no longer true, and `destination_label()` says so -- a card
+        # headed "🏛️ Senior appraiser" above an edited prompt is the exact
+        # confidently-wrong display that function exists to prevent.
+        card_title = destination_label()
+
         def render(text: str, done: bool) -> None:
             placeholder.html(
                 viz.persona_card_html(
-                    name, text,
+                    card_title, text,
                     system_prompt=st.session_state["system_text"],
                     accent=accent, pending=not done,
                 )
@@ -687,11 +760,20 @@ with tab2:
     )
 
     if picked:
-        # ~14 tokens/sec measured on the 4B at 4-bit on an RTX 3080.
-        seconds = len(picked) * st.session_state["answer_tokens"] / 14
+        rate = st.session_state.get(f"tok_per_sec_{choice}")
+        seconds = (len(picked) * st.session_state["answer_tokens"]
+                   / (rate or TOKENS_PER_SEC_FALLBACK))
+        how = (
+            f"measured — this model does about **{rate:.0f} tokens a second** on "
+            f"this machine"
+            if rate else
+            f"estimated at {TOKENS_PER_SEC_FALLBACK:.0f} tokens a second; ask "
+            f"one question and this becomes a real measurement"
+        )
         st.caption(
             f"{len(picked)} persona{'s' if len(picked) != 1 else ''} · "
-            f"roughly **{seconds:.0f} seconds** of generation, one after another."
+            f"roughly **{seconds:.0f} seconds** of generation, one after "
+            f"another. _({how}.)_"
         )
     if len(picked) > 4:
         st.warning(
@@ -710,13 +792,13 @@ with tab2:
                 placeholders[name].html(
                     viz.persona_card_html(
                         name, "", system_prompt=PERSONAS[name],
-                        accent=viz.PERSONA_COLORS[list(PERSONAS).index(name) % 5],
+                        accent=viz.PERSONA_COLORS[list(PERSONAS).index(name) % len(viz.PERSONA_COLORS)],
                         pending=True,
                     )
                 )
 
         for name in picked:
-            accent = viz.PERSONA_COLORS[list(PERSONAS).index(name) % 5]
+            accent = viz.PERSONA_COLORS[list(PERSONAS).index(name) % len(viz.PERSONA_COLORS)]
             slot = placeholders[name]
 
             def render(text: str, done: bool, _n=name, _a=accent, _s=slot) -> None:
@@ -747,6 +829,9 @@ with tab2:
 with tab3:
     st.subheader("Now ask it something it cannot possibly know.")
     st.markdown(
+        "The DeLorean needs plutonium to make the jump. Ask this model "
+        "something outside what it was trained on and it has none — "
+        "**it cannot get there.** What it does instead is the problem.\n\n"
         "Here is the part that surprises people. Ask a bare model a question "
         "outside what it was trained on and it will usually **tell you it does "
         "not know** — which is correct, honest, and useless.\n\n"
@@ -861,6 +946,32 @@ with tab3:
             "confident right one.\n\n"
             "If it failed every time, you could plan around it."
         )
+
+    # ── The wrap-up, and the hand-off to Section 5 ──────────────────────────
+    #
+    # INSIDE tab 3, not under the whole app. The app covers two sections in
+    # sequence, so a footer below the tab strip would sit there announcing
+    # §4's punchline while the room is still watching §3 build up to it. It
+    # belongs at the end of the story, which is the end of this tab.
+    st.divider()
+    st.markdown(
+        "#### 🎬 That's Sections 3 and 4\n"
+        "**Section 3 — the good news.** A system prompt is not a setting or a "
+        "configuration screen. It is **text, glued to the front of your "
+        "question**, and it turns the same weights into a different colleague. "
+        "That is most of what people mean by *customising* an assistant.\n\n"
+        "**Section 4 — the bill.** The same confident persona will invent an "
+        "ordinance, a filing deadline, or three comparable sales with closing "
+        "dates — and none of it will look like a mistake. **A plausible answer "
+        "and a correct one are indistinguishable from the outside.**\n\n"
+        "The model is not short of intelligence here. It is short of "
+        "**access** — to your roll, your sales file, your policy manual, "
+        "today's date. **That is what Section 5 starts to fix.**"
+    )
+    st.caption(
+        "🕰️ *“Roads? Where we're going, we don't need roads.”* — Dr. Emmett "
+        "Brown … but we are going to need some tools."
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────

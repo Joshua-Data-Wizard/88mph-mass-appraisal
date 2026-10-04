@@ -42,8 +42,9 @@ understanding of what Agentic LLMs are and how they can help us. 🏘️
 
 It's the companion code for the IAAO Calgary session
 **"Search, Extract & Value: The Lightning Fast Assistant"** — and it exists because
-too many conference talks show you something amazing 🤩 and never show you how it
-was done. Everything demonstrated on stage is in here, commented, and meant to be
+a conference is about learning and collaborating these langauge models can be very useful and 
+we should all try to leverage them to help our offices keep up there amazing work with new found assitants🤩. 
+Everything demonstrated on stage is in here, commented, and meant to be
 taken back to your office. 📦
 
 **You don't need to be a programmer to try it.** 🙌
@@ -53,7 +54,7 @@ taken back to your office. 📦
 
 ## 🚗 Fire up the DeLorean
 
-Three commands. That's the whole setup. ⏱️
+Three commands. That's the whole setup. ⏱️ Just run these in the folder of the project. 😀
 
 ```powershell
 uv sync                                    # ⚙️  build the environment
@@ -152,7 +153,7 @@ same test* — one is assessed too low, one is wildly inconsistent, one is
 quietly unfair to cheaper homes. Three different problems, three different
 afternoons of work, and **the countywide figure shows none of them.**
 
-Eleven seconds. On a laptop. Nothing left the building.
+About eleven seconds. On a laptop. Nothing left the building.
 
 > 🔑 The agent decides **what to ask**. The tool decides **what is correct** —
 > the IAAO maths is ordinary Python the model never touches.
@@ -178,12 +179,12 @@ wrote no tool code for any of them** — and then:
 > Collector reports a total outstanding balance of **$8,432.13**, which bars
 > the split under **policy §4.2**…
 
-Twenty-six seconds, for a question that today takes three phone calls and a
-week. **And it checks all three even after one fails** — because somebody told
+About twenty-six seconds, for a question that today takes three phone calls and staffs
+valueable time. **And it checks all three even after one fails** — because somebody told
 only the first reason their application was refused has to come back again to
 hear the rest.
 
-Then ask it the harder one: ***"is our sales file still true?"*** The Clerk
+Then ask it the critical question for the office: ***"is our sales file still true?"*** The Clerk
 corrected a deed after your feed was pulled — and when you drop that one bad
 sale, the neighborhood turns out to fail **a second test the stale file was
 hiding.** 😬
@@ -222,27 +223,42 @@ An appraiser estimates the fair market ▮
 Then a question where it is genuinely torn — `tax` **52.7%** / `value` **24.9%** /
 `taxes` **10.4%** — and you can *see* the doubt.
 
-**😬 And then the part that should worry you.** We ask it to do arithmetic:
+**🖱️ And one thing only the app can do.** The prediction tab has three buttons —
+**▶ Take the winner**, **② Take 2nd place**, **③ Take 3rd place**. Press one and
+that token is glued onto the sentence and the model predicts *again*, so you
+walk the generation loop a single step at a time and watch the odds shift under
+you. Press the winner four times from `Location, location,` and you have built a
+sentence by hand, exactly the way the model does it a few hundred times a second.
+
+Press **②** instead and the sentence goes somewhere the winning path would never
+have taken it — `Location, location, and…` rather than `…location`. That choice,
+made with dice instead of by hand, is all **temperature** is. Every demo in this
+repo takes first place every time, on purpose, so that what you rehearse is what
+you get.
+
+**😬 And then the part that should worry you — that's §4.** Ask it something only
+your county knows: *what is the minimum lot size to split an R-1 parcel?* With no
+persona it declines, honestly. Give it the confident expert persona from §3 and
+ask again:
 
 ```
-CORRECT | 1,247 + 3,891   | model: 5,138       | truth: 5,138
-WRONG   | 1,247 x 3,891   | model: 4,860,057   | truth: 4,852,077
-WRONG   | 17% of $412,500 | model: 68,125      | truth: 70,125
+🏛️  "0.25 acres. Per the County's Zoning Ordinance, any subdivision of an
+     R-1 parcel must result in lots at least 0.25 acres in size…"
+
+✅   6,000 sq ft per resulting parcel   —   Policy 4.3
 ```
 
-Off by **$2,000** — and it looks completely reasonable. It didn't say *"I don't
-know."* It handed back a confident, correctly-shaped number that passes any
-eyeball test. **Now imagine that on a notice of value.** 📬
+**There is no such ordinance.** And the invented number does not merely get a
+fact wrong — **it reverses the decision.** Biff Tannen's 15,800 sq ft lot splits
+into two 7,900 sq ft parcels, which clears the real 6,000 rule and fails the
+invented 10,890 one. The model didn't say *"I don't know."* It cited a regulation
+that does not exist, in the voice of a 25-year veteran. 📬
 
-> 🛠️ The fix isn't a smarter model. It's a calculator — and that's what a *tool*
-> is, which is exactly where §6 picks up.
-
-**🖱️ And one thing only the app can do.** In the prediction tab there's a
-**▶ Take the winner** button. Press it and the winning token is glued onto the
-sentence and the model predicts *again* — so you walk the generation loop one
-step at a time and watch the odds shift under you. Press it four times starting
-from `Location, location,` and you have built a sentence by hand, the same way
-the model does it a few hundred times a second.
+> 📖 **The real rule ships in this repo**, so you can check the model against it
+> yourself: [`data/policy/parcel_split_and_combination.md`](data/policy/parcel_split_and_combination.md).
+> The fix isn't a smarter model — it's giving it the manual to read (**§8**) and
+> the tools to look things up (**§6**). **§10 asks this exact question for real**,
+> across three county offices that have never spoken to each other.
 
 ---
 
