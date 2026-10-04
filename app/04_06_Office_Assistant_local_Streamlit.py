@@ -141,14 +141,20 @@ def gpu_status() -> tuple[float, float] | None:
     return free / 1024**3, total / 1024**3
 
 
-def run_agent(graph, responder, question: str, system: str,
-              tool_names: list[str], slot) -> None:
+def run_agent(question: str, system: str, tool_names: list[str], slot,
+              *, model_key: str) -> None:
     """Run one question, drawing each step of the loop as it lands.
 
     The graph is streamed rather than awaited so the audience watches Reason,
     then Act, then Observe appear one at a time. Waiting seven seconds and then
     showing a finished diagram teaches much less.
+
+    The graph is built in here rather than passed in so that no variable in the
+    script's own namespace ends up holding the model -- which matters for
+    releasing it on a switch. See the comment at the bottom of this file.
     """
+    graph, responder = build(model_key, tuple(tool_names))
+
     messages: list[dict] = []
     if system.strip():
         messages.append({"role": "system", "content": system})
@@ -224,6 +230,23 @@ with st.sidebar:
     # reason it is not here is worth more than the entry would have been.
     for missing in models.blocked():
         st.caption(f"⚠️ **{missing.label}** is not offered — {missing.blocked_reason}")
+
+    # ── Switching models: let go of the old one first ───────────────────────
+    #
+    # Three separate things hold a loaded model, and all three have to let go
+    # or nothing is freed and the card fills up after two or three switches:
+    #
+    #   1. Streamlit's @st.cache_resource    ->  load_model.clear()
+    #      ...and `build`, whose compiled graph closes over the same weights
+    #   2. delorean's own cache, llm._CACHE  ->  llm.unload()
+    #   3. this script's own variables       ->  dropped at the BOTTOM of this
+    #      file, where the comment explains why it cannot be done here
+    previous = st.session_state.get("loaded_model")
+    if previous is not None and previous != choice:
+        load_model.clear()      # 1
+        build.clear()           # 1 — the graph holds the responder holds the model
+        llm.unload()            # 2 — also collects garbage, empties the CUDA cache
+    st.session_state["loaded_model"] = choice
 
     st.divider()
 
@@ -364,10 +387,10 @@ with tab_hover:
 
     if st.button("🛹 Ask", type="primary", use_container_width=True,
                  key="hover_go"):
-        graph, responder = build(choice, tuple(HOVER_TOOLS))
         slot = st.empty()
-        run_agent(graph, responder, st.session_state["hover_q"],
-                  st.session_state["system_text"], HOVER_TOOLS, slot)
+        run_agent(st.session_state["hover_q"],
+                  st.session_state["system_text"], HOVER_TOOLS, slot,
+                  model_key=choice)
 
         if st.session_state["last_raw"]:
             with st.expander("🔍 What the model **literally** wrote"):
@@ -418,10 +441,10 @@ with tab_almanac:
 
     if st.button("📖 Ask", type="primary", use_container_width=True,
                  key="almanac_go"):
-        graph, responder = build(choice, tuple(ALMANAC_TOOLS))
         slot = st.empty()
-        run_agent(graph, responder, st.session_state["almanac_q"],
-                  st.session_state["system_text"], ALMANAC_TOOLS, slot)
+        run_agent(st.session_state["almanac_q"],
+                  st.session_state["system_text"], ALMANAC_TOOLS, slot,
+                  model_key=choice)
 
         used = st.session_state["last_used"]
         if "search_policy" in used:
@@ -449,3 +472,25 @@ with tab_almanac:
             "the rule from this manual *plus* facts from three different county "
             "offices that do not talk to each other. That is what MCP is for."
         )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Reference 3 of 3 — let go of the weights before this run ends
+#
+#  Streamlit runs this script again on every click, in a brand new namespace
+#  each time, so you would expect the previous run's variables to vanish with
+#  it. They do not: Streamlit keeps THIS run's widget callbacks alive into the
+#  NEXT run, and a Python function carries its whole module namespace with it
+#  in `__globals__`. Every `on_click=` above is therefore still holding this
+#  script -- and the model with it -- at the moment the next run tries to free
+#  the memory. Nothing can release a model that is still reachable.
+#
+#  This is also why `run_agent()` builds its own graph instead of taking one:
+#  a `graph, responder = build(...)` line out here would leave the model
+#  reachable in exactly the same way, and only on the runs where somebody had
+#  pressed Ask -- which is the worst kind of bug to find on stage.
+#
+#  Full measurements: Plans/vram_model_switching.md.
+# ─────────────────────────────────────────────────────────────────────────────
+
+del loaded_model, _tokenizer

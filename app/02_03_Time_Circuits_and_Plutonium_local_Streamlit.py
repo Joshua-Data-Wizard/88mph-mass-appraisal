@@ -450,11 +450,32 @@ with st.sidebar:
     if status:
         free_gb, total_gb = status
         st.metric("GPU memory free", f"{free_gb:.1f} GB", f"of {total_gb:.0f} GB")
+
+        # This button used to call empty_cache() and say nothing, which made it
+        # look broken: in the situation a presenter reaches for it, it has
+        # nothing to hand back and appears to do nothing at all. Now it reports
+        # what actually happened, which is the honest and more interesting
+        # answer -- PyTorch holds blocks it is not using, and those are the only
+        # thing this button can return.
         if st.button("🧹 Free unused memory", use_container_width=True):
             import torch
 
+            before = torch.cuda.memory_reserved()
             torch.cuda.empty_cache()
+            st.session_state["freed_gb"] = (
+                before - torch.cuda.memory_reserved()) / 1024**3
             st.rerun()
+
+        freed = st.session_state.pop("freed_gb", None)
+        if freed is not None:
+            st.caption(
+                f"Returned **{freed:.2f} GB** of blocks PyTorch was holding "
+                "but not using."
+                if freed > 0.01 else
+                "Nothing to return — PyTorch is using every block it holds. "
+                "This button cannot unload a model; **switching models** is "
+                "what does that."
+            )
     else:
         st.warning("No GPU found — this will run on the CPU and be slower.", icon="🐢")
 
@@ -477,6 +498,28 @@ st.markdown(
     "that one call. Punch in a different destination and the same question "
     "comes back a fundamentally different answer."
 )
+
+# ── Switching models: let go of the old one before loading the new one ──────
+#
+# Picking a different model in the sidebar used to load the new one WITHOUT
+# releasing the old, so two or three switches filled the card and the next
+# answer died with an out-of-memory error.
+#
+# THREE separate things hold a loaded model, and all three have to let go:
+#
+#   1. Streamlit's @st.cache_resource     ->  load_model.clear()
+#   2. delorean's own cache, llm._CACHE   ->  llm.unload()
+#   3. this script's own `model` variable ->  dropped at the BOTTOM of this
+#      file, and the comment there explains why it cannot be done here
+#
+# Measured on an RTX 3080: with 1 and 2 only, a switch leaves 2.90 GB still
+# allocated and both models sit on the card at once. With all three, memory
+# holds steady at one model however many times you switch.
+previous = st.session_state.get("loaded_model")
+if previous is not None and previous != choice:
+    load_model.clear()      # 1
+    llm.unload()            # 2 — also collects garbage and empties the CUDA cache
+st.session_state["loaded_model"] = choice
 
 with st.spinner(f"Loading {spec.label} …"):
     model, tokenizer = load_model(choice)
@@ -818,3 +861,31 @@ with tab3:
             "confident right one.\n\n"
             "If it failed every time, you could plan around it."
         )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Reference 3 of 3 — let go of the weights before this run ends
+#
+#  This one line is what makes the release at the top of the file work, and it
+#  is the least obvious thing in this app.
+#
+#  Streamlit runs this script again on every click, in a brand new module
+#  namespace each time. You would expect the previous run's `model` variable to
+#  disappear with that namespace -- but Streamlit keeps THIS run's widget
+#  callbacks alive into the NEXT run. It stores them in widget metadata that is
+#  only replaced when each widget re-registers, which happens far below the
+#  release code at the top. And a Python function carries its entire module
+#  namespace with it, in `__globals__`.
+#
+#  So every `on_click=` button above is quietly holding this whole script --
+#  including `model` -- at the exact moment the next run is trying to free it.
+#  No amount of cache clearing or garbage collecting can touch a model that is
+#  still reachable.
+#
+#  Dropping our own two names here means that by the time the next run asks for
+#  the memory back, nothing is holding it. Measured: without this line a switch
+#  frees 0.00 GB and both models sit on the card; with it, the old model is
+#  gone before the new one loads.
+# ─────────────────────────────────────────────────────────────────────────────
+
+del model, tokenizer

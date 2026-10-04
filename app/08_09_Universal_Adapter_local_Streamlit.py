@@ -231,6 +231,29 @@ with st.sidebar:
     spec = models.REGISTRY[model_key]
     st.caption(f"`{spec.hf_id}`")
 
+    # ── Switching models: let go of the old one first ───────────────────────
+    #
+    # Three separate things hold a loaded model, and all three have to let go
+    # or nothing is freed and the card fills up after two or three switches:
+    #
+    #   1. Streamlit's @st.cache_resource    ->  load_model.clear()
+    #      ...and `build`, whose compiled graph closes over the same weights
+    #   2. delorean's own cache, llm._CACHE  ->  llm.unload()
+    #   3. this script's own variables       ->  dropped at the BOTTOM of this
+    #      file, where the comment explains why it cannot be done here
+    #
+    # ⚠️ NAMED caches only. A blanket `st.cache_resource.clear()` would also
+    # drop `connect_offices` WITHOUT calling close() on it, leaving three
+    # orphaned MCP subprocesses holding the GPU. `build.clear()` is safe
+    # because rebuilding the graph calls `connect_offices()` again and gets
+    # the same three servers back from its own cache.
+    previous = st.session_state.get("loaded_model")
+    if previous is not None and previous != model_key:
+        load_model.clear()      # 1
+        build.clear()           # 1 — the graph holds the responder holds the model
+        llm.unload()            # 2 — also collects garbage, empties the CUDA cache
+    st.session_state["loaded_model"] = model_key
+
     if not cached(model_key):
         st.error("**Not on this machine yet.** Choosing this downloads it "
                  "first — several GB, with no progress shown.", icon="⬇️")
@@ -381,3 +404,24 @@ else:
         "the Appraiser, the Clerk of Courts and the Tax Collector, then read "
         "our own policy manual before it answers.",
         icon="🔌")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Reference 3 of 3 — let go of the weights before this run ends
+#
+#  Streamlit runs this script again on every click, in a brand new namespace
+#  each time, so you would expect the previous run's variables to vanish with
+#  it. They do not: Streamlit keeps THIS run's widget callbacks alive into the
+#  NEXT run, and a Python function carries its whole module namespace with it
+#  in `__globals__`. Every `on_click=` above is therefore still holding this
+#  script -- and the model with it -- at the moment the next run tries to free
+#  the memory. Nothing can release a model that is still reachable.
+#
+#  `graph` goes too: it holds the responder, which holds the weights.
+#  `offices` deliberately does NOT -- the three MCP servers are meant to stay
+#  running, and `connect_offices()`'s own cache is what keeps them.
+#
+#  Full measurements: Plans/vram_model_switching.md.
+# ─────────────────────────────────────────────────────────────────────────────
+
+del graph, loaded, _tok

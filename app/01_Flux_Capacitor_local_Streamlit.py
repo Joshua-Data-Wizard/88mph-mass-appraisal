@@ -143,11 +143,29 @@ with st.sidebar:
     if status:
         free_gb, total_gb = status
         st.metric("GPU memory free", f"{free_gb:.1f} GB", f"of {total_gb:.0f} GB")
+
+        # Reports what it actually did. This button can only hand back blocks
+        # PyTorch is holding but not using -- it cannot unload a loaded model.
+        # Saying so is better than appearing to do nothing.
         if st.button("🧹 Free unused memory", use_container_width=True):
             import torch
 
+            before = torch.cuda.memory_reserved()
             torch.cuda.empty_cache()
+            st.session_state["freed_gb"] = (
+                before - torch.cuda.memory_reserved()) / 1024**3
             st.rerun()
+
+        freed = st.session_state.pop("freed_gb", None)
+        if freed is not None:
+            st.caption(
+                f"Returned **{freed:.2f} GB** of blocks PyTorch was holding "
+                "but not using."
+                if freed > 0.01 else
+                "Nothing to return — PyTorch is using every block it holds. "
+                "This button cannot unload a model; **switching models** is "
+                "what does that."
+            )
     else:
         st.warning("No GPU found — this will run on the CPU and be slower.", icon="🐢")
 
@@ -171,6 +189,21 @@ st.markdown(
     "to be found. It is doing one thing, very fast, over and over: "
     "**guessing the next small piece of text.**"
 )
+
+# ── Switching models: let go of the old one before loading the new one ──────
+#
+# Three separate things hold a loaded model, and all three have to let go or
+# nothing is freed and the card fills up after two or three switches:
+#
+#   1. Streamlit's @st.cache_resource     ->  load_model.clear()
+#   2. delorean's own cache, llm._CACHE   ->  llm.unload()
+#   3. this script's own `model` variable ->  dropped at the BOTTOM of this
+#      file, where the comment explains why it cannot be done here
+previous = st.session_state.get("loaded_model")
+if previous is not None and previous != choice:
+    load_model.clear()      # 1
+    llm.unload()            # 2 — also collects garbage and empties the CUDA cache
+st.session_state["loaded_model"] = choice
 
 with st.spinner(f"Loading {spec.label} …"):
     model, tokenizer, VOCAB = load_model(choice)
@@ -201,7 +234,7 @@ with tab_tokens:
     )
 
     if "token_text" not in st.session_state:
-        st.session_state.token_text = "parcel 04-127-3891"
+        st.session_state.token_text = "appraisal"
 
     st.caption("Try one of these, or type anything you like:")
     cols = st.columns(len(PRESET_TOKENS))
@@ -444,3 +477,21 @@ st.caption(
     '"Your future hasn\'t been written yet. No one\'s has. '
     'Your future is whatever you make it. So make it a good one." — Dr. Emmett Brown'
 )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Reference 3 of 3 — let go of the weights before this run ends
+#
+#  Streamlit runs this script again on every click, in a brand new namespace
+#  each time, so you would expect the previous run's `model` variable to vanish
+#  with it. It does not: Streamlit keeps THIS run's widget callbacks alive into
+#  the NEXT run, and a Python function carries its whole module namespace with
+#  it in `__globals__`. Every `on_click=` above is therefore still holding this
+#  script -- and `model` with it -- at the moment the next run tries to free
+#  the memory. Nothing can release a model that is still reachable.
+#
+#  Dropping our own names here is what makes the release at the top work.
+#  Full measurements: Plans/vram_model_switching.md.
+# ─────────────────────────────────────────────────────────────────────────────
+
+del model, tokenizer

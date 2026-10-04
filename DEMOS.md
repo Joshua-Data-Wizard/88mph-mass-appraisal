@@ -78,6 +78,19 @@ slide, and it costs about fifteen seconds of model load.
 | Google Gemma 4 E2B | **6.55 GB** | fastest, but the heaviest — see below |
 | Qwen3.5 0.8B | 1.44 GB | §2 only; cannot drive tools |
 
+✅ **Switching is safe, and that is new.** Until 2026-10-03 the apps loaded the
+new model *without releasing the old one*, so a second switch put two models on
+the card and a third could run it out of memory mid-demo. Every app now releases
+the previous model first. Measured on the RTX 3080, switching from Qwen3.5-4B:
+
+| Switch to | Reload | Memory afterwards |
+|---|---|---|
+| Qwen3.5 0.8B | 2.6 s | drops to one model |
+| SmolLM3 3B | 4.2 s | drops to one model |
+| Qwen3.5 4B | 4.9 s | back to one model |
+
+**Budget about five seconds, and switch as often as you like.**
+
 ⚠️ **Gemma needs 6.55 GB.** Fine on the presenter machine; on an 8 GB
 laptop it leaves about 1.5 GB, so close everything else first. And
 **NVIDIA Nemotron is deliberately not in the list** — it runs out of memory
@@ -950,7 +963,7 @@ new filing fee. **The assistant can tell the taxpayer that at the counter.**
 |---|---|
 | An app will not start | Open the matching notebook — committed **with outputs**, narrate from the saved result |
 | A cell errors live | Same. The output below it is the real one from this machine |
-| GPU out of memory | Sidebar → **🧹 Free unused memory**, or switch to the tiny model |
+| GPU out of memory | **Switch to the tiny model in the sidebar** — switching releases the model you were using. Close other apps too; desktop software holds 2–3 GB. ⚠️ **🧹 Free unused memory will not help here**: it only hands back blocks PyTorch is holding but not using, and it says so when there are none |
 | Wifi is down | **Nothing on the live path needs internet.** Models are cached locally; Tavily is deliberately off the live path |
 | A model gives a different answer | Say so. Greedy decoding makes it reproducible, but *"it varies"* is itself the §4 lesson |
 

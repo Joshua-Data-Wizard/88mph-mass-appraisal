@@ -290,6 +290,23 @@ with st.sidebar:
     spec = models.REGISTRY[model_key]
     st.caption(f"`{spec.hf_id}`")
 
+    # ── Switching models: let go of the old one first ───────────────────────
+    #
+    # Three separate things hold a loaded model, and all three have to let go
+    # or nothing is freed and the card fills up after two or three switches:
+    #
+    #   1. Streamlit's @st.cache_resource    ->  load_model.clear()
+    #      ...and `build`, whose compiled graph closes over the same weights
+    #   2. delorean's own cache, llm._CACHE  ->  llm.unload()
+    #   3. this script's own variables       ->  dropped at the BOTTOM of this
+    #      file, where the comment explains why it cannot be done here
+    previous = st.session_state.get("loaded_model")
+    if previous is not None and previous != model_key:
+        load_model.clear()      # 1
+        build.clear()           # 1 — the graph holds the responder holds the model
+        llm.unload()            # 2 — also collects garbage, empties the CUDA cache
+    st.session_state["loaded_model"] = model_key
+
     # Picking a model that is not on this machine starts a multi-gigabyte
     # download the moment you press Run, with no progress bar anywhere the
     # audience can see. Say so before that happens rather than after.
@@ -513,3 +530,22 @@ else:
         "Press **1️⃣ How did the county do?** to begin. The agent will write "
         "its own SQL, run the IAAO ratio study, and report back.",
         icon="⚡")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Reference 3 of 3 — let go of the weights before this run ends
+#
+#  Streamlit runs this script again on every click, in a brand new namespace
+#  each time, so you would expect the previous run's variables to vanish with
+#  it. They do not: Streamlit keeps THIS run's widget callbacks alive into the
+#  NEXT run, and a Python function carries its whole module namespace with it
+#  in `__globals__`. Every `on_click=` above is therefore still holding this
+#  script -- and the model with it -- at the moment the next run tries to free
+#  the memory. Nothing can release a model that is still reachable.
+#
+#  Dropping our own names here is what makes the release in the sidebar work.
+#  Measured: without it a switch frees nothing and both models sit on the card.
+#  Full measurements: Plans/vram_model_switching.md.
+# ─────────────────────────────────────────────────────────────────────────────
+
+del loaded_model, _tok

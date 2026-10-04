@@ -437,6 +437,7 @@ Copy `.env.example` → `.env` and fill in your keys.
      test_app_88mph.py            🖱️ the §7 app, clicked
      test_app_office.py           🖱️ the §6/§8 app, clicked
      test_app_adapter.py          🖱️ the §10 app, clicked
+     test_model_switch.py         🧹 switching models releases the old one
 ✅ src/delorean/             🚗 the shared engine every notebook imports
      models.py                  which model, and why
      llm.py                     loading models, local and hosted
@@ -487,8 +488,10 @@ uv run streamlit run app/04_06_Office_Assistant_local_Streamlit.py             #
 ```
 
 Each opens at `localhost:8501` with a model picker in the sidebar, so you can
-swap engines mid-demo. The Office Assistant also reports **which device the
-weights are actually on**, so nobody has to take "it runs locally" on faith.
+swap engines mid-demo. **Swapping releases the model you were using** — about
+five seconds to load the replacement, and the card never ends up holding two.
+The Office Assistant also reports **which device the weights are actually on**,
+so nobody has to take "it runs locally" on faith.
 
 > ⚙️ **Settings are committed** in `.streamlit/config.toml`. The important one
 > turns Streamlit's file watcher off: it otherwise walks ~5,500 `transformers`
