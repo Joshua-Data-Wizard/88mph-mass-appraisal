@@ -1,7 +1,7 @@
 """
 parcel.py — looking a property up in the Appraiser's office roll.
 
-This is the first real tool the agent gets, in Section 6.
+This is the first real tool the agent gets, in Section 7.
 
 The interesting part is not the database query. It is `normalize_parcel_id()`,
 and the reason it exists goes all the way back to Section 2.

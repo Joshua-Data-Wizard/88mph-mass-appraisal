@@ -47,7 +47,7 @@ dependencies = [
     # HF_XET_HIGH_PERFORMANCE=1 instead — see .env.example.
 
     # ── Agent framework ──────────────────────────────────────────────────
-    # Sections 5-11.
+    # Sections 6-11.
     #
     # DELIBERATE CHOICE: LangGraph only. We do NOT use the `langchain`
     # package or its provider wrappers (langchain-huggingface,
@@ -83,7 +83,7 @@ dependencies = [
     "sentence-transformers>=3.0",  # turns text into vectors, locally
     "pypdf>=5.0",                  # read policy manuals and deadline PDFs
 
-    # ── Live web search (Section 6) ──────────────────────────────────────
+    # ── Live web search (Section 7) ──────────────────────────────────────
     "tavily-python>=0.7",     # official Tavily client; import as `tavily`
 
     # ── Model Context Protocol ───────────────────────────────────────────
@@ -94,13 +94,13 @@ dependencies = [
     "mcp>=1.2",
 
     # ── Data and statistics ──────────────────────────────────────────────
-    # Section 7. Ratio studies, COD, PRD. Parcel storage is sqlite3, which
+    # Section 9. Ratio studies, COD, PRD. Parcel storage is sqlite3, which
     # ships with Python — no dependency needed and every IT shop knows it.
     "pandas>=2.2",
     "numpy>=1.26",
 
     # ── Mapping ──────────────────────────────────────────────────────────
-    # Section 7 and 11. folium renders an interactive map inline in a
+    # Section 9 and 11. folium renders an interactive map inline in a
     # notebook AND inside Streamlit. Deliberately NOT geopandas: it drags
     # in GDAL, which is a reliable way to ruin a Windows install.
     "folium>=0.17",

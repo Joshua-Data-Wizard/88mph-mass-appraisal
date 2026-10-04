@@ -16,7 +16,7 @@ one of them — which is exactly the point Section 10 makes about MCP.
 
 EVERYTHING HERE IS INVENTED. No real parcel, owner, address, or sale appears in
 this repository. The coordinates are real Calgary-area coordinates so the maps
-in Section 7 render over actual streets, but every property sitting on them is
+in Section 9 render over actual streets, but every property sitting on them is
 fictional.
 
 The data is DETERMINISTIC. Same seed, same database, every time — so the outputs
@@ -24,7 +24,7 @@ committed in the notebooks always match what your machine produces.
 
 ---------------------------------------------------------------------------
 The flaws in this data are deliberate. See data/README.md for the full list.
-Assessment data with no problems in it makes Section 7's ratio study pointless:
+Assessment data with no problems in it makes Section 9's ratio study pointless:
 there would be nothing for the agent to find. Each neighborhood below is built
 to fail (or pass) a different IAAO test.
 ---------------------------------------------------------------------------
@@ -74,7 +74,7 @@ HERO_PARCEL = "04-127-3891"
 #  The sales feed — and why it is deliberately a little bit out of date
 # ─────────────────────────────────────────────────────────────────────────
 #
-# Section 7 needs an appraiser to be able to run a ratio study, and a ratio
+# Section 9 needs an appraiser to be able to run a ratio study, and a ratio
 # study needs the sale price (the Clerk's) next to the assessed value (ours).
 # In a real county nobody queries the Clerk live for that. The Clerk sends
 # over a sales file, somebody loads it, and the Appraiser works from their own
@@ -86,7 +86,7 @@ HERO_PARCEL = "04-127-3891"
 # such change: after the feed was pulled, the Clerk amended a deed to record
 # that it was NOT an arm's length sale after all.
 #
-# So Section 7's ratio study is right as of the feed and wrong as of today,
+# So Section 9's ratio study is right as of the feed and wrong as of today,
 # and nothing in the Appraiser's office can tell you that. Section 10 plugs
 # into the Clerk live through MCP and the discrepancy surfaces in one query.
 # The argument for MCP stops being "look, it connects" and becomes "your feed
@@ -99,7 +99,7 @@ FEED_CORRECTED_ON = "2026-03-04"
 #  The six neighborhoods, and the appraisal problem each one is built to have
 #
 #  IAAO measures three different things, and they are genuinely different
-#  questions. This dataset gives Section 7 one clear example of each:
+#  questions. This dataset gives Section 9 one clear example of each:
 #
 #    LEVEL       Are we assessing at the right percentage of market value?
 #                -> measured by the MEDIAN RATIO (assessed / sale price)
@@ -193,7 +193,7 @@ NEIGHBORHOODS = [
     },
 ]
 
-# Property classes. The commercial and vacant parcels exist so that Section 7
+# Property classes. The commercial and vacant parcels exist so that Section 9
 # has to FILTER before it computes anything -- a ratio study is residential
 # improved only, and mixing classes is a classic beginner error.
 # (code, weight, description) -- weight second, so weighted_choice() can read
@@ -231,7 +231,7 @@ LAST_NAMES = [
 ]
 
 # Deed types the Clerk actually records. Only some of them represent an
-# arm's-length sale, which is why Section 7 has to qualify sales before
+# arm's-length sale, which is why Section 9 has to qualify sales before
 # computing a ratio study.
 DEED_TYPES = [
     # (type, weight, is_arms_length)
@@ -606,7 +606,7 @@ def install_hero_tax(accounts: list[dict], hero: dict) -> dict:
 def build_sales_feed(sales: list[dict], parcels: list[dict]) -> list[dict]:
     """Flatten the Clerk's deeds against our parcel characteristics.
 
-    This table exists for one reason and it is a Section 7 reason: **the model
+    This table exists for one reason and it is a Section 9 reason: **the model
     should never have to write a JOIN.** A small language model asked to join
     two tables will do it, and will do it wrongly in ways that look right --
     we measured exactly that, an inner join that silently returned zero rows
@@ -615,7 +615,7 @@ def build_sales_feed(sales: list[dict], parcels: list[dict]) -> list[dict]:
     So every column an appraiser needs for a ratio study is carried here
     already: what it sold for, what we said it was worth, the ratio between
     them, and enough characteristics to slice by. One table, no joins, and
-    every question in Section 7 answerable with a plain WHERE clause.
+    every question in Section 9 answerable with a plain WHERE clause.
 
     Note this is a SNAPSHOT, taken on FEED_PULLED_ON. See the note up top.
     """
@@ -761,7 +761,7 @@ def verify(parcels: list[dict], sales: list[dict]) -> None:
     """Print the ratio study so we can SEE that the flaws are where we put them.
 
     Run this against the FEED, not the Clerk's live deeds. The feed is what
-    Section 7 reads, so the feed is what has to reproduce -- and after
+    Section 9 reads, so the feed is what has to reproduce -- and after
     `install_clerk_correction` the two deliberately disagree by one sale.
     """
     by_id = {p["parcel_id"]: p for p in parcels}
@@ -975,7 +975,7 @@ def main() -> None:
     print(f"    feed  says : arm's length sale, ${corrected['sale_price']:,}")
     print(f"    clerk says : {corrected['deed_type']}, NOT arm's length "
           f"(corrected {corrected['corrected_on']})")
-    print(f"    -> Section 7's ratio study counts a sale it should not.")
+    print(f"    -> Section 9's ratio study counts a sale it should not.")
 
     delinquent = [a for a in accounts if a["status"] == "DELINQUENT"]
     print(f"\n  Delinquent accounts: {len(delinquent)} "

@@ -57,7 +57,7 @@ except ImportError:                                  # pragma: no cover
 from delorean import models                          # noqa: E402
 
 #: What the live demos actually need. §2 uses the little one; everything from
-#: §6 onward uses the 4B.
+#: §7 onward uses the 4B.
 DEFAULT_KEYS = ["tiny", "qwen"]
 
 BAR = "=" * 78
@@ -376,7 +376,7 @@ def main() -> int:
     if proved == len(runnable):
         print("  Start an app:\n"
               "      uv run streamlit run "
-              "app/01_Flux_Capacitor_local_Streamlit.py")
+              "app/02_Flux_Capacitor_local_Streamlit.py")
     else:
         print("  Some models downloaded but would not run. The message above\n"
               "  says which, and why. The rest are fine to use.")

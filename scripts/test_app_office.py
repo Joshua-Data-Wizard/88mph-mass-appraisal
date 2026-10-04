@@ -1,16 +1,16 @@
-"""AppTest for the Section 6 + Section 8 app.
+"""AppTest for the Section 7 + Section 8 app.
 
     uv run python scripts/test_app_office.py
 
 This app had no test at all until 2026-08-25, which is how a change to
-`local_responder` reached it unnoticed. Section 7's app has had one since it
+`local_responder` reached it unnoticed. Section 9's app has had one since it
 was built; this is the matching cover for the other agent app.
 
 What it actually checks, beyond "does it render":
 
   * the ONE tool in tab 1 and the TWO in tab 2 -- the toolbelt growing is the
     §8 lesson, so a regression there is a broken demo, not a broken widget
-  * the raw reveal, which is §6's whole payload. It has to contain the
+  * the raw reveal, which is §7's whole payload. It has to contain the
     model's tool-call markup, not its prose. That distinction is exactly what
     broke when `last_raw` briefly became the special-token-stripped decode.
   * restraint -- the question that must NOT reach for a tool
@@ -19,7 +19,7 @@ What it actually checks, beyond "does it render":
     callback, and CLAUDE.md records that jumping to an end state hides bugs
 
 ⚠️ AppTest runs the script but not a browser, so it cannot see anything
-DOMPurify strips. See the §7 app's `svg_card` note. Nothing here draws SVG.
+DOMPurify strips. See the §9 app's `svg_card` note. Nothing here draws SVG.
 """
 import sys
 import time
@@ -31,7 +31,7 @@ from streamlit.testing.v1 import AppTest
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 REPO = Path(__file__).resolve().parent.parent
-APP = str(REPO / "app" / "04_06_Office_Assistant_local_Streamlit.py")
+APP = str(REPO / "app" / "07_08_Office_Assistant_local_Streamlit.py")
 TIMEOUT = 400
 
 
@@ -82,7 +82,7 @@ def main():
     ok &= report(at, "the absence is explained, not silent",
                  "Nemotron named" if "Nemotron" in captions else "!! NO EXPLANATION")
 
-    print("\n=== 3. §6 tab — one tool, and the raw reveal ===")
+    print("\n=== 3. §7 tab — one tool, and the raw reveal ===")
     t0 = time.time()
     button(at, "hover_go").click().run()
     used = at.session_state["last_used"]
@@ -99,7 +99,7 @@ def main():
         print("        XX  last_raw holds no tool-call markup at all")
         ok = False
 
-    print("\n=== 4. §6 — the mangled parcel id (Section 2 collecting its debt) ===")
+    print("\n=== 4. §7 — the mangled parcel id (Section 2 collecting its debt) ===")
     button(at, "hq1").click().run()          # "Pull up 4-127-3891."
     ok &= report(at, "preset button fills the box",
                  repr(at.session_state["hover_q"][:40]))
@@ -113,7 +113,7 @@ def main():
         print("        XX  the trace does not show Biff Tannen")
         ok = False
 
-    print("\n=== 5. §6 — restraint: this one must NOT call a tool ===")
+    print("\n=== 5. §7 — restraint: this one must NOT call a tool ===")
     button(at, "hq3").click().run()          # market vs assessed value
     t0 = time.time()
     button(at, "hover_go").click().run()
@@ -145,7 +145,7 @@ def main():
 
     print("\n=== 7. the system-prompt presets, clicked in sequence ===")
     seq = ["🤖 No system prompt at all",
-           "🏛️ The Section 4 expert",
+           "🏛️ The Section 5 expert",
            "🎛️ Front counter (the guardrail)"]
     for name in seq:
         button(at, f"sysbtn_{name}").click().run()

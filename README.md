@@ -42,8 +42,9 @@ understanding of what Agentic LLMs are and how they can help us. 🏘️
 
 It's the companion code for the IAAO Calgary session
 **"Search, Extract & Value: The Lightning Fast Assistant"** — and it exists because
-too many conference talks show you something amazing 🤩 and never show you how it
-was done. Everything demonstrated on stage is in here, commented, and meant to be
+a conference is about learning and collaborating these langauge models can be very useful and 
+we should all try to leverage them to help our offices keep up there amazing work with new found assitants🤩. 
+Everything demonstrated on stage is in here, commented, and meant to be
 taken back to your office. 📦
 
 **You don't need to be a programmer to try it.** 🙌
@@ -53,7 +54,7 @@ taken back to your office. 📦
 
 ## 🚗 Fire up the DeLorean
 
-Three commands. That's the whole setup. ⏱️
+Three commands. That's the whole setup. ⏱️ Just run these in the folder of the project. 😀
 
 ```powershell
 uv sync                                    # ⚙️  build the environment
@@ -91,7 +92,7 @@ and exactly what to do instead if it can't. No guessing. ✅
 >
 > It checks free space first and tells you what it is about to cost. The
 > default is the two models the demos actually use — **`--all` is a 33 GB
-> download**, and only worth it if you want to compare models yourself (§9).
+> download**, and only worth it if you want to compare models yourself (§3).
 >
 > ℹ️ *Note for Windows:* if your machine cannot create symlinks, HuggingFace
 > stores each model **twice** and the download costs double the disk. The
@@ -101,26 +102,26 @@ and exactly what to do instead if it can't. No guessing. ✅
 
 ---
 
-## ▶️ Start here — all nine demos are live
+## ▶️ Start here — all eight demos are live
 
 Every one of them runs **on your own machine**. Pick a road and go:
 
 ```powershell
-uv run streamlit run app/01_Flux_Capacitor_local_Streamlit.py                  # §2
-uv run streamlit run app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py  # §3 + §4
-uv run streamlit run app/04_06_Office_Assistant_local_Streamlit.py             # §6 + §8
-uv run streamlit run app/05_88mph_Valuation_Review_local_Streamlit.py          # §7
-uv run streamlit run app/08_09_Universal_Adapter_local_Streamlit.py            # §10
+uv run streamlit run app/02_Flux_Capacitor_local_Streamlit.py                  # §2
+uv run streamlit run app/04_05_Time_Circuits_and_Plutonium_local_Streamlit.py  # §4 + §5
+uv run streamlit run app/07_08_Office_Assistant_local_Streamlit.py             # §7 + §8
+uv run streamlit run app/09_88mph_Valuation_Review_local_Streamlit.py          # §9
+uv run streamlit run app/10_Universal_Adapter_local_Streamlit.py            # §10
 uv run jupyter lab                                                             # 📓 15 notebooks
 ```
 
 | 🖱️ The apps | What you click |
 |---|---|
-| **[⚡ The Flux Capacitor](app/01_Flux_Capacitor_local_Streamlit.py)** | Type in *your* parcel number and watch it shatter into tokens. Then watch the model predict one word at a time. |
-| **[🎛️ Time Circuits & Plutonium](app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py)** | Punch a personality into the dashboard, then ask it something it cannot know and watch it invent an ordinance. |
-| **[🛹 The Office Assistant](app/04_06_Office_Assistant_local_Streamlit.py)** | Hand it a tool and watch it stop guessing — then hand it your policy manual. |
-| **[🏎️ 88 MPH — Valuation Review](app/05_88mph_Valuation_Review_local_Streamlit.py)** | Ask for a ratio study in plain English. It writes the SQL, runs the IAAO statistics and draws the map. |
-| **[🔌 The Universal Adapter](app/08_09_Universal_Adapter_local_Streamlit.py)** | One question, three county offices, no integration project. |
+| **[⚡ The Flux Capacitor](app/02_Flux_Capacitor_local_Streamlit.py)** | Type in *your* parcel number and watch it shatter into tokens. Then watch the model predict one word at a time. |
+| **[🎛️ Time Circuits & Plutonium](app/04_05_Time_Circuits_and_Plutonium_local_Streamlit.py)** | Punch a personality into the dashboard, then ask it something it cannot know and watch it invent an ordinance. |
+| **[🛹 The Office Assistant](app/07_08_Office_Assistant_local_Streamlit.py)** | Hand it a tool and watch it stop guessing — then hand it your policy manual. |
+| **[🏎️ 88 MPH — Valuation Review](app/09_88mph_Valuation_Review_local_Streamlit.py)** | Ask for a ratio study in plain English. It writes the SQL, runs the IAAO statistics and draws the map. |
+| **[🔌 The Universal Adapter](app/10_Universal_Adapter_local_Streamlit.py)** | One question, three county offices, no integration project. |
 
 ---
 
@@ -152,7 +153,7 @@ same test* — one is assessed too low, one is wildly inconsistent, one is
 quietly unfair to cheaper homes. Three different problems, three different
 afternoons of work, and **the countywide figure shows none of them.**
 
-Eleven seconds. On a laptop. Nothing left the building.
+About eleven seconds. On a laptop. Nothing left the building.
 
 > 🔑 The agent decides **what to ask**. The tool decides **what is correct** —
 > the IAAO maths is ordinary Python the model never touches.
@@ -178,12 +179,12 @@ wrote no tool code for any of them** — and then:
 > Collector reports a total outstanding balance of **$8,432.13**, which bars
 > the split under **policy §4.2**…
 
-Twenty-six seconds, for a question that today takes three phone calls and a
-week. **And it checks all three even after one fails** — because somebody told
+About twenty-six seconds, for a question that today takes three phone calls and staffs
+valueable time. **And it checks all three even after one fails** — because somebody told
 only the first reason their application was refused has to come back again to
 hear the rest.
 
-Then ask it the harder one: ***"is our sales file still true?"*** The Clerk
+Then ask it the critical question for the office: ***"is our sales file still true?"*** The Clerk
 corrected a deed after your feed was pulled — and when you drop that one bad
 sale, the neighborhood turns out to fail **a second test the stale file was
 hiding.** 😬
@@ -222,27 +223,42 @@ An appraiser estimates the fair market ▮
 Then a question where it is genuinely torn — `tax` **52.7%** / `value` **24.9%** /
 `taxes` **10.4%** — and you can *see* the doubt.
 
-**😬 And then the part that should worry you.** We ask it to do arithmetic:
+**🖱️ And one thing only the app can do.** The prediction tab has three buttons —
+**▶ Take the winner**, **② Take 2nd place**, **③ Take 3rd place**. Press one and
+that token is glued onto the sentence and the model predicts *again*, so you
+walk the generation loop a single step at a time and watch the odds shift under
+you. Press the winner four times from `Location, location,` and you have built a
+sentence by hand, exactly the way the model does it a few hundred times a second.
+
+Press **②** instead and the sentence goes somewhere the winning path would never
+have taken it — `Location, location, and…` rather than `…location`. That choice,
+made with dice instead of by hand, is all **temperature** is. Every demo in this
+repo takes first place every time, on purpose, so that what you rehearse is what
+you get.
+
+**😬 And then the part that should worry you — that's §5.** Ask it something only
+your county knows: *what is the minimum lot size to split an R-1 parcel?* With no
+persona it declines, honestly. Give it the confident expert persona from §4 and
+ask again:
 
 ```
-CORRECT | 1,247 + 3,891   | model: 5,138       | truth: 5,138
-WRONG   | 1,247 x 3,891   | model: 4,860,057   | truth: 4,852,077
-WRONG   | 17% of $412,500 | model: 68,125      | truth: 70,125
+🏛️  "0.25 acres. Per the County's Zoning Ordinance, any subdivision of an
+     R-1 parcel must result in lots at least 0.25 acres in size…"
+
+✅   6,000 sq ft per resulting parcel   —   Policy 4.3
 ```
 
-Off by **$2,000** — and it looks completely reasonable. It didn't say *"I don't
-know."* It handed back a confident, correctly-shaped number that passes any
-eyeball test. **Now imagine that on a notice of value.** 📬
+**There is no such ordinance.** And the invented number does not merely get a
+fact wrong — **it reverses the decision.** Biff Tannen's 15,800 sq ft lot splits
+into two 7,900 sq ft parcels, which clears the real 6,000 rule and fails the
+invented 10,890 one. The model didn't say *"I don't know."* It cited a regulation
+that does not exist, in the voice of a 25-year veteran. 📬
 
-> 🛠️ The fix isn't a smarter model. It's a calculator — and that's what a *tool*
-> is, which is exactly where §6 picks up.
-
-**🖱️ And one thing only the app can do.** In the prediction tab there's a
-**▶ Take the winner** button. Press it and the winning token is glued onto the
-sentence and the model predicts *again* — so you walk the generation loop one
-step at a time and watch the odds shift under you. Press it four times starting
-from `Location, location,` and you have built a sentence by hand, the same way
-the model does it a few hundred times a second.
+> 📖 **The real rule ships in this repo**, so you can check the model against it
+> yourself: [`data/policy/parcel_split_and_combination.md`](data/policy/parcel_split_and_combination.md).
+> The fix isn't a smarter model — it's giving it the manual to read (**§8**) and
+> the tools to look things up (**§7**). **§10 asks this exact question for real**,
+> across three county offices that have never spoken to each other.
 
 ---
 
@@ -253,26 +269,27 @@ on stage, you can find it in about ten seconds. 👀
 
 | § | The Bit | ⚙️ What You Actually Learn |
 |:---:|---|---|
-| 2 | ⚡ **The Flux Capacitor** ✅<br/>[🖥️ local](notebooks/01_flux_capacitor_local.ipynb) · [☁️ hosted](notebooks/01_flux_capacitor_api.ipynb) · [🖱️ app](app/01_Flux_Capacitor_local_Streamlit.py) | What an LLM *is* — watch next-word prediction happen live |
-| 3 | 🎛️ **Setting the Time Circuits** ✅<br/>[🖥️ local](notebooks/02_time_circuits_local.ipynb) · [☁️ hosted](notebooks/02_time_circuits_api.ipynb) · [🖱️ app ⑂](app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py) | The system prompt — one sentence that changes everything |
-| 4 | 🔋 **Running out of Plutonium** ✅<br/>[🖥️ local](notebooks/03_plutonium_local.ipynb) · [☁️ hosted](notebooks/03_plutonium_api.ipynb) · [🖱️ app ⑂](app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py) | Where it goes blind — and invents an ordinance to cover it |
-| 5 | 🗑️ **Introducing Mr. Fusion** | Agents & the ReAct loop: Reason → Act → Observe *(slides)* |
-| 6 | 🛹 **The Hoverboard** ✅<br/>[🖥️ local](notebooks/04_hoverboard_local.ipynb) · [☁️ hosted](notebooks/04_hoverboard_api.ipynb) · [🖱️ app ⑂](app/04_06_Office_Assistant_local_Streamlit.py) | A tool is a Python function *you* wrote — build one from nothing |
-| 7 | 🏎️ **Reaching 88 MPH** ✅<br/>[🖥️ local](notebooks/05_88mph_local.ipynb) · [☁️ hosted](notebooks/05_88mph_api.ipynb) · [🖱️ app](app/05_88mph_Valuation_Review_local_Streamlit.py) | The valuation review agent — SQL it writes itself, IAAO ratio studies, maps |
-| 8 | 📖 **Grays Sports Almanac** ✅<br/>[🖥️ local](notebooks/06_almanac_local.ipynb) · [☁️ hosted](notebooks/06_almanac_api.ipynb) · [🖱️ app ⑂](app/04_06_Office_Assistant_local_Streamlit.py) | RAG in plain English — and it's just another tool |
-| 9 | ⚙️ **The DeLorean Engine** ✅<br/>[🖥️ local](notebooks/07_delorean_smol.ipynb) | Small models — a 3B model runs §7 on **1.86 GB** of weights |
-| 10 | 🔌 **The Universal Adapter** ✅<br/>[🖥️ local](notebooks/08_universal_adapter_local.ipynb) · [☁️ hosted](notebooks/08_universal_adapter_api.ipynb) · [🖱️ app](app/08_09_Universal_Adapter_local_Streamlit.py) · [🔌 servers](mcp_server/) | MCP — three county offices, one question, no integration project |
-| 11 | 📊 **Putting a Bow On It** ✅ | Not another app — the take-home. How you actually start on Monday |
+| 2 | ⚡ **The Flux Capacitor** ✅<br/>[🖥️ local](notebooks/02_flux_capacitor_local.ipynb) · [☁️ hosted](notebooks/02_flux_capacitor_api.ipynb) · [🖱️ app](app/02_Flux_Capacitor_local_Streamlit.py) | What an LLM *is* — watch next-word prediction happen live |
+| 3 | ⚙️ **The DeLorean Engine** ✅<br/>[🖥️ local](notebooks/03_delorean_engine.ipynb) | Which engine do you need? A 3B model runs §9 on **1.86 GB** of weights — and ⏭️ part of this notebook time-travels to §9 on purpose |
+| 4 | 🎛️ **Setting the Time Circuits** ✅<br/>[🖥️ local](notebooks/04_time_circuits_local.ipynb) · [☁️ hosted](notebooks/04_time_circuits_api.ipynb) · [🖱️ app ⑂](app/04_05_Time_Circuits_and_Plutonium_local_Streamlit.py) | The system prompt — one sentence that changes everything |
+| 5 | 🔋 **Running out of Plutonium** ✅<br/>[🖥️ local](notebooks/05_plutonium_local.ipynb) · [☁️ hosted](notebooks/05_plutonium_api.ipynb) · [🖱️ app ⑂](app/04_05_Time_Circuits_and_Plutonium_local_Streamlit.py) | Where it goes blind — and invents an ordinance to cover it |
+| 6 | 🗑️ **Introducing Mr. Fusion** | Agents & the ReAct loop: Reason → Act → Observe *(slides)* |
+| 7 | 🛹 **The Hoverboard** ✅<br/>[🖥️ local](notebooks/07_hoverboard_local.ipynb) · [☁️ hosted](notebooks/07_hoverboard_api.ipynb) · [🖱️ app ⑂](app/07_08_Office_Assistant_local_Streamlit.py) | A tool is a Python function *you* wrote — build one from nothing |
+| 8 | 📖 **Grays Sports Almanac** ✅<br/>[🖥️ local](notebooks/08_almanac_local.ipynb) · [☁️ hosted](notebooks/08_almanac_api.ipynb) · [🖱️ app ⑂](app/07_08_Office_Assistant_local_Streamlit.py) | RAG in plain English — and it's just another tool |
+| 9 | 🏎️ **Reaching 88 MPH** ✅<br/>[🖥️ local](notebooks/09_88mph_local.ipynb) · [☁️ hosted](notebooks/09_88mph_api.ipynb) · [🖱️ app](app/09_88mph_Valuation_Review_local_Streamlit.py) | The valuation review agent — SQL it writes itself, IAAO ratio studies, maps |
+| 10 | 🔌 **The Universal Adapter** ✅<br/>[🖥️ local](notebooks/10_universal_adapter_local.ipynb) · [☁️ hosted](notebooks/10_universal_adapter_api.ipynb) · [🖱️ app](app/10_Universal_Adapter_local_Streamlit.py) · [🔌 servers](mcp_server/) | MCP — three county offices, one question, no integration project |
+| 11 | 🎈🎉 **Your Future Hasn't Been Written Yet** 🚗💨 | **You are looking at it.** No eleventh app — the reveal *is* this repository. Clone it, run it, hand it to your IT staff on Monday |
 
 > ### ⑂ Three apps each cover two sections — on purpose.
 >
-> **§3 + §4** share one app because they are cause and effect: the system prompt
+> **§4 + §5** share one app because they are cause and effect: the system prompt
 > that makes the model sound like an expert is the same one that makes it invent
 > an ordinance. Splitting them would throw away the twist.
 >
-> **§6 + §8** share one app because the whole point of §8 is that RAG is **not**
+> **§7 + §8** share one app because the whole point of §8 is that RAG is **not**
 > special — it is one more tool on the same agent. You watch the toolbelt grow
-> from one chip to two. §7 sits between them in the talk, so you reopen it.
+> from one chip to two — and the two sections run back to back, so it is one
+> sitting at the keyboard.
 >
 > **§10** is one app carrying **two** live demos — the cross-office question
 > and the sync check — because they run on the same three servers and the
@@ -307,7 +324,7 @@ number and the wrong one to plan with.
 |---|:---:|---|:---:|---|
 | `Qwen/Qwen3.5-0.8B` | 0.8B | Apache 2.0 | **1.44 GB** | Demo 1 — small enough to run with no GPU at all |
 | `Qwen/Qwen3.5-4B` ⭐ | 4B | Apache 2.0 | **4.00 GB** | The workhorse — **1st of 13** local models for tool calling |
-| `HuggingFaceTB/SmolLM3-3B` | 3B | Apache 2.0 | **2.77 GB** | The "look how little this needs" story — **runs all of §7** |
+| `HuggingFaceTB/SmolLM3-3B` | 3B | Apache 2.0 | **2.77 GB** | The "look how little this needs" story — **runs all of §9** |
 | 🪟 `microsoft/Phi-4-mini-instruct` | 3.8B | **MIT** | **4.15 GB** | A name your IT department already trusts |
 | 🔷 `google/gemma-4-E2B-it` | 2.3B | Apache 2.0 | 6.55 GB | The fastest here — 5.7s a question |
 | `nvidia/NVIDIA-Nemotron-3-Nano-4B-BF16` | 4B | NVIDIA Open | ⚠️ **15.6 GB** | ⚠️ **Not offered in the apps on Windows** — see below |
@@ -368,13 +385,13 @@ Windows. Without them it falls back to a PyTorch scan costing roughly
 |---|---|---|---|---|---|
 | peak VRAM | 6.25 GB | 9.35 GB | 12.47 GB | 15.57 GB | **OOM** |
 
-Demo 5's prompt is ~1,300 tokens and its peak sits past where Nemotron survives, so it never finishes. **On Linux with those
+Demo 6's prompt is ~1,300 tokens and its peak sits past where Nemotron survives, so it never finishes. **On Linux with those
 kernels installed it should be fine** — this is a platform limit, not a
 verdict on the model, so it stays in the registry and stays loadable by key
 (`llm.load_local("nemotron")`). The apps just do not offer it, because a
 dropdown is a promise.
 
-[`07_delorean_smol.ipynb`](notebooks/07_delorean_smol.ipynb) tells the whole
+[`03_delorean_engine.ipynb`](notebooks/03_delorean_engine.ipynb) tells the whole
 story. **"Check the architecture has working kernels on your OS"** is the
 first question to ask about any model, and no leaderboard answers it.
 
@@ -397,7 +414,7 @@ models.compare()          # full strengths and weaknesses for each
 
 > 💡 **Demo 1 runs without a GPU** even in the local version — the 0.8B model is
 > small enough for an ordinary laptop. You only need the graphics card once we
-> get to the agent demos in §6.
+> get to the agent demos in §7.
 
 Copy `.env.example` → `.env` and fill in your keys.
 
@@ -413,20 +430,20 @@ Copy `.env.example` → `.env` and fill in your keys.
 ✅ Guides/
      UV_Readme.md            📘 never used uv? start here
 ✅ notebooks/                📓 one pair per demo — local and hosted
-     01_flux_capacitor_{local,api}.ipynb   ⚡ §2  what an LLM is
-     02_time_circuits_{local,api}.ipynb    🎛️ §3  system prompts
-     03_plutonium_{local,api}.ipynb        🔋 §4  where it goes blind
-     04_hoverboard_{local,api}.ipynb       🛹 §6  tools, built from nothing
-     05_88mph_{local,api}.ipynb            🏎️ §7  ratio studies, SQL, maps
-     06_almanac_{local,api}.ipynb          📖 §8  RAG as one more tool
-     07_delorean_smol.ipynb                ⚙️ §9  the same demo on a 3B model
-     08_universal_adapter_{local,api}.ipynb 🔌 §10 three offices over MCP
+     02_flux_capacitor_{local,api}.ipynb   ⚡ §2  what an LLM is
+     04_time_circuits_{local,api}.ipynb    🎛️ §4  system prompts
+     05_plutonium_{local,api}.ipynb        🔋 §5  where it goes blind
+     07_hoverboard_{local,api}.ipynb       🛹 §7  tools, built from nothing
+     09_88mph_{local,api}.ipynb            🏎️ §9  ratio studies, SQL, maps
+     08_almanac_{local,api}.ipynb          📖 §8  RAG as one more tool
+     03_delorean_engine.ipynb                ⚙️ §3  the same demo on a 3B model
+     10_universal_adapter_{local,api}.ipynb 🔌 §10 three offices over MCP
 ✅ app/                      🖱️ clickable versions, for showing someone
-     01_Flux_Capacitor_local_Streamlit.py                  ⚡ §2
-     02_03_Time_Circuits_and_Plutonium_local_Streamlit.py  🎛️ §3 + §4
-     04_06_Office_Assistant_local_Streamlit.py             🛹 §6 + §8
-     05_88mph_Valuation_Review_local_Streamlit.py          🏎️ §7
-     08_09_Universal_Adapter_local_Streamlit.py            🔌 §10
+     02_Flux_Capacitor_local_Streamlit.py                  ⚡ §2
+     04_05_Time_Circuits_and_Plutonium_local_Streamlit.py  🎛️ §4 + §5
+     07_08_Office_Assistant_local_Streamlit.py             🛹 §7 + §8
+     09_88mph_Valuation_Review_local_Streamlit.py          🏎️ §9
+     10_Universal_Adapter_local_Streamlit.py            🔌 §10
 ✅ scripts/
      check_setup.py               🔍 run this first — can my machine do this?
      fetch_models.py              ⬇️ download models before you need them
@@ -434,9 +451,10 @@ Copy `.env.example` → `.env` and fill in your keys.
      test_tools.py                🛡️ can the tools survive a sloppy model?
      eval_tools.py                📊 does the model actually use them well?
      compare_models.py            🤖 every model, same questions, same tools
-     test_app_88mph.py            🖱️ the §7 app, clicked
-     test_app_office.py           🖱️ the §6/§8 app, clicked
+     test_app_88mph.py            🖱️ the §9 app, clicked
+     test_app_office.py           🖱️ the §7/§8 app, clicked
      test_app_adapter.py          🖱️ the §10 app, clicked
+     test_model_switch.py         🧹 switching models releases the old one
 ✅ src/delorean/             🚗 the shared engine every notebook imports
      models.py                  which model, and why
      llm.py                     loading models, local and hosted
@@ -473,7 +491,7 @@ Copy `.env.example` → `.env` and fill in your keys.
 > **The flaws in it are deliberate.** Three of the six neighborhoods fail a
 > different IAAO test — one on level, one on uniformity, one on equity — while
 > the countywide numbers pass every standard. An office reporting only the
-> county figure would call it a good year. That gap is what §7's agent finds.
+> county figure would call it a good year. That gap is what §9's agent finds.
 >
 > Everything is invented. No real parcel, owner, address, or sale is in this
 > repository.
@@ -481,14 +499,16 @@ Copy `.env.example` → `.env` and fill in your keys.
 ### ▶️ Running the apps
 
 ```powershell
-uv run streamlit run app/01_Flux_Capacitor_local_Streamlit.py                  # §2
-uv run streamlit run app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py  # §3 + §4
-uv run streamlit run app/04_06_Office_Assistant_local_Streamlit.py             # §6 + §8
+uv run streamlit run app/02_Flux_Capacitor_local_Streamlit.py                  # §2
+uv run streamlit run app/04_05_Time_Circuits_and_Plutonium_local_Streamlit.py  # §4 + §5
+uv run streamlit run app/07_08_Office_Assistant_local_Streamlit.py             # §7 + §8
 ```
 
 Each opens at `localhost:8501` with a model picker in the sidebar, so you can
-swap engines mid-demo. The Office Assistant also reports **which device the
-weights are actually on**, so nobody has to take "it runs locally" on faith.
+swap engines mid-demo. **Swapping releases the model you were using** — about
+five seconds to load the replacement, and the card never ends up holding two.
+The Office Assistant also reports **which device the weights are actually on**,
+so nobody has to take "it runs locally" on faith.
 
 > ⚙️ **Settings are committed** in `.streamlit/config.toml`. The important one
 > turns Streamlit's file watcher off: it otherwise walks ~5,500 `transformers`
@@ -528,13 +548,13 @@ Built in the open, in the order the session presents it. 🔨
 | ✅ | **§2 — ⚡ The Flux Capacitor: what an LLM actually is** *(both roads)* |
 | ✅ | §2 as an interactive Streamlit app 🖱️ |
 | ✅ | Synthetic county data — 3 office systems + policy corpus 🏘️ |
-| ✅ | **§3–4 — prompting, and where it breaks** 🕰️ *(4 notebooks + shared app)* |
-| ✅ | **§6 + §8 — tools, and RAG as one more tool** 🛹📖 *(4 notebooks + shared app)* |
-| ✅ | **§7 — 🏎️ the valuation review agent: SQL, ratio studies, maps** *(2 notebooks + app)* |
-| ✅ | **§9 — ⚙️ small models: a 3B runs §7 on 1.86 GB** *(notebook, local only)* |
+| ✅ | **§4–4 — prompting, and where it breaks** 🕰️ *(4 notebooks + shared app)* |
+| ✅ | **§7 + §8 — tools, and RAG as one more tool** 🛹📖 *(4 notebooks + shared app)* |
+| ✅ | **§9 — 🏎️ the valuation review agent: SQL, ratio studies, maps** *(2 notebooks + app)* |
+| ✅ | **§3 — ⚙️ small models: a 3B runs §9 on 1.86 GB** *(notebook, local only)* |
 | ✅ | **§10 — 🔌 the Universal Adapter: three MCP servers, two demos** *(2 notebooks + app + 3 servers)* |
 | ✅ | §11 — resolved as the take-home close, no new artifact needed 📊 |
-| 🏁 | **All nine live demos are built.** What is left is rehearsal. |
+| 🏁 | **All eight live demos are built.** What is left is rehearsal. |
 
 ---
 

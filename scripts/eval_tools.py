@@ -35,7 +35,7 @@ from delorean import data, llm, models, tools  # noqa: E402
 
 HERO = "04-127-3891"
 
-# Which tools the agent is offered. Section 6 exposes one on the live path;
+# Which tools the agent is offered. Section 7 exposes one on the live path;
 # the eval offers both so we can measure whether it picks correctly.
 OFFERED = ["lookup_parcel", "search_parcels", "search_policy"]
 

@@ -1,11 +1,11 @@
 """
 prompts.py — the system prompts that do real engineering work.
 
-Section 3 taught the audience that a system prompt turns a general-purpose
-model into somebody in particular. Section 4 showed the bill: the same prompt
+Section 4 taught the audience that a system prompt turns a general-purpose
+model into somebody in particular. Section 5 showed the bill: the same prompt
 that made it sound like an appraiser is what made it invent an ordinance.
 
-By Section 7 the system prompt has stopped being a party trick and become
+By Section 9 the system prompt has stopped being a party trick and become
 load-bearing. Three separate things in this file are measured, not guessed:
 
 **It buys back restraint.** With three tools and no system prompt, the model
@@ -14,7 +14,7 @@ define "market value". Naming when each tool applies fixed that completely,
 with no loss of recall.
 
 **It halves the wall clock.** Told to keep answers to three sentences because
-the figures are already on screen, the Section 7 demo went from 25-40 seconds
+the figures are already on screen, the Section 9 demo went from 25-40 seconds
 a question to 10-12. Same tools, same answers, same accuracy -- roughly twice
 the speed, from three sentences of English. On a 15-minute stage slot that is
 the difference between a demo and a wait.
@@ -34,7 +34,7 @@ three files is a system prompt that disagrees with itself by next week.
 from __future__ import annotations
 
 # --------------------------------------------------------------------------
-#  Section 7 — the valuation review assistant
+#  Section 9 — the valuation review assistant
 # --------------------------------------------------------------------------
 
 REVIEW_ASSISTANT = (
@@ -76,10 +76,10 @@ REVIEW_ASSISTANT_NO_RATIO_TOOL = (
 
 
 # --------------------------------------------------------------------------
-#  Section 6 and 8 — the front counter
+#  Section 7 and 8 — the front counter
 # --------------------------------------------------------------------------
 #
-# Kept here so every demo's prompt is readable in one place. The Section 6/8
+# Kept here so every demo's prompt is readable in one place. The Section 7/8
 # app still defines its own copy; if that ever changes, it should import this.
 
 FRONT_COUNTER = (
@@ -96,7 +96,7 @@ FRONT_COUNTER = (
     "policy, name the section you took it from."
 )
 
-#: Section 4's villain, kept for the app's prompt switcher. Confident, expert,
+#: Section 5's villain, kept for the app's prompt switcher. Confident, expert,
 #: and with no tools it will invent an ordinance rather than admit ignorance.
 OVERCONFIDENT_EXPERT = (
     "You are a senior property appraiser with 25 years of experience in the "
@@ -118,7 +118,7 @@ OVERCONFIDENT_EXPERT = (
 #: as a fact. Renaming it "the tax balance" fixed it outright.
 #:
 #: **"Do not restate the checklist and do not explain your process"** took the
-#: same question from 59 seconds to 22. Section 7 found the same thing; it is
+#: same question from 59 seconds to 22. Section 9 found the same thing; it is
 #: not a one-off.
 #:
 #: Measured on Qwen3.5-4B against three live MCP servers: all four sources

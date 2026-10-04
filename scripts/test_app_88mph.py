@@ -1,4 +1,4 @@
-"""AppTest for the Section 7 app.
+"""AppTest for the Section 9 app.
 
 Real click SEQUENCES, not jumps to an end state -- CLAUDE.md records a bug
 that `set_value()` sailed straight past because it skipped the intermediate
@@ -18,7 +18,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 # machine in the world -- in a repository whose entire purpose is being handed
 # to somebody else.
 REPO = Path(__file__).resolve().parent.parent
-APP = str(REPO / "app" / "05_88mph_Valuation_Review_local_Streamlit.py")
+APP = str(REPO / "app" / "09_88mph_Valuation_Review_local_Streamlit.py")
 TIMEOUT = 400
 
 

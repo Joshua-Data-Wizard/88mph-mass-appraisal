@@ -1,7 +1,7 @@
 """
 query.py — letting the model write its own SQL, safely.
 
-Section 7's first tool, and the one that makes people in the audience sit
+Section 9's first tool, and the one that makes people in the audience sit
 forward. The agent is not picking from a menu of canned reports. It writes a
 query, we run it, and it reads the answer.
 
@@ -21,7 +21,7 @@ file:
    systems -- that gap is Section 10's whole subject.
 
 The other half of this file is the schema blurb the model is shown. That
-blurb is a prompt, and it is the highest-leverage text in Section 7: it is
+blurb is a prompt, and it is the highest-leverage text in Section 9: it is
 what turns "write me some SQL" into a query that runs first time.
 
 Measured on Qwen3.5-4B: 7 of 7 questions produced runnable SQL, about four
@@ -45,7 +45,7 @@ from .base import fail, tool
 # Curated on purpose. `parcels` really has sixteen columns; the model is shown
 # eleven. Bedrooms, bathrooms, the neighborhood code and the class description
 # are all real, and all left out, because every column offered is one more
-# thing to reach for and get wrong. Nothing in Section 7 needs them.
+# thing to reach for and get wrong. Nothing in Section 9 needs them.
 
 TABLES: dict[str, list[str]] = {
     "parcels": [
@@ -223,7 +223,7 @@ def execute(sql: str, limit: int = MAX_ROWS) -> tuple[list[str], list[tuple]]:
     """Run a checked SELECT against the Appraiser's database, read-only.
 
     Raises `sqlite3.Error` on a bad query -- callers turn that into a hint.
-    Shared by all three Section 7 tools so there is one place where a query
+    Shared by all three Section 9 tools so there is one place where a query
     actually touches the data.
     """
     # mode=ro is the real guarantee. SQLite refuses writes at the file level,

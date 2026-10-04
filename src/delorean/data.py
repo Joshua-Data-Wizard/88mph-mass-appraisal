@@ -1,7 +1,7 @@
 """
 data.py — getting at Hill Valley County's three office systems.
 
-Every demo from Section 4 onward reads its data through this file, so nobody
+Every demo from Section 5 onward reads its data through this file, so nobody
 has to hardcode a path to a .db and none of the notebooks drift apart.
 
 The important thing about this module is what it does NOT provide: there is no
@@ -139,7 +139,7 @@ def _connect(path: Path) -> sqlite3.Connection:
     """Open one database read-only-ish, with dict-like rows.
 
     `row_factory = sqlite3.Row` is what lets you write `row["owner_name"]`
-    instead of `row[2]`. Worth it every time — the tools in Section 7 build
+    instead of `row[2]`. Worth it every time — the tools in Section 9 build
     their answers out of column names.
     """
     if not path.exists():
@@ -168,7 +168,7 @@ def tax() -> sqlite3.Connection:
 
 
 # ─────────────────────────────────────────────────────────────────────────
-#  DataFrames — for the ratio study in Section 7
+#  DataFrames — for the ratio study in Section 9
 # ─────────────────────────────────────────────────────────────────────────
 
 def _frame(con: sqlite3.Connection, sql: str) -> "pd.DataFrame":
@@ -197,7 +197,7 @@ def sales_df() -> "pd.DataFrame":
 
     Note this includes deeds that are NOT usable market sales — quit claims,
     sheriff's deeds, interfamily transfers. Filtering them is the assessor's
-    job, not the Clerk's, and Section 7 does it explicitly.
+    job, not the Clerk's, and Section 9 does it explicitly.
     """
     return _frame(clerk(), "SELECT * FROM sales")
 
@@ -208,7 +208,7 @@ def tax_df() -> "pd.DataFrame":
 
 
 def sales_feed_df() -> "pd.DataFrame":
-    """The Appraiser's own copy of the Clerk's sales file — Section 7's table.
+    """The Appraiser's own copy of the Clerk's sales file — Section 9's table.
 
     This is NOT the Clerk's live records. It is a snapshot the Appraiser's
     office loaded on `feed_pulled_on()`, with our assessed value and the
@@ -219,7 +219,7 @@ def sales_feed_df() -> "pd.DataFrame":
     1. A ratio study needs the sale price and the assessed value side by side,
        and they live in two different offices. Every county solves that with a
        periodic file transfer, so we solve it the same way.
-    2. It means the agent in Section 7 never has to write a JOIN. Small models
+    2. It means the agent in Section 9 never has to write a JOIN. Small models
        write joins that run and quietly return the wrong rows.
 
     That it is a snapshot is the setup for Section 10 — see `feed_pulled_on`.

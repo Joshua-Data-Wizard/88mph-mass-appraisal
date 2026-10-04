@@ -21,20 +21,19 @@ heading — do not write a script against those sections.
 | § | Title | Min | Demo artifact | Status |
 |---|---|---|---|---|
 | 1 | Welcome to Hill Valley | 5 | slides | — |
-| **2** | **The Flux Capacitor** | **7** | `app/01_Flux_Capacitor_local_Streamlit.py` | ✅ built |
-| **3** | **Setting the Time Circuits** | **5** | `app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py` tabs 1–2 | ✅ built |
-| **4** | **Running out of Plutonium** | **3** | same app, tab 3 | ✅ built |
-| 5 | Introducing Mr. Fusion | 7 | slides — Reason → Act → Observe | — |
-| **6** | **The Hoverboard** | **10** | `app/04_06_Office_Assistant_local_Streamlit.py` tab 1 | ✅ built |
-| **7** | **Reaching 88 MPH** | **15** | `app/05_88mph_Valuation_Review_local_Streamlit.py` | ✅ built |
+| **2** | **The Flux Capacitor** | **7** | `app/02_Flux_Capacitor_local_Streamlit.py` | ✅ built |
+| **3** | **The DeLorean Engine** | **5** | `notebooks/03_delorean_engine.ipynb` — no numbered demo | ✅ built |
+| **4** | **Setting the Time Circuits** | **5** | `app/04_05_Time_Circuits_and_Plutonium_local_Streamlit.py` tabs 1–2 | ✅ built |
+| **5** | **Running out of Plutonium** | **3** | same app, tab 3 | ✅ built |
+| 6 | Introducing Mr. Fusion | 7 | slides — Reason → Act → Observe | — |
+| **7** | **The Hoverboard** | **10** | `app/07_08_Office_Assistant_local_Streamlit.py` tab 1 | ✅ built |
 | **8** | **Grays Sports Almanac** | **8** | same app, tab 2 | ✅ built |
-| **9** | **The DeLorean Engine** | **5** | slide reveal + `notebooks/07_delorean_smol.ipynb` | ✅ built |
-| **10** | **The Universal Adapter** | **10** | `app/08_09_Universal_Adapter_local_Streamlit.py` + `mcp_server/` | ✅ built |
-| **11** | **Putting a Bow On It** | **5** | no new artifact — the take-home close | ✅ decided |
-| 12 | Wrap Up & Q&A | 10 | slides | — |
+| **9** | **Reaching 88 MPH** | **15** | `app/09_88mph_Valuation_Review_local_Streamlit.py` | ✅ built |
+| **10** | **The Universal Adapter** | **10** | `app/10_Universal_Adapter_local_Streamlit.py` + `mcp_server/` | ✅ built |
+| **11** | **🎈 Your Future Hasn't Been Written Yet** | **15** | no new artifact — **the repo itself**, then Q&A | ✅ decided |
 
-**Five apps cover §2, §3, §4, §6, §7, §8 and §10 — 58 minutes of stage time, and every demo in them is measured.**
-**All nine live demos are built.** §11 needs no artifact; see its entry below.
+**Five apps cover §2, §4, §5, §7, §9, §8 and §10 — 58 minutes of stage time, and every demo in them is measured.**
+**All eight live demos are built.** §3 and §11 need no numbered demo; see their entries below.
 
 > ### ⏱️ Dry-run measured: **75–80 minutes**, several runs, against a 90:00 slot.
 > Roughly ten minutes of headroom. **Spend it on the room** — a question that
@@ -46,17 +45,17 @@ heading — do not write a script against those sections.
 ## Before you present
 
 ```powershell
-uv run streamlit run app/01_Flux_Capacitor_local_Streamlit.py
-uv run streamlit run app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py
-uv run streamlit run app/04_06_Office_Assistant_local_Streamlit.py
-uv run streamlit run app/05_88mph_Valuation_Review_local_Streamlit.py
-uv run streamlit run app/08_09_Universal_Adapter_local_Streamlit.py
+uv run streamlit run app/02_Flux_Capacitor_local_Streamlit.py
+uv run streamlit run app/04_05_Time_Circuits_and_Plutonium_local_Streamlit.py
+uv run streamlit run app/07_08_Office_Assistant_local_Streamlit.py
+uv run streamlit run app/09_88mph_Valuation_Review_local_Streamlit.py
+uv run streamlit run app/10_Universal_Adapter_local_Streamlit.py
 ```
 
 ⚠️ **The last two cannot run at the same time.** Each loads its own copy of the
 4B model, and two will not fit on an 8 GB card. Stop one before starting the
 other — a cold start is about 15 seconds, so do it during the intro slides for
-whichever section is next. The §2 and §3/§4 apps are small enough to leave up.
+whichever section is next. The §2 and §4/§5 apps are small enough to leave up.
 
 ### 🤖 The model picker — and a live moment worth having ready
 
@@ -73,10 +72,23 @@ slide, and it costs about fifteen seconds of model load.
 | Model | Peak VRAM | Note |
 |---|---|---|
 | Qwen3.5 4B ⭐ | 4.00 GB | the default, 6/6 on tools |
-| SmolLM3 3B | **2.77 GB** | smallest — this is §9's reveal |
+| SmolLM3 3B | **2.77 GB** | smallest — this is §3's reveal |
 | Microsoft Phi-4 mini | 4.15 GB | MIT licence |
 | Google Gemma 4 E2B | **6.55 GB** | fastest, but the heaviest — see below |
 | Qwen3.5 0.8B | 1.44 GB | §2 only; cannot drive tools |
+
+✅ **Switching is safe, and that is new.** Until 2026-10-03 the apps loaded the
+new model *without releasing the old one*, so a second switch put two models on
+the card and a third could run it out of memory mid-demo. Every app now releases
+the previous model first. Measured on the RTX 3080, switching from Qwen3.5-4B:
+
+| Switch to | Reload | Memory afterwards |
+|---|---|---|
+| Qwen3.5 0.8B | 2.6 s | drops to one model |
+| SmolLM3 3B | 4.2 s | drops to one model |
+| Qwen3.5 4B | 4.9 s | back to one model |
+
+**Budget about five seconds, and switch as often as you like.**
 
 ⚠️ **Gemma needs 6.55 GB.** Fine on the presenter machine; on an 8 GB
 laptop it leaves about 1.5 GB, so close everything else first. And
@@ -100,12 +112,20 @@ trained doesn't change what it can reach, which is nothing."*
 
 # ⚡ §2 — The Flux Capacitor  *(7 min)*
 
-**`app/01_Flux_Capacitor_local_Streamlit.py`** · model: `Qwen3.5-0.8B` (tiny, fast)
+**`app/02_Flux_Capacitor_local_Streamlit.py`** · model: `Qwen3.5-0.8B` (tiny, fast)
 
 ### The job of this demo
 The audience's first contact with the whole idea. Everything downstream —
 agents, tools, RAG, MCP — rests on one thing landing here: **an LLM is a
 next-word prediction engine, not a database and not a search engine.**
+
+**The header now says why the section is called what it is**, and it is worth
+reading out:
+
+> *"Doc Brown built one component and called it the thing that makes time
+> travel possible. This is that component. Agents, tools, document search, the
+> three county offices in Section 10 — all of it sits on top of what happens in
+> these three tabs."*
 
 ### Three tabs
 
@@ -123,12 +143,18 @@ Type text, watch it break into coloured token chips with their ID numbers undern
 > 🎯 **The parcel number is the money moment.** The model does not see an
 > identifier. It sees thirteen unrelated fragments. Say out loud: *"remember
 > this — it is why these things fumble parcel numbers and arithmetic,"* because
-> §4 collects on it.
+> §5 collects on it.
 
 **Tab 2 — 🎲 One prediction**
 
 The x-ray view. The model's actual odds over all **248,320** possible next
 tokens, drawn as bars. Verified figures:
+
+> 📌 **248,320 is Qwen3.5's vocabulary, which is what §2 runs on.** The app
+> reads it from whichever model is loaded, so it is correct on screen either
+> way — but if you switch models during this section, the figure on your slide
+> is the one that goes stale. SmolLM3 is 128,256; Phi-4-mini 200,064; Gemma 4
+> 262,144.
 
 | Prompt | Result |
 |---|---|
@@ -142,12 +168,43 @@ times from the default builds: *"An appraiser estimates the fair market* →
 **value** → **of** → **a** → **house**".
 
 > ⚠️ **Do not use** `The capital of France is` — measured at only **12.9%** for
-> ` Paris`. It makes the model look ignorant, which is a §4 message, not a §2 one.
+> ` Paris`. It makes the model look ignorant, which is a §5 message, not a §2 one.
+
+### 🎲 The second and third place buttons — a free run at *temperature*
+
+Next to the winner are **② Take 2nd place** and **③ Take 3rd place**. They are
+the cheapest explanation of temperature in the whole talk, because the room
+watches *you* make the choice a sampler makes at random.
+
+From `Location, location,` the three candidates are ` location` **81.1%**,
+` and` **4.7%**, ` Location` **0.8%**. Press **②** and the sentence becomes
+*"Location, location, **and**"*, which then continues *"and location"* — a
+visibly different road from the same weights.
+
+**What to say:** *"every demo today takes first place every time — that is why
+you get the same answer twice. Turn that dial up and it starts taking the
+runner-up sometimes. That dial is called temperature."* The expander beneath
+the buttons says the same thing, and names the one line of code (`do_sample=False`)
+that this repo sets everywhere on purpose.
+
+⚠️ **Optional, and skippable.** It costs about twenty seconds and §2 has the
+budget, but if the room is already with you, the winner button alone makes the
+point.
 
 **Tab 3 — 🔁 Generation**
 
 A real appraisal question, streamed with visible token boundaries so the
 connection back to tab 1 is seen rather than asserted.
+
+Two captions land underneath, and the second is the §3 hook:
+
+> ⚡ *The DeLorean needed 1.21 gigawatts to make **one** jump. This made
+> **42 complete passes** through all 0.8B of the model's numbers to write one
+> paragraph — which is why Section 3 cares so much about how big the model is.*
+
+The pass count and the model size are both read live, so the sentence stays
+true if you switch models. 42 passes is typical for the default question at
+120 max tokens.
 
 ### Takeaway
 > ### 💡 "It looked at 248,320 options and picked one. Then it did it again. That's the whole trick."
@@ -157,9 +214,58 @@ connection back to tab 1 is seen rather than asserted.
 
 ---
 
-# 🎛️ §3 — Setting the Time Circuits  *(5 min)*
+# ⚙️ §3 — The DeLorean Engine  *(5 min)*
 
-**`app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py`**, tabs 1–2 · model: `Qwen3.5-4B`
+**`notebooks/03_delorean_engine.ipynb`** · model: whatever you want to try
+
+### ⚠️ No numbered demo, and that is the point
+Every app in this repository has a **model picker in the sidebar**. The engine
+question — *how big a model do I need, and whose?* — is answered eight times
+over by the demos themselves, so it gets a section and a notebook rather than a
+beat of its own. §3 is a **conversation**, not a stopwatch.
+
+### The job of this section
+It comes third because every demo after it runs on an engine the room has not
+chosen yet. Answer four questions before they are asked:
+
+| The question | The answer this section gives |
+|---|---|
+| How big does it have to be? | **1.86 GB of weights** runs the whole of §9 |
+| Will it fit on what I own? | an 8 GB card is the floor; the table shows what does not fit |
+| Whose model is it? | Apache 2.0 and MIT, no gated licences, nothing phoning home |
+| How do I choose? | four questions, in order — Act 7 |
+
+> 🔒 **"I have never heard of these companies."** The notebook answers this
+> head-on, and it is the objection most likely to come from the room. The
+> reframe: *"Where was this model trained?"* is a reasonable question.
+> *"What can this software reach?"* is the one that actually protects you.
+
+### ⏭️ SPOILER ALERT — the live path stops partway down
+**Acts 2 to 5 travel forward to §9** and re-run that section's ratio study on a
+small model. They are fenced off behind a divider that says so, in-theme, and
+**the live §3 path skips them.** Run Act 1, then jump to **⏪ BACK TO 1985** for
+Acts 6 and 7.
+
+| Divider | Acts | When |
+|---|---|---|
+| 🚦 LIVE DEMO PATH | 1 — what a small model actually cost | **live at §3** |
+| ⏭️ SPOILER ALERT | 2–5 — §9's agent on a smaller engine, where it slips, the 0/6 lesson | after §9, or take-home |
+| ⏪ BACK TO 1985 | 6–7 — the one that did not fit, and choosing one | **live at §3** |
+
+⚠️ **Do not run Act 2 on stage at §3.** The room has not met an agent, a tool
+or a ratio study yet — it is three sections early.
+
+### Takeaway
+> ### 💡 "Do not shop for the smartest model. Shop for the smallest one that passes your own test."
+
+### Timing
+~5 minutes: Act 1, then Acts 6–7. The spoiler block is reading material.
+
+---
+
+# 🎛️ §4 — Setting the Time Circuits  *(5 min)*
+
+**`app/04_05_Time_Circuits_and_Plutonium_local_Streamlit.py`**, tabs 1–2 · model: `Qwen3.5-4B`
 
 ### The header is a prop
 A working DeLorean time-circuit display — three glowing LED rows on black —
@@ -223,7 +329,7 @@ streaming**. The app shows the estimate before you click.
 
 ---
 
-# 🔋 §4 — Running out of Plutonium  *(3 min)*
+# 🔋 §5 — Running out of Plutonium  *(3 min)*
 
 **Same app, tab 3.** This is the section where the outline was wrong and the
 measurement changed the story.
@@ -234,7 +340,7 @@ The outline says *"watch it fail or hallucinate."* **Asked plainly, the model
 refuses — politely and correctly — every single time.** Weather, parcel lookup,
 recent sales, news. All honest declines.
 
-**What actually causes hallucination is the persona from §3.**
+**What actually causes hallucination is the persona from §4.**
 
 ### The demo: ask it both ways
 
@@ -246,7 +352,7 @@ confident expert persona — side by side.
 | | Answer |
 |---|---|
 | 🤖 **No persona** | *"…no actual county by this name… minimum lot sizes are not defined by real-world law."* |
-| 🏛️ **§3 expert persona** | *"**0.25 acres.** Per the County's Zoning Ordinance, any subdivision of an R-1 parcel must result in lots that are at least 0.25 acres in size… will be denied by the Planning Commission."* |
+| 🏛️ **§4 expert persona** | *"**0.25 acres.** Per the County's Zoning Ordinance, any subdivision of an R-1 parcel must result in lots that are at least 0.25 acres in size… will be denied by the Planning Commission."* |
 | ✅ **The truth** | **6,000 sq ft** — `data/policy/parcel_split_and_combination.md`, Policy 4.3 |
 
 Then a **truth-check panel** appears: model claim in red, the county's actual
@@ -276,6 +382,8 @@ Parcel 04-127-3891 — 1955 Hilldale Ct    15,800 sq ft → two lots of 7,900
 - **📊 PRD** — invents *"Property Revenue Distribution"*, and on a second run
   *"Property Reference Date."* Two different wrong expansions of a term everyone
   in that room uses weekly. **Best credibility-puncture for this audience.**
+  The question asks about **a PRD of 1.043**, which is Hilldale's real figure —
+  so you can say *"we will come back to this number in Section 9,"* and then do.
 - **🌦️ Weather** — the honest refusal. Useful contrast: it behaved *well* here.
 
 ### ⚠️ Two things to say out loud
@@ -307,23 +415,37 @@ audit. Both notebook twins report their own result truthfully.
 ### Takeaway
 > ### 💡 "A plausible answer and a correct answer look identical from the outside. The only reason we caught this is that we had the county's real records sitting next to it."
 
+### Closing the app — the hand-off to §6
+Tab 3 now opens by earning its own title, which is worth saying out loud:
+
+> *"The DeLorean needs plutonium to make the jump. Ask this model something
+> outside what it was trained on and it has none — **it cannot get there.**
+> What it does instead is the problem."*
+
+And **the app has a footer under the tabs** that wraps both sections and sets
+up §6 — the one sentence to land is *"the model is not short of intelligence
+here, it is short of **access**."* It closes on:
+
+> 🕰️ *"Roads? Where we're going, we don't need roads."* … but we are going to
+> need some tools.
+
 ### Timing
 ~15 s for both answers plus the truth-check panel.
 
 ---
 
-# 🛹 §6 + 📖 §8 — The Office Assistant  ✅ **APP + NOTEBOOKS BUILT**
+# 🛹 §7 + 📖 §8 — The Office Assistant  ✅ **APP + NOTEBOOKS BUILT**
 
-**`app/04_06_Office_Assistant_local_Streamlit.py`** · model: `Qwen3.5-4B`
-· notebooks: [`04_hoverboard`](notebooks/04_hoverboard_local.ipynb) ·
-[`06_almanac`](notebooks/06_almanac_local.ipynb) *(both with `_api` twins)*
+**`app/07_08_Office_Assistant_local_Streamlit.py`** · model: `Qwen3.5-4B`
+· notebooks: [`07_hoverboard`](notebooks/07_hoverboard_local.ipynb) ·
+[`08_almanac`](notebooks/08_almanac_local.ipynb) *(both with `_api` twins)*
 
-**One app whose toolbelt grows.** §7 sits between the two tabs, so you reopen it.
+**One app whose toolbelt grows.** §9 sits between the two tabs, so you reopen it.
 
 ### 🎛️ The system prompt panel — open it on stage
 
 An expander above both tabs holds the agent's system prompt, live-editable, with
-three presets and its **token count** (a §3 callback: you re-send it every call).
+three presets and its **token count** (a §4 callback: you re-send it every call).
 
 This is not decoration. It is the third demo hiding in this app, and it is
 measured:
@@ -342,10 +464,10 @@ measured:
    value?"* → it **searches the policy manual**, unnecessarily
 3. Hit **🎛️ Front counter (the guardrail)**, ask again → it **answers directly**
 
-> 🎯 *"Section 3 showed you a system prompt changes how it sounds. It also
+> 🎯 *"Section 4 showed you a system prompt changes how it sounds. It also
 > decides when it reaches for the filing cabinet — and when it just answers."*
 
-### 🔍 The raw reveal — §6's demystifying beat
+### 🔍 The raw reveal — §7's demystifying beat
 
 After any run, an expander shows **the literal text the model wrote**:
 
@@ -381,7 +503,7 @@ seconds for a finished diagram.
 **The visible tool list growing from one entry to two is the lesson.** RAG is
 not a separate magic thing — it is another tool the same agent can call.
 
-### §6 — measured round trip
+### §7 — measured round trip
 Reason → Act → Observe → Answer, verified end to end against `cama.db`:
 
 ```
@@ -397,9 +519,9 @@ A: Parcel 04-127-3891 is owned by Biff Tannen and is assessed at $412,500.
 **6.8 seconds** with thinking off. With thinking on it takes **23.8 s** but emits
 a genuine reasoning trace first — *"I have a tool called lookup_parcel… this
 seems like the right tool to use for this query"* — which **is** the Reason step
-§5 puts on a slide. Show it once, then switch it off.
+§6 puts on a slide. Show it once, then switch it off.
 
-### §6 — measured reliability
+### §7 — measured reliability
 
 The tools are hardened against the slips small models actually make, and it is
 measurable. Across ten phrasings of one question, the model picked the right
@@ -411,7 +533,7 @@ On the full 24-question evaluation (`scripts/eval_tools.py`) Qwen3.5-4B scores
 **24/24**, including **6/6 on questions where the right move is to call no tool
 at all** — no reaching for the database because somebody said "good morning."
 
-> 🎯 **Worth saying out loud in §6:** the tool has to be forgiving *because* of
+> 🎯 **Worth saying out loud in §7:** the tool has to be forgiving *because* of
 > §2. The model sees that parcel number as thirteen fragments, so it cannot
 > reassemble it the same way twice. **The robustness is not defensive
 > programming — it is the bill for how these things read.**
@@ -426,7 +548,7 @@ Runs on **CPU** — no GPU needed, which matters because the hosted path assumes
 there isn't one.
 
 **Every passage comes back with `document §section`.** That is the line to hit
-on stage: §4's model invented an ordinance and cited a Planning Commission that
+on stage: §5's model invented an ordinance and cited a Planning Commission that
 does not exist. This one quotes Policy 4.3 of a real document, and anyone in the
 room can open the file and check it.
 
@@ -441,25 +563,25 @@ failure. The single miss:
 
 With **two** tools that category was 6/6; with **three** it is 4/5. Nothing
 broke — but an agent that reaches for a filing cabinet to answer a definition is
-slower and looks less sure of itself. §7 offers five or six tools, so this is
+slower and looks less sure of itself. §9 offers five or six tools, so this is
 worth re-measuring before the dry run.
 
 ### Takeaways
-> ### 🛹 §6: "A tool is just a Python function you gave it permission to call. Our imagination is the only bound."
+> ### 🛹 §7: "A tool is just a Python function you gave it permission to call. Our imagination is the only bound."
 > ### 📖 §8: "RAG isn't magic. It's a tool that reads your filing cabinet — and it's the same agent, with one more tool."
 
 ---
 
-# 🏎️ §7 — Reaching 88 MPH  ✅ **APP + BOTH NOTEBOOKS BUILT**
+# 🏎️ §9 — Reaching 88 MPH  ✅ **APP + BOTH NOTEBOOKS BUILT**
 
-**`app/05_88mph_Valuation_Review_local_Streamlit.py`** · model: `Qwen3.5-4B`
-· notebooks: [`05_88mph_local`](notebooks/05_88mph_local.ipynb) ·
-[`05_88mph_api`](notebooks/05_88mph_api.ipynb)
+**`app/09_88mph_Valuation_Review_local_Streamlit.py`** · model: `Qwen3.5-4B`
+· notebooks: [`09_88mph_local`](notebooks/09_88mph_local.ipynb) ·
+[`09_88mph_api`](notebooks/09_88mph_api.ipynb)
 
 **The longest section in the talk and the core IAAO payload.** Everything
 before this earns the right to show it; everything after it is a variation.
 
-**Start this app during the §7 intro slides.** Only one app can run at a time —
+**Start this app during the §9 intro slides.** Only one app can run at a time —
 two model copies will not fit on an 8 GB card — and a cold start takes about
 **15 seconds**. Stop the office-assistant app first, start this one while you
 are still talking, and it is warm by the time you turn to it.
@@ -486,7 +608,7 @@ SQL — visibly, checkably. The statistics are never its job.
 | **Sidebar** | The three tools, the system prompt, the whole schema the model is shown, and the GPU it is running on. |
 
 **This app deliberately leads with the finding, not the machinery** — that is
-what separates it from §6/§8, where the loop *is* the show. The trace runs live
+what separates it from §7/§8, where the loop *is* the show. The trace runs live
 while it works, then folds itself away when the answer lands.
 
 ---
@@ -603,7 +725,7 @@ the query."*
 | **Recall** (called the right tool when it needed one) | **6/6** |
 | **Restraint** (answered directly when it should) | **4/4** |
 
-**Restraint held at three tools** — the count that broke it in §6 — because of
+**Restraint held at three tools** — the count that broke it in §7 — because of
 the guardrail prompt. Zero unnecessary tool calls on *"good morning"*, *"what
 does COD stand for"*, *"market value versus assessed value"* and *"why a median
 instead of an average"*.
@@ -614,7 +736,7 @@ Adding one clause — *"keep every answer to three sentences; the figures are
 already on screen"* — took question ② from **39 seconds to 12**. Same tools,
 same answer, same accuracy.
 
-🎤 *"Section 3 was not a party trick. That prompt is doing three jobs here: it
+🎤 *"Section 4 was not a party trick. That prompt is doing three jobs here: it
 stops it reaching for a database to answer a definition, it stops it inventing
 statistics, and it made this demo twice as fast."*
 
@@ -639,8 +761,8 @@ to a whole number first, and it returns this — sorted, totalled, confident:
 🎤 *"It assessed thirty-two properties at nothing at all, and handed me a tidy
 table about it. That is why the statistics are not in the prompt."*
 
-⚠️ **This is a real failure and it is not on the live path deliberately.** §4
-already spent three minutes on "you cannot trust it bare." §7 is the payoff
+⚠️ **This is a real failure and it is not on the live path deliberately.** §5
+already spent three minutes on "you cannot trust it bare." §9 is the payoff
 section and should feel like power. Keep this in your pocket for Q&A.
 
 ---
@@ -672,12 +794,12 @@ three IAAO tests have quietly ceased to exist.
 > more money. It is a *domain-knowledge* failure, and domain knowledge has
 > to live somewhere the model cannot get it wrong.
 
-**§7 is the first demo whose twins agree**, and that is the point: §4 and §6
+**§9 is the first demo whose twins agree**, and that is the point: §5 and §7
 both ended with the two models behaving differently, but here `ratio_study`
 computed the numbers either way. Verified mechanically — the two notebooks
 differ in exactly **one code cell**.
 
-🎤 *"That is the argument for §9 before we get there: a small model is not worse
+🎤 *"That is the argument for §3 before we get there: a small model is not worse
 at arithmetic it never does."*
 
 ---
@@ -703,22 +825,22 @@ tensors on the GPU** if anyone wants to check.
 | If | Then |
 |---|---|
 | A question hangs or the model misbehaves | Press the button again — it is deterministic, and each question is independent. |
-| The app will not start | The notebooks are committed **with outputs**. Open `05_88mph_local.ipynb` and narrate from the saved run — every number in this section is in there. |
+| The app will not start | The notebooks are committed **with outputs**. Open `09_88mph_local.ipynb` and narrate from the saved run — every number in this section is in there. |
 | The GPU is out of memory | The office-assistant app is probably still running. Stop it; only one app fits at a time. |
 | Somebody asks for a slice you have not tried | The free-text box takes anything the tools can express. *Homes built after 1980* and *the five highest value parcels* are both verified working. |
 
 ---
 
 ### Takeaway
-> ### 🏎️ §7: "The county passed every standard while half its neighborhoods failed. One number was never going to tell you that — and the assistant found it in eleven seconds, on a laptop, without sending your roll anywhere."
+> ### 🏎️ §9: "The county passed every standard while half its neighborhoods failed. One number was never going to tell you that — and the assistant found it in eleven seconds, on a laptop, without sending your roll anywhere."
 
 ---
 
 # 🔌 §10 — The Universal Adapter  ✅ **APP + BOTH NOTEBOOKS BUILT**
 
-**`app/08_09_Universal_Adapter_local_Streamlit.py`** · model: `Qwen3.5-4B`
-· notebooks: [`08_universal_adapter_local`](notebooks/08_universal_adapter_local.ipynb) ·
-[`08_universal_adapter_api`](notebooks/08_universal_adapter_api.ipynb)
+**`app/10_Universal_Adapter_local_Streamlit.py`** · model: `Qwen3.5-4B`
+· notebooks: [`10_universal_adapter_local`](notebooks/10_universal_adapter_local.ipynb) ·
+[`10_universal_adapter_api`](notebooks/10_universal_adapter_api.ipynb)
 
 **The finale, and the only section where the architecture diagram IS the demo.**
 Two live demos live in this one app.
@@ -729,7 +851,7 @@ Two live demos live in this one app.
 
 > ### The tool did not get easier to write. It stopped being ours to write.
 
-Section 6 cost us a function **and** a hand-written schema, per tool, forever.
+Section 7 cost us a function **and** a hand-written schema, per tool, forever.
 Here three programs describe themselves and the agent assembles its own
 toolbelt. **Nothing in this repository describes any of their tools.**
 
@@ -791,7 +913,7 @@ studies.
 
 ---
 
-## 🔴 The money visual — Section 7, revisited
+## 🔴 The money visual — Section 9, revisited
 
 The app then measures what that one deed cost, side by side:
 
@@ -821,16 +943,16 @@ at a hearing and one you cannot.
 |---|---|
 | Three servers online | **5.5 s** |
 | App cold start (incl. model) | **~21 s** |
-| Demo 8 · local / hosted | **26 s / 36 s** |
-| Demo 9 · local / hosted | **15 s / 3 s** |
+| Demo 7 · local / hosted | **26 s / 36 s** |
+| Demo 8 · local / hosted | **15 s / 3 s** |
 | Sources consulted | **4 of 4**, both models |
 | Reproducibility | byte-identical across runs (greedy decoding) |
 | Robustness | 5 of 5 phrasings reach the right verdict — by address, as a taxpayer, with a mangled parcel number |
 | App test | `scripts/test_app_adapter.py` — **ALL PASS**, 103 s |
 
-### ⚠️ The capability ceiling — and it sits between §7 and §10
+### ⚠️ The capability ceiling — and it sits between §9 and §10
 
-**SmolLM3-3B runs the whole of Section 7 and cannot do this.** Measured on the
+**SmolLM3-3B runs the whole of Section 9 and cannot do this.** Measured on the
 same question: **1 office of 4**, and with the guided prompt it answered from
 memory and **invented a policy structure that does not exist**.
 
@@ -839,14 +961,14 @@ memory and **invented a policy structure that does not exist**.
 > where the money goes — and it is worth knowing which half of the job needs
 > it."*
 
-Use this if anyone asks whether §9's "run it on a 3B" claim covers everything.
+Use this if anyone asks whether §3's "run it on a 3B" claim covers everything.
 It does not, and saying so is worth more than the claim.
 
 ---
 
 ## 🔀 The twins converge, for a NEW reason
 
-Section 7's twins agreed because the **statistics** were in a tool. Section
+Section 9's twins agreed because the **statistics** were in a tool. Section
 10's agree because the **facts** are in three servers. Same principle, one
 layer up — and the two notebooks differ in **exactly one code cell and one
 markdown cell**, the tightest pair in the repository.
@@ -867,7 +989,7 @@ satisfy this requirement"*. Same verdict, same figures.
 | If | Then |
 |---|---|
 | An office panel says **✕ did not answer** | That server died. The agent keeps going and says which office it could not reach — narrate that, it is the honest failure mode and it is designed in. |
-| The app will not start | Notebooks are committed **with outputs**. Open `08_universal_adapter_local.ipynb` and narrate from the saved run. |
+| The app will not start | Notebooks are committed **with outputs**. Open `10_universal_adapter_local.ipynb` and narrate from the saved run. |
 | The GPU is full | Another app is probably still up — only one fits. **And check for orphaned servers**: `nvidia-smi --query-gpu=memory.used --format=csv` should read ~1.1 GB idle. |
 | You Ctrl-C'd the app and restarted | Three MCP servers may still be running. Check with `nvidia-smi --query-gpu=memory.used --format=csv` — idle should read about 1.1 GB. |
 | Somebody asks a question you have not tried | The free-text box takes anything the three offices can answer. *"Who owns 1955 Hilldale Ct and do they owe anything?"* is verified working. |
@@ -875,19 +997,19 @@ satisfy this requirement"*. Same verdict, same figures.
 ---
 
 ### Takeaways
-> ### 🔌 §10 Demo 8: "A taxpayer asked a question no single office could answer, and got a correct, sourced, citable answer in twenty-five seconds — from three systems that have never been integrated, on a machine under a desk."
-> ### 🔌 §10 Demo 9: "Your sales file is a photograph of a filing cabinet that has since been rearranged. This is how you find out before the hearing does."
+> ### 🔌 §10 Demo 7: "A taxpayer asked a question no single office could answer, and got a correct, sourced, citable answer in twenty-five seconds — from three systems that have never been integrated, on a machine under a desk."
+> ### 🔌 §10 Demo 8: "Your sales file is a photograph of a filing cabinet that has since been rearranged. This is how you find out before the hearing does."
 
 ---
 
-# 📊 §11 — Putting a Bow On It  *(5 min)*
+# 🎈 §11 — Your Future Hasn't Been Written Yet  *(15 min)*
 
 **No new artifact, and that is deliberate.** Decided 2026-08-25.
 
 The outline asks for *"a small Streamlit app running the Mass Valuation Agent…
-a clean, ChatGPT-like interface."* That is Section 7's engine with a different
+a clean, ChatGPT-like interface."* That is Section 9's engine with a different
 face — it was always a reprise, not a new product. Building a third app to
-follow §7 and §10 would end the talk on a **smaller** demo than the two before
+follow §9 and §10 would end the talk on a **smaller** demo than the two before
 it, which is the wrong shape.
 
 So §11 spends its five minutes on the thing the presenters care most about:
@@ -895,7 +1017,7 @@ So §11 spends its five minutes on the thing the presenters care most about:
 
 ### What is on screen
 
-Reopen **either** finished app with the machinery collapsed — §7 for a single
+Reopen **either** finished app with the machinery collapsed — §9 for a single
 office, §10 for the cross-office one — and let it sit there answering a
 question while you talk over it. Then the repository itself.
 
@@ -907,7 +1029,7 @@ question while you talk over it. Then the repository itself.
    `scripts/check_setup.py` tells you whether your machine can do it.
 3. **"Take it home."** 15 notebooks, 5 apps, three MCP servers, and a county
    of synthetic data that is safe to show anybody.
-4. **The four questions for choosing a model** — `07_delorean_smol.ipynb`.
+4. **The four questions for choosing a model** — `03_delorean_engine.ipynb`.
 
 ### Takeaway
 > ### 📊 §11: "Everything you watched today runs on a machine somebody in your office already owns, on data that never left the building. The hard part was never the technology. It was deciding to start."
@@ -924,13 +1046,17 @@ it should follow this.
 | § | What happens to it |
 |---|---|
 | **2** | Chopped into **13 tokens** on screen. "The model sees fragments, not an identifier." |
-| **2** | Its assessed value, `$412,500`, is the number the model fumbles arithmetic on |
-| **4** | The model invents a zoning rule that would **deny** its split |
-| **4** | Invents comps for its street that do not exist |
-| **6** | The agent **looks it up correctly** — Biff Tannen, $412,500 |
-| **7** | Its neighborhood, **Hilldale, fails the equity test** — the roll is regressive around it. *("Who owns 04-127-3891?" is a one-click probe in the app)* |
+| **5** | The model invents a zoning rule that would **deny** its split |
+| **5** | Invents comps for its street that do not exist |
+| **7** | The agent **looks it up correctly** — Biff Tannen, $412,500 |
 | **8** | The agent reads the policy manual and gets the lot rule **right** |
+| **9** | Its neighborhood, **Hilldale, fails the equity test** — the roll is regressive around it. *("Who owns 04-127-3891?" is a one-click probe in the app)* |
 | **10** | Three county systems + the policy → **"May Biff split this parcel?"** — answered in **26 seconds** |
+
+📎 **Also, off the live path:** its assessed value `$412,500` is the number the
+model fumbles arithmetic on — it says 17% of it is 68,125 when the answer is
+70,125, **exactly $2,000 out**. That lives in §2's notebook *explore* section,
+not on stage, so do not promise it from the podium.
 
 The §10 answer, measured: lot size ✅ **15,800 sq ft, halves to 7,900 against a
 6,000 minimum** · ownership ✅ **Biff is grantee on the 2025 warranty deed** ·
@@ -938,9 +1064,10 @@ taxes ❌ **$8,432.13 delinquent across two years.** Policy 4.2 blocks it — an
 the same policy says how to cure it: pay in full, reinstate within 90 days, no
 new filing fee. **The assistant can tell the taxpayer that at the counter.**
 
-> **This is why the talk works.** The audience meets a parcel in minute 7, watches
-> a machine lie about it in minute 15, and watches the same machine get it right
-> in minute 45 — because we gave it tools instead of a better personality.
+> **This is why the talk works.** The audience meets a parcel in **minute 7**,
+> watches a machine lie about it in **minute 23**, and watches the same machine
+> get it right in **minute 38** — because we gave it tools instead of a better
+> personality.
 
 ---
 
@@ -950,9 +1077,9 @@ new filing fee. **The assistant can tell the taxpayer that at the counter.**
 |---|---|
 | An app will not start | Open the matching notebook — committed **with outputs**, narrate from the saved result |
 | A cell errors live | Same. The output below it is the real one from this machine |
-| GPU out of memory | Sidebar → **🧹 Free unused memory**, or switch to the tiny model |
+| GPU out of memory | **Switch to the tiny model in the sidebar** — switching releases the model you were using. Close other apps too; desktop software holds 2–3 GB. ⚠️ **🧹 Free unused memory will not help here**: it only hands back blocks PyTorch is holding but not using, and it says so when there are none |
 | Wifi is down | **Nothing on the live path needs internet.** Models are cached locally; Tavily is deliberately off the live path |
-| A model gives a different answer | Say so. Greedy decoding makes it reproducible, but *"it varies"* is itself the §4 lesson |
+| A model gives a different answer | Say so. Greedy decoding makes it reproducible, but *"it varies"* is itself the §5 lesson |
 
 ---
 
@@ -963,14 +1090,14 @@ matching their situation. Same lesson, one differs only in how the model is call
 
 | Notebook | § | Needs |
 |---|---|---|
-| `01_flux_capacitor_{local,api}` | 2 | GPU / API key |
-| `02_time_circuits_{local,api}` | 3 | GPU / API key |
-| `03_plutonium_{local,api}` | 4 | GPU / API key + the county data |
-| `04_hoverboard_{local,api}` | 6 | GPU / API key + the county data |
-| **`05_88mph_{local,api}`** | **7** | GPU / API key + the county data |
-| `06_almanac_{local,api}` | 8 | GPU / API key + the policy corpus |
-| **`07_delorean_smol`** | **9** | GPU only — **1.86 GB** of weights, no API key, local only |
-| **`08_universal_adapter_{local,api}`** | **10** | GPU / API key + all three county databases |
+| `02_flux_capacitor_{local,api}` | 2 | GPU / API key |
+| `04_time_circuits_{local,api}` | 3 | GPU / API key |
+| `05_plutonium_{local,api}` | 4 | GPU / API key + the county data |
+| `07_hoverboard_{local,api}` | 6 | GPU / API key + the county data |
+| **`09_88mph_{local,api}`** | **7** | GPU / API key + the county data |
+| `08_almanac_{local,api}` | 8 | GPU / API key + the policy corpus |
+| **`03_delorean_engine`** | **9** | GPU only — **1.86 GB** of weights, no API key, local only |
+| **`10_universal_adapter_{local,api}`** | **10** | GPU / API key + all three county databases |
 
-Point the audience here in §12. **This repo is the answer to "but how did you
+Point the audience here in §11. **This repo is the answer to "but how did you
 do that?"** — which is the reason it exists.

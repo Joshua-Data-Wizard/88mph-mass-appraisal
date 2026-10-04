@@ -1,9 +1,9 @@
 """
 ratio.py — the IAAO ratio study, in about a hundred lines of arithmetic.
 
-This is the heart of Section 7, and it deliberately contains no model, no
+This is the heart of Section 9, and it deliberately contains no model, no
 agent and no database. It takes sales, it returns statistics, and every number
-in it can be checked by hand. Everything else in Section 7 — the tool the
+in it can be checked by hand. Everything else in Section 9 — the tool the
 agent calls, the scorecard the app draws, the notebook's tables — reads from
 here, so there is exactly one place the maths can be wrong.
 
@@ -30,7 +30,7 @@ appraiser three genuinely different afternoons of work.
 
 The one that catches people: **the median, not the average.** A handful of odd
 sales drag an average around; the median barely moves. Every number here that
-could be either is the median on purpose, and Section 7 makes a point of it,
+could be either is the median on purpose, and Section 9 makes a point of it,
 because a language model asked to do this in SQL reaches for AVG() every time.
 
 ALL OF THIS DATA IS SYNTHETIC. See data/README.md.
@@ -100,7 +100,7 @@ STANDARDS: dict[str, dict[str, Any]] = {
 #:
 #: It stays off the scorecard for a teaching reason, not a statistical one.
 #: Graded, PRB fails in three of six neighborhoods -- including two that pass
-#: PRD -- and every neighborhood ends up failing two tests. Section 7 rests on
+#: PRD -- and every neighborhood ends up failing two tests. Section 9 rests on
 #: each troubled neighborhood failing exactly ONE test, so an appraiser can see
 #: three distinct problems needing three distinct fixes. A fourth grade blurs
 #: that into noise.
@@ -238,7 +238,7 @@ def ratio_stats(sales: "pd.DataFrame", *,
     column, if present, is honoured.
 
     Returns a plain dictionary rather than an object, because this result is
-    JSON-encoded straight back into a language model's context in Section 7.
+    JSON-encoded straight back into a language model's context in Section 9.
     It has to read well to something that has never seen this codebase.
 
     Non-arm's length sales are dropped BY DEFAULT and the count is reported.
@@ -364,7 +364,7 @@ def ratio_by_group(sales: "pd.DataFrame", group_by: str, *,
                    arms_length_only: bool = True) -> "pd.DataFrame":
     """Run a separate ratio study for each value of `group_by`.
 
-    This is the function behind Section 7's whole point. Run the county as one
+    This is the function behind Section 9's whole point. Run the county as one
     lump and Hill Valley looks healthy. Run it grouped by neighborhood and
     three of the six fail -- each one a different test.
 

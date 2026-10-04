@@ -116,7 +116,7 @@ def tool(*, name: str, description: str, parameters: dict,
 def schemas(names: list[str] | None = None) -> list[dict]:
     """Tool definitions to hand the model.
 
-    Pass `names` to expose only some of them. Section 6 gives the agent exactly
+    Pass `names` to expose only some of them. Section 7 gives the agent exactly
     one tool on the live path, because watching it choose between five is a
     different lesson than watching it use one.
     """
@@ -432,7 +432,7 @@ def strip_tool_calls(text: str) -> str:
     # Shape D, and then everything from the point Gemma starts inventing its
     # own tool RESPONSE. Measured: it emits <|tool_response> straight after the
     # call and, left alone, writes a plausible result for a tool that has not
-    # run yet. That text must never reach a user -- it is Section 4 wearing a
+    # run yet. That text must never reach a user -- it is Section 5 wearing a
     # tool call's clothes.
     cleaned = re.sub(r"<\|tool_call>.*?<tool_call\|>", "", cleaned, flags=re.S)
     cleaned = re.sub(r"<\|tool_call>.*", "", cleaned, flags=re.S)

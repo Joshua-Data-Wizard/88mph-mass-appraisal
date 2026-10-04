@@ -1,14 +1,14 @@
 """
-The Universal Adapter   ·   Section 10, Live Demos 8 and 9
+The Universal Adapter   ·   Section 10, Live Demos 7 and 8
 
-    uv run streamlit run app/08_09_Universal_Adapter_local_Streamlit.py
+    uv run streamlit run app/10_Universal_Adapter_local_Streamlit.py
 
 The finale. Three county offices, three separate programs, one question that
 none of them can answer alone.
 
 WHAT MAKES THIS DIFFERENT FROM EVERY APP BEFORE IT
 --------------------------------------------------
-Section 6 built a tool: we wrote a Python function, hand-wrote a JSON schema
+Section 7 built a tool: we wrote a Python function, hand-wrote a JSON schema
 describing it, and handed both to the model. Two pieces of code per tool,
 every time, forever.
 
@@ -16,7 +16,7 @@ Here we wrote neither. Three servers start up, the agent asks each one what it
 can do, and the answers become its toolbelt. Add a fourth office next year and
 nothing in this file changes.
 
-    Section 6    a tool is a function YOU wrote
+    Section 7    a tool is a function YOU wrote
     Section 10   an MCP server is a program SOMEBODY ELSE published
 
 That is the difference between a charger built for one phone and a USB-C
@@ -31,7 +31,7 @@ THE TWO DEMOS
 
     9   "Is our sales file still true?"
         The Appraiser works from a feed pulled on one date. The Clerk kept
-        correcting deeds afterwards. Nobody sends a note. Section 7's ratio
+        correcting deeds afterwards. Nobody sends a note. Section 9's ratio
         study was run on a sale that had already been reclassified.
 
 EVERYTHING HERE IS SYNTHETIC. See data/README.md.
@@ -160,7 +160,7 @@ def render_sync_impact(rows: list[dict]) -> None:
     """What the correction actually costs the ratio study.
 
     The agent finds the problem; this panel measures it. That split is
-    deliberate and it is the same rule Section 7 runs on -- the agent decides
+    deliberate and it is the same rule Section 9 runs on -- the agent decides
     what to ask, and the arithmetic lives somewhere it cannot be got wrong.
     """
     feed = data.sales_feed_df()
@@ -175,7 +175,7 @@ def render_sync_impact(rows: list[dict]) -> None:
         st.caption(
             f"Deed {row.get('instrument_number', '?')} on parcel {parcel} was "
             f"booked as a {row.get('deed_type', '?')} and corrected on "
-            f"{row.get('corrected_on', '?')}. Section 7 studied it as a valid "
+            f"{row.get('corrected_on', '?')}. Section 9 studied it as a valid "
             f"sale. These are the same statistics with and without it."
         )
         stale = feed[feed.neighborhood == hood]
@@ -230,6 +230,29 @@ with st.sidebar:
                                f"({models.REGISTRY[k].params})"))
     spec = models.REGISTRY[model_key]
     st.caption(f"`{spec.hf_id}`")
+
+    # ── Switching models: let go of the old one first ───────────────────────
+    #
+    # Three separate things hold a loaded model, and all three have to let go
+    # or nothing is freed and the card fills up after two or three switches:
+    #
+    #   1. Streamlit's @st.cache_resource    ->  load_model.clear()
+    #      ...and `build`, whose compiled graph closes over the same weights
+    #   2. delorean's own cache, llm._CACHE  ->  llm.unload()
+    #   3. this script's own variables       ->  dropped at the BOTTOM of this
+    #      file, where the comment explains why it cannot be done here
+    #
+    # ⚠️ NAMED caches only. A blanket `st.cache_resource.clear()` would also
+    # drop `connect_offices` WITHOUT calling close() on it, leaving three
+    # orphaned MCP subprocesses holding the GPU. `build.clear()` is safe
+    # because rebuilding the graph calls `connect_offices()` again and gets
+    # the same three servers back from its own cache.
+    previous = st.session_state.get("loaded_model")
+    if previous is not None and previous != model_key:
+        load_model.clear()      # 1
+        build.clear()           # 1 — the graph holds the responder holds the model
+        llm.unload()            # 2 — also collects garbage, empties the CUDA cache
+    st.session_state["loaded_model"] = model_key
 
     if not cached(model_key):
         st.error("**Not on this machine yet.** Choosing this downloads it "
@@ -381,3 +404,24 @@ else:
         "the Appraiser, the Clerk of Courts and the Tax Collector, then read "
         "our own policy manual before it answers.",
         icon="🔌")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Reference 3 of 3 — let go of the weights before this run ends
+#
+#  Streamlit runs this script again on every click, in a brand new namespace
+#  each time, so you would expect the previous run's variables to vanish with
+#  it. They do not: Streamlit keeps THIS run's widget callbacks alive into the
+#  NEXT run, and a Python function carries its whole module namespace with it
+#  in `__globals__`. Every `on_click=` above is therefore still holding this
+#  script -- and the model with it -- at the moment the next run tries to free
+#  the memory. Nothing can release a model that is still reachable.
+#
+#  `graph` goes too: it holds the responder, which holds the weights.
+#  `offices` deliberately does NOT -- the three MCP servers are meant to stay
+#  running, and `connect_offices()`'s own cache is what keeps them.
+#
+#  Full measurements: Plans/vram_model_switching.md.
+# ─────────────────────────────────────────────────────────────────────────────
+
+del graph, loaded, _tok

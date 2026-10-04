@@ -1,13 +1,13 @@
 """
-02_03_Time_Circuits_and_Plutonium_local_Streamlit.py
+04_05_Time_Circuits_and_Plutonium_local_Streamlit.py
 ====================================================
 
-Sections 3 and 4, in one app.
+Sections 4 and 5, in one app.
 
-    uv run streamlit run app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py
+    uv run streamlit run app/04_05_Time_Circuits_and_Plutonium_local_Streamlit.py
 
-    Section 3  "Setting the Time Circuits"    -> tabs 1 and 2
-    Section 4  "Running out of Plutonium"     -> tab 3
+    Section 4  "Setting the Time Circuits"    -> tabs 1 and 2
+    Section 5  "Running out of Plutonium"     -> tab 3
 
 Everything runs on your own machine. No API key, nothing leaves the building.
 
@@ -15,13 +15,13 @@ Why these two sections share one app
 ------------------------------------
 They are not merely adjacent in the outline. They are cause and effect.
 
-Section 3 shows that a system prompt turns a vague, generic model into
+Section 4 shows that a system prompt turns a vague, generic model into
 something that sounds like a 25-year appraiser. That is the good news, and it
 is genuinely useful.
 
-Section 4 shows the bill for it. Asked a question it cannot possibly know, a
+Section 5 shows the bill for it. Asked a question it cannot possibly know, a
 model with NO persona will politely tell you it does not know. Give it the
-confident expert persona from Section 3 and it will invent a specific,
+confident expert persona from Section 4 and it will invent a specific,
 plausible, completely fictional answer instead -- and cite an ordinance that
 does not exist while doing it.
 
@@ -40,8 +40,10 @@ defaults to the 4B. Switch to the small one in the sidebar and watch it happen
 
 from __future__ import annotations
 
+import queue
 import sqlite3
 import sys
+import time
 from pathlib import Path
 from threading import Thread
 
@@ -62,7 +64,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# The default model. Section 3 needs a model that can actually hold a character;
+# The default model. Section 4 needs a model that can actually hold a character;
 # the 0.8B one cannot, which is a finding in itself but a poor default.
 DEFAULT_MODEL = "qwen"
 
@@ -71,9 +73,21 @@ DEFAULT_MODEL = "qwen"
 # quality setting. 90 tokens is roughly 6 seconds per answer.
 ANSWER_TOKENS = 90
 
+# How long to wait for the next token before deciding something has gone wrong.
+# Generous: this is the gap between *consecutive* tokens, and the 4B produces
+# about fourteen a second. See the comment at the streamer for why it exists.
+STREAM_TIMEOUT = 60.0
+
+# Tab 2 tells you how long comparing N personas will take, which means it needs
+# a generation speed. This is only the starting guess -- Qwen3.5-4B at 4-bit on
+# an RTX 3080 -- because the sidebar offers five models and they are not close
+# to each other (the 0.8B is several times quicker). The first real answer
+# replaces it with a measurement of THIS model on THIS machine.
+TOKENS_PER_SEC_FALLBACK = 14.0
+
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  The personas — Section 3's destinations
+#  The personas — Section 4's destinations
 #
 #  Punch one of these into the time circuits and the same question comes back
 #  a completely different answer. That IS the demo.
@@ -120,7 +134,7 @@ DEFAULT_QUESTION = QUESTIONS[0]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  The probes — Section 4's questions it cannot possibly know
+#  The probes — Section 5's questions it cannot possibly know
 #
 #  Each of these was tested against this model before it went in here. The
 #  `truth` is not an opinion: it comes out of data/policy/ or out of one of the
@@ -163,14 +177,25 @@ PROBES: dict[str, dict] = {
     },
 
     "📊 What does PRD stand for?": {
+        # ⚠️ 1.043 on purpose, and it must stay matched to §9.
+        #
+        # Hilldale has two true PRDs depending on how you stratify:
+        #   all arms-length sales (50)  -> 1.043   <- what §9's agent computes
+        #   residential R01/R02 (47)    -> 1.042   <- IAAO's stratification
+        # Both are correct. §9 does not filter by property class, so 1.043 is
+        # the figure the room sees later, and this probe says §9 will find it.
+        # Do not "correct" this to 1.042 without changing §9 too. It read
+        # 1.041 until 2026-10-04, which matched neither -- it was a figure that
+        # moved when the data was last regenerated and never got re-read.
         "question": (
             "In a ratio study, what does PRD stand for and what does a PRD of "
-            "1.041 tell you?"
+            "1.043 tell you?"
         ),
         "truth": (
             "Price Related Differential. Above 1.03 is regressive: lower-value "
             "properties are assessed at a higher percentage of value than "
-            "higher-value ones. 1.041 fails the IAAO standard."
+            "higher-value ones. 1.043 fails the IAAO standard — and it is "
+            "Hilldale's actual figure, which Section 9 finds for itself."
         ),
         "source": "data/policy/ratio_study_standards.md — Policy 9.4",
         "consequence": (
@@ -206,7 +231,7 @@ PROBES: dict[str, dict] = {
         "consequence": (
             "Here the model behaves <b>well</b>: it tells you it cannot know. That "
             "is the honest failure, and it is still a failure — a polite refusal "
-            "gets an appraiser exactly as far as a wrong answer does. Section 6 "
+            "gets an appraiser exactly as far as a wrong answer does. Section 7 "
             "hands it its first real tool, and questions it refused here start "
             "coming back answered."
         ),
@@ -287,8 +312,16 @@ def stream_answer(model, tokenizer, system: str, question: str,
     text = llm.chat_prompt(tokenizer, messages)
     inputs = tokenizer(text, return_tensors="pt").to(model.device)
 
+    # ⚠️ `timeout` is not optional. Without it the queue read below blocks
+    # FOREVER. generate() runs on the thread further down, and if it raises --
+    # an out-of-memory error from a long prompt, a CUDA fault -- nothing ever
+    # calls `streamer.end()`. The loop then waits for a token that will never
+    # arrive, with no error on screen, and the only way out is restarting the
+    # server. In front of a room that is the worst failure available, so we
+    # give up after a while and say so instead.
     streamer = TextIteratorStreamer(
-        tokenizer, skip_prompt=True, skip_special_tokens=True
+        tokenizer, skip_prompt=True, skip_special_tokens=True,
+        timeout=STREAM_TIMEOUT,
     )
 
     kwargs = dict(
@@ -307,17 +340,45 @@ def stream_answer(model, tokenizer, system: str, question: str,
         with torch.no_grad():
             model.generate(**kwargs)
 
-    thread = Thread(target=generate)
+    # `daemon=True` matters now that the join below is bounded: a generation
+    # that has wedged must never be able to stop the interpreter exiting while
+    # still holding the graphics card.
+    thread = Thread(target=generate, daemon=True)
     thread.start()
 
     parts: list[str] = []
-    for chunk in streamer:
-        parts.append(chunk)
-        render("".join(parts), False)
-    thread.join()
+    stalled = False
+    started = time.time()
+    try:
+        for chunk in streamer:
+            parts.append(chunk)
+            render("".join(parts), False)
+    except queue.Empty:
+        stalled = True
+    elapsed = time.time() - started
+
+    # Remember how fast this model actually is, so tab 2's "roughly N seconds"
+    # stops being a guess after the first answer. The streamer yields one piece
+    # per token in practice, which is close enough to call tokens per second.
+    if not stalled and len(parts) > 5 and elapsed > 0.2:
+        st.session_state[f"tok_per_sec_{st.session_state.get('loaded_model')}"] = (
+            len(parts) / elapsed)
+
+    # By here the thread has either finished or died. Never wait on it without
+    # a limit -- that would reintroduce the hang the timeout exists to prevent.
+    thread.join(timeout=5)
 
     answer = "".join(parts).strip()
     render(answer, True)
+
+    if stalled:
+        st.error(
+            f"The model stopped producing text for {STREAM_TIMEOUT:.0f} seconds, "
+            f"so this gave up rather than freezing. The usual cause is a very long "
+            f"prompt filling the graphics card — shorten it, or switch to a "
+            f"smaller model in the sidebar.",
+            icon="⏱️",
+        )
     return answer
 
 
@@ -379,7 +440,12 @@ def comps_truth() -> str:
             f"  {addr[r['parcel_id']]} — ${r['sale_price']:,} on {r['recorded_date']}"
         )
 
-    lines += ["", f"Parcels addressed on Hilldale Ct anywhere in the county: "
+    # `street_addrs` is a SET, so this is distinct addresses, not parcels --
+    # there are 87 parcels on Hilldale Ct but only 84 different addresses, and
+    # calling 84 a parcel count would be wrong by three on screen. Distinct
+    # addresses is also the number that matters here: the question is whether
+    # the address the model invented exists at all.
+    lines += ["", f"Distinct addresses on Hilldale Ct anywhere in the county: "
                   f"{len(street_addrs)}."]
     invented = [a for a in ("1952 Hilldale Ct", "1948 Hilldale Ct")
                 if a not in street_addrs]
@@ -415,7 +481,7 @@ st.session_state.setdefault("probe_results", None)
 
 with st.sidebar:
     st.markdown("## 🎛️ Time Circuits")
-    st.caption("Sections 3 & 4 — prompting, and where it breaks")
+    st.caption("Sections 4 & 5 — prompting, and where it breaks")
     st.divider()
 
     keys = models.selectable()
@@ -450,18 +516,39 @@ with st.sidebar:
     if status:
         free_gb, total_gb = status
         st.metric("GPU memory free", f"{free_gb:.1f} GB", f"of {total_gb:.0f} GB")
+
+        # This button used to call empty_cache() and say nothing, which made it
+        # look broken: in the situation a presenter reaches for it, it has
+        # nothing to hand back and appears to do nothing at all. Now it reports
+        # what actually happened, which is the honest and more interesting
+        # answer -- PyTorch holds blocks it is not using, and those are the only
+        # thing this button can return.
         if st.button("🧹 Free unused memory", use_container_width=True):
             import torch
 
+            before = torch.cuda.memory_reserved()
             torch.cuda.empty_cache()
+            st.session_state["freed_gb"] = (
+                before - torch.cuda.memory_reserved()) / 1024**3
             st.rerun()
+
+        freed = st.session_state.pop("freed_gb", None)
+        if freed is not None:
+            st.caption(
+                f"Returned **{freed:.2f} GB** of blocks PyTorch was holding "
+                "but not using."
+                if freed > 0.01 else
+                "Nothing to return — PyTorch is using every block it holds. "
+                "This button cannot unload a model; **switching models** is "
+                "what does that."
+            )
     else:
         st.warning("No GPU found — this will run on the CPU and be slower.", icon="🐢")
 
     st.divider()
     st.caption(
         "Notebook versions of both demos are in `notebooks/` "
-        "(`02_time_circuits`, `03_plutonium`) and go deeper."
+        "(`04_time_circuits`, `05_plutonium`) and go deeper."
     )
 
 
@@ -477,6 +564,28 @@ st.markdown(
     "that one call. Punch in a different destination and the same question "
     "comes back a fundamentally different answer."
 )
+
+# ── Switching models: let go of the old one before loading the new one ──────
+#
+# Picking a different model in the sidebar used to load the new one WITHOUT
+# releasing the old, so two or three switches filled the card and the next
+# answer died with an out-of-memory error.
+#
+# THREE separate things hold a loaded model, and all three have to let go:
+#
+#   1. Streamlit's @st.cache_resource     ->  load_model.clear()
+#   2. delorean's own cache, llm._CACHE   ->  llm.unload()
+#   3. this script's own `model` variable ->  dropped at the BOTTOM of this
+#      file, and the comment there explains why it cannot be done here
+#
+# Measured on an RTX 3080: with 1 and 2 only, a switch leaves 2.90 GB still
+# allocated and both models sit on the card at once. With all three, memory
+# holds steady at one model however many times you switch.
+previous = st.session_state.get("loaded_model")
+if previous is not None and previous != choice:
+    load_model.clear()      # 1
+    llm.unload()            # 2 — also collects garbage and empties the CUDA cache
+st.session_state["loaded_model"] = choice
 
 with st.spinner(f"Loading {spec.label} …"):
     model, tokenizer = load_model(choice)
@@ -511,9 +620,9 @@ st.html(
 )
 
 tab1, tab2, tab3 = st.tabs([
-    "🎛️  §3 · Punch In a Destination",
-    "⚖️  §3 · Side by Side",
-    "🔋  §4 · Running Out of Plutonium",
+    "🎛️  §4 · Punch In a Destination",
+    "⚖️  §4 · Side by Side",
+    "🔋  §5 · Running Out of Plutonium",
 ])
 
 
@@ -582,10 +691,17 @@ with tab1:
         accent = viz.PERSONA_COLORS[list(PERSONAS).index(name) % len(viz.PERSONA_COLORS)] \
             if name in PERSONAS else viz.PERSONA_COLORS[0]
 
+        # The card's heading uses the same label as the DESTINATION TIME row,
+        # not the raw preset name. Once you hand-edit the prompt, the preset
+        # name is no longer true, and `destination_label()` says so -- a card
+        # headed "🏛️ Senior appraiser" above an edited prompt is the exact
+        # confidently-wrong display that function exists to prevent.
+        card_title = destination_label()
+
         def render(text: str, done: bool) -> None:
             placeholder.html(
                 viz.persona_card_html(
-                    name, text,
+                    card_title, text,
                     system_prompt=st.session_state["system_text"],
                     accent=accent, pending=not done,
                 )
@@ -644,11 +760,20 @@ with tab2:
     )
 
     if picked:
-        # ~14 tokens/sec measured on the 4B at 4-bit on an RTX 3080.
-        seconds = len(picked) * st.session_state["answer_tokens"] / 14
+        rate = st.session_state.get(f"tok_per_sec_{choice}")
+        seconds = (len(picked) * st.session_state["answer_tokens"]
+                   / (rate or TOKENS_PER_SEC_FALLBACK))
+        how = (
+            f"measured — this model does about **{rate:.0f} tokens a second** on "
+            f"this machine"
+            if rate else
+            f"estimated at {TOKENS_PER_SEC_FALLBACK:.0f} tokens a second; ask "
+            f"one question and this becomes a real measurement"
+        )
         st.caption(
             f"{len(picked)} persona{'s' if len(picked) != 1 else ''} · "
-            f"roughly **{seconds:.0f} seconds** of generation, one after another."
+            f"roughly **{seconds:.0f} seconds** of generation, one after "
+            f"another. _({how}.)_"
         )
     if len(picked) > 4:
         st.warning(
@@ -667,13 +792,13 @@ with tab2:
                 placeholders[name].html(
                     viz.persona_card_html(
                         name, "", system_prompt=PERSONAS[name],
-                        accent=viz.PERSONA_COLORS[list(PERSONAS).index(name) % 5],
+                        accent=viz.PERSONA_COLORS[list(PERSONAS).index(name) % len(viz.PERSONA_COLORS)],
                         pending=True,
                     )
                 )
 
         for name in picked:
-            accent = viz.PERSONA_COLORS[list(PERSONAS).index(name) % 5]
+            accent = viz.PERSONA_COLORS[list(PERSONAS).index(name) % len(viz.PERSONA_COLORS)]
             slot = placeholders[name]
 
             def render(text: str, done: bool, _n=name, _a=accent, _s=slot) -> None:
@@ -698,16 +823,19 @@ with tab2:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  Tab 3 — Section 4, where it runs out of plutonium
+#  Tab 3 — Section 5, where it runs out of plutonium
 # ─────────────────────────────────────────────────────────────────────────────
 
 with tab3:
     st.subheader("Now ask it something it cannot possibly know.")
     st.markdown(
+        "The DeLorean needs plutonium to make the jump. Ask this model "
+        "something outside what it was trained on and it has none — "
+        "**it cannot get there.** What it does instead is the problem.\n\n"
         "Here is the part that surprises people. Ask a bare model a question "
         "outside what it was trained on and it will usually **tell you it does "
         "not know** — which is correct, honest, and useless.\n\n"
-        "Then give it the confident expert persona from Section 3 and ask the "
+        "Then give it the confident expert persona from Section 4 and ask the "
         "**same question again.**"
     )
 
@@ -786,9 +914,9 @@ with tab3:
         )
 
         st.success(
-            "**That is the whole problem, and it is fixable.** Section 5 explains "
-            "how an agent reasons about what it needs. Section 6 hands it real "
-            "tools. Section 7 points those tools at this county's actual data — "
+            "**That is the whole problem, and it is fixable.** Section 6 explains "
+            "how an agent reasons about what it needs. Section 7 hands it real "
+            "tools. Section 9 points those tools at this county's actual data — "
             "and this question gets a real answer.",
             icon="⏭️",
         )
@@ -818,3 +946,57 @@ with tab3:
             "confident right one.\n\n"
             "If it failed every time, you could plan around it."
         )
+
+    # ── The wrap-up, and the hand-off to Section 6 ──────────────────────────
+    #
+    # INSIDE tab 3, not under the whole app. The app covers two sections in
+    # sequence, so a footer below the tab strip would sit there announcing
+    # §5's punchline while the room is still watching §4 build up to it. It
+    # belongs at the end of the story, which is the end of this tab.
+    st.divider()
+    st.markdown(
+        "#### 🎬 That's Sections 4 and 5\n"
+        "**Section 4 — the good news.** A system prompt is not a setting or a "
+        "configuration screen. It is **text, glued to the front of your "
+        "question**, and it turns the same weights into a different colleague. "
+        "That is most of what people mean by *customising* an assistant.\n\n"
+        "**Section 5 — the bill.** The same confident persona will invent an "
+        "ordinance, a filing deadline, or three comparable sales with closing "
+        "dates — and none of it will look like a mistake. **A plausible answer "
+        "and a correct one are indistinguishable from the outside.**\n\n"
+        "The model is not short of intelligence here. It is short of "
+        "**access** — to your roll, your sales file, your policy manual, "
+        "today's date. **That is what Section 6 starts to fix.**"
+    )
+    st.caption(
+        "🕰️ *“Roads? Where we're going, we don't need roads.”* — Dr. Emmett "
+        "Brown … but we are going to need some tools."
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Reference 3 of 3 — let go of the weights before this run ends
+#
+#  This one line is what makes the release at the top of the file work, and it
+#  is the least obvious thing in this app.
+#
+#  Streamlit runs this script again on every click, in a brand new module
+#  namespace each time. You would expect the previous run's `model` variable to
+#  disappear with that namespace -- but Streamlit keeps THIS run's widget
+#  callbacks alive into the NEXT run. It stores them in widget metadata that is
+#  only replaced when each widget re-registers, which happens far below the
+#  release code at the top. And a Python function carries its entire module
+#  namespace with it, in `__globals__`.
+#
+#  So every `on_click=` button above is quietly holding this whole script --
+#  including `model` -- at the exact moment the next run is trying to free it.
+#  No amount of cache clearing or garbage collecting can touch a model that is
+#  still reachable.
+#
+#  Dropping our own two names here means that by the time the next run asks for
+#  the memory back, nothing is holding it. Measured: without this line a switch
+#  frees 0.00 GB and both models sit on the card; with it, the old model is
+#  gone before the new one loads.
+# ─────────────────────────────────────────────────────────────────────────────
+
+del model, tokenizer

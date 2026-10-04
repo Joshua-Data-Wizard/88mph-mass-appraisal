@@ -4,7 +4,7 @@
 >
 > No real parcel, owner, address, sale, or tax account appears anywhere in this
 > repository. The names are drawn from a fictional town in a 1985 film. The
-> coordinates are real Calgary-area coordinates — chosen so the maps in Section 7
+> coordinates are real Calgary-area coordinates — chosen so the maps in Section 9
 > render over actual streets — but **every property sitting on them is fictional**.
 >
 > This is a public repository about property records. It is treated accordingly.
@@ -57,22 +57,54 @@ on GitHub without opening SQLite.
 
 ## 🎯 The flaws are on purpose
 
-**A dataset with no problems in it makes Section 7 pointless.** If every
+**A dataset with no problems in it makes Section 9 pointless.** If every
 neighborhood were assessed perfectly, the ratio study would find nothing and
 there would be no reason for an appraiser to want an assistant.
 
 So each neighborhood is built to fail a *different* IAAO test. These are the
-numbers the generator actually produces — not targets, measured output:
+numbers the generator actually produces — not targets, measured output.
+
+**Qualified residential sales only** — `arms_length = 1` and
+`property_class IN ('R01','R02')` — which is how IAAO stratifies and how
+`verify()` in the generator reports:
 
 | Neighborhood | n | Median | COD | PRD | Built to demonstrate |
 |---|---:|---:|---:|---:|---|
-| Lyon Estates | 40 | 0.947 | 6.06 | 1.000 | ✅ a healthy baseline |
-| Twin Pines Ranch | 28 | 0.935 | 9.60 | 1.005 | ✅ passes |
+| Lyon Estates | 40 | 0.948 | 6.07 | 1.002 | ✅ a healthy baseline |
+| Twin Pines Ranch | 28 | 0.935 | 9.60 | 1.002 | ✅ passes |
 | Eastwood Ravine | 27 | 0.984 | 6.06 | 1.001 | ✅ passes |
-| **Riverside Heights** | 31 | **0.807** | 6.27 | 0.999 | ❌ **LEVEL** — assessed 19% below market |
-| **Courthouse Square** | 29 | 0.938 | **22.20** | 1.022 | ❌ **UNIFORMITY** — inconsistent, COD over 15 |
-| **Hilldale** | 47 | 0.902 | 13.72 | **1.041** | ❌ **EQUITY** — regressive, PRD over 1.03 |
-| **COUNTYWIDE** | 202 | 0.921 | 12.41 | 1.025 | ⚠️ **every measure passes** |
+| **Riverside Heights** | 31 | **0.807** | 6.27 | 1.002 | ❌ **LEVEL** — assessed 19% below market |
+| **Courthouse Square** | 29 | 0.938 | **22.20** | 1.026 | ❌ **UNIFORMITY** — inconsistent, COD over 15 |
+| **Hilldale** | 47 | 0.930 | 13.59 | **1.042** | ❌ **EQUITY** — regressive, PRD over 1.03 |
+| **COUNTYWIDE** | 202 | 0.927 | 12.37 | 1.027 | ⚠️ **every measure passes** |
+
+> ### ⚠️ Section 9 shows slightly different figures, and both are right
+>
+> The §9 agent writes its own SQL and **does not filter by property class** —
+> it is handed the sales feed and asked a question. Across all classes every
+> verdict is identical and the numbers move in the third decimal:
+>
+> | | residential only | all classes |
+> |---|---:|---:|
+> | Hilldale PRD | 1.042 | **1.043** |
+> | Courthouse Square COD | 22.20 | **22.08** |
+> | Countywide *n* | 202 | **210** |
+>
+> **[DEMOS.md](../DEMOS.md) prints the all-classes table**, because that is
+> what the room actually sees on screen. Neither table is wrong — they answer
+> slightly different questions. **If you quote a figure anywhere, say which
+> one it is.** Not doing that is what let a third set of numbers survive in
+> this file until 2026-10-04.
+
+> ### 🔁 Re-verify these rather than trusting them
+>
+> `verify()` in
+> [`scripts/generate_hill_valley_data.py`](../scripts/generate_hill_valley_data.py)
+> prints this exact table on every run. ⚠️ **Anything that changes how often
+> the generator calls `rng` moves every number after it.** That has already
+> happened once — bounding the map scatter shifted Hilldale's median from
+> 0.902 to 0.930 — and this table kept the old figures until somebody
+> re-derived them. **Regenerate, read the output, update the table.**
 
 ### That last row is the whole lesson
 
@@ -84,7 +116,7 @@ Three of its six neighborhoods have real, actionable problems. The errors
 offset each other in aggregate and vanish.
 
 **This is why stratification is mandatory** (Policy 9.5), and it is the finding
-the Section 7 agent is built to surface.
+the Section 9 agent is built to surface.
 
 ### Each failure is a genuinely different problem
 
@@ -104,10 +136,10 @@ the Section 7 agent is built to surface.
 
 | What | How much | Why it is there |
 |---|---|---|
-| Non-arm's-length deeds | 34 of 244 | Quit claims, sheriff's deeds, estate transfers, $1 interfamily gifts. **Section 7 must filter these** before computing anything — Policy 7.3. |
+| Non-arm's-length deeds | 35 of 244 | Quit claims, sheriff's deeds, estate transfers, $1 interfamily gifts. **Section 9 must filter these** before computing anything — Policy 7.3. |
 | Delinquent tax accounts | 37 of 1,200 (3.1%) | Section 10 needs real delinquencies, not just the one hero parcel. |
 | Partial payments | ~3.4% | `status = 'PARTIAL'` — a balance that is not zero but not a full delinquency either. An agent that only checks `status = 'DELINQUENT'` gets the wrong answer. |
-| Commercial + vacant parcels | ~7% | A ratio study is residential-improved only. Mixing classes is a classic beginner error, so the data makes it possible to commit. |
+| Commercial + vacant parcels | 91 of 1,200 (7.6%) | A ratio study is residential-improved only. Mixing classes is a classic beginner error, so the data makes it possible to commit. |
 
 ---
 
@@ -115,8 +147,9 @@ the Section 7 agent is built to surface.
 
 One parcel is hand-built and threads the entire talk.
 
-**Section 2** already showed the audience this exact string being chopped into
-13 tokens — proof that the model sees fragments, not an identifier. **Section 10**
+**Section 2** already showed the audience this parcel being chopped into
+tokens — `04-127-3891` on its own is **11**, and `parcel 04-127-3891` is
+**13** — proof that the model sees fragments, not an identifier. **Section 10**
 then asks whether it can be split. Same parcel, 80 minutes apart.
 
 | System | What it says |
@@ -179,8 +212,8 @@ office would write them:
 | Document | Contains | Used by |
 |---|---|---|
 | [`parcel_split_and_combination.md`](policy/parcel_split_and_combination.md) | **Policy 4.2 — the tax balance rule that blocks Biff's split**, minimum lot sizes, effective dates | §8, §10 |
-| [`sales_qualification.md`](policy/sales_qualification.md) | Which deed types count as arm's length, disqualifying conditions, minimum sample size | §7, §8 |
-| [`ratio_study_standards.md`](policy/ratio_study_standards.md) | COD, PRD and median ratio standards; why stratification is mandatory; corrective action | §7, §8 |
+| [`sales_qualification.md`](policy/sales_qualification.md) | Which deed types count as arm's length, disqualifying conditions, minimum sample size | §9, §8 |
+| [`ratio_study_standards.md`](policy/ratio_study_standards.md) | COD, PRD and median ratio standards; why stratification is mandatory; corrective action | §9, §8 |
 | [`assessment_calendar.md`](policy/assessment_calendar.md) | Assessment date, notice mailing, **the July 25 appeal deadline**, roll certification | §8 |
 
 **Markdown, not PDF** — deliberately. Markdown renders on GitHub, so an attendee

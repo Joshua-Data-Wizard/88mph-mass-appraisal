@@ -5,7 +5,7 @@ This is Section 8, and the point it has to land is this:
 
     RAG is not a different kind of magic. It is a TOOL.
 
-Section 6 gave the agent `lookup_parcel` and it went and read a database.
+Section 7 gave the agent `lookup_parcel` and it went and read a database.
 Section 8 gives the same agent `search_policy` and it goes and reads a filing
 cabinet. Same loop, same agent, one more entry in the tool list. That is the
 whole idea, and building it as an ordinary tool alongside the others is what
@@ -22,7 +22,7 @@ cannot act on an answer it cannot trace. That is not politeness -- Section 10
 depends on it, where the agent has to say *"Policy 4.2 bars the split"* and a
 human has to be able to go and check.
 
-It is also the direct answer to Section 4. There, the model invented an
+It is also the direct answer to Section 5. There, the model invented an
 ordinance and cited a Planning Commission that does not exist. Here it quotes a
 real section of a real document, and you can open the file yourself.
 """

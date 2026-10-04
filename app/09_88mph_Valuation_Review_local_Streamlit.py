@@ -1,7 +1,7 @@
 """
-88 MPH — The Valuation Review Assistant   ·   Section 7, Live Demo 5
+88 MPH — The Valuation Review Assistant   ·   Section 9, Live Demo 6
 
-    uv run streamlit run app/05_88mph_Valuation_Review_local_Streamlit.py
+    uv run streamlit run app/09_88mph_Valuation_Review_local_Streamlit.py
 
 The core IAAO payload, and the longest slot in the talk. An appraiser asks the
 questions they would actually ask on a Monday morning, and an agent running
@@ -11,12 +11,12 @@ WHAT MAKES THIS APP DIFFERENT FROM THE OTHER TWO
 ------------------------------------------------
 Each app in this repository shows a different thing on purpose:
 
-    Section 6/8   the LOOP is the show      -- the trace fills the screen
-    Section 7     the FINDING is the show   -- results fill the screen,
+    Section 7/8   the LOOP is the show      -- the trace fills the screen
+    Section 9     the FINDING is the show   -- results fill the screen,
                   (this one)                   the loop is one click below
     Section 11    only the ANSWER           -- the machinery is gone
 
-By Section 7 the audience has already watched Reason -> Act -> Observe turn.
+By Section 9 the audience has already watched Reason -> Act -> Observe turn.
 Showing it again competes with the thing they came for, which is what the
 agent actually found. So the trace runs live while it works and folds itself
 away when the answer lands.
@@ -64,7 +64,7 @@ st.set_page_config(page_title="88 MPH — Valuation Review",
 DEFAULT_MODEL = "qwen"
 
 #: The live toolbelt. Three, which is the size we have actually measured, and
-#: Section 6's two parcel tools are deliberately NOT here -- `run_sql` does
+#: Section 7's two parcel tools are deliberately NOT here -- `run_sql` does
 #: everything they did. Swap a tool out rather than pile another on.
 TOOLBELT = ("run_sql", "ratio_study", "map_parcels")
 
@@ -276,7 +276,7 @@ st.session_state.setdefault("dial", None)
 
 with st.sidebar:
     st.markdown("## ⚡ 88 MPH")
-    st.caption("Section 7 — the valuation review assistant")
+    st.caption("Section 9 — the valuation review assistant")
     st.divider()
 
     keys = models.selectable()
@@ -289,6 +289,23 @@ with st.sidebar:
     )
     spec = models.REGISTRY[model_key]
     st.caption(f"`{spec.hf_id}`")
+
+    # ── Switching models: let go of the old one first ───────────────────────
+    #
+    # Three separate things hold a loaded model, and all three have to let go
+    # or nothing is freed and the card fills up after two or three switches:
+    #
+    #   1. Streamlit's @st.cache_resource    ->  load_model.clear()
+    #      ...and `build`, whose compiled graph closes over the same weights
+    #   2. delorean's own cache, llm._CACHE  ->  llm.unload()
+    #   3. this script's own variables       ->  dropped at the BOTTOM of this
+    #      file, where the comment explains why it cannot be done here
+    previous = st.session_state.get("loaded_model")
+    if previous is not None and previous != model_key:
+        load_model.clear()      # 1
+        build.clear()           # 1 — the graph holds the responder holds the model
+        llm.unload()            # 2 — also collects garbage, empties the CUDA cache
+    st.session_state["loaded_model"] = model_key
 
     # Picking a model that is not on this machine starts a multi-gigabyte
     # download the moment you press Run, with no progress bar anywhere the
@@ -307,7 +324,7 @@ with st.sidebar:
             "switch back.", icon="⚠️")
 
     # This app is where a blocked model would have done the most damage --
-    # Section 7's prompt is about 1,600 tokens, which is past where Nemotron
+    # Section 9's prompt is about 1,600 tokens, which is past where Nemotron
     # runs out of memory. Explain the absence rather than leaving a gap.
     for missing in models.blocked():
         st.caption(f"⚠️ **{missing.label}** is not offered — {missing.blocked_reason}")
@@ -513,3 +530,22 @@ else:
         "Press **1️⃣ How did the county do?** to begin. The agent will write "
         "its own SQL, run the IAAO ratio study, and report back.",
         icon="⚡")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Reference 3 of 3 — let go of the weights before this run ends
+#
+#  Streamlit runs this script again on every click, in a brand new namespace
+#  each time, so you would expect the previous run's variables to vanish with
+#  it. They do not: Streamlit keeps THIS run's widget callbacks alive into the
+#  NEXT run, and a Python function carries its whole module namespace with it
+#  in `__globals__`. Every `on_click=` above is therefore still holding this
+#  script -- and the model with it -- at the moment the next run tries to free
+#  the memory. Nothing can release a model that is still reachable.
+#
+#  Dropping our own names here is what makes the release in the sidebar work.
+#  Measured: without it a switch frees nothing and both models sit on the card.
+#  Full measurements: Plans/vram_model_switching.md.
+# ─────────────────────────────────────────────────────────────────────────────
+
+del loaded_model, _tok

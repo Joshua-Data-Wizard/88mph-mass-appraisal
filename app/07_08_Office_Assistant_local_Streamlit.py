@@ -1,12 +1,12 @@
 """
-04_06_Office_Assistant_local_Streamlit.py
+07_08_Office_Assistant_local_Streamlit.py
 =========================================
 
-Sections 6 and 8, in one app.
+Sections 7 and 8, in one app.
 
-    uv run streamlit run app/04_06_Office_Assistant_local_Streamlit.py
+    uv run streamlit run app/07_08_Office_Assistant_local_Streamlit.py
 
-    Section 6  "The Hoverboard"          -> tab 1, ONE tool
+    Section 7  "The Hoverboard"          -> tab 1, ONE tool
     Section 8  "Grays Sports Almanac"    -> tab 2, the SAME agent, one more tool
 
 Everything runs on your own machine. No API key, nothing leaves the building.
@@ -16,12 +16,12 @@ Why these two sections share one app
 Because the point of Section 8 is that RAG is **not** a different kind of magic.
 It is a tool. Same agent, same Reason -> Act -> Observe loop, same code path --
 one more entry in a list. Building it as a second tab on the same agent makes
-that argument visible instead of asserting it from a slide. Section 7 sits
+that argument visible instead of asserting it from a slide. Section 9 sits
 between them in the talk, so you will reopen this app after it.
 
 The system prompt is the third demo hiding in here
 --------------------------------------------------
-Section 3 taught that a system prompt changes how a model *sounds*. Here it does
+Section 4 taught that a system prompt changes how a model *sounds*. Here it does
 something harder: it decides when the agent should reach for a tool and when it
 should just answer. That is not a stylistic claim, it is measured. With three
 tools offered and no guardrail, this model searched the policy manual to answer
@@ -56,7 +56,7 @@ st.set_page_config(page_title="The Office Assistant", page_icon="🛹",
 DEFAULT_MODEL = "qwen"
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  The system prompts — Section 3's lesson, doing real work
+#  The system prompts — Section 4's lesson, doing real work
 # ─────────────────────────────────────────────────────────────────────────────
 
 GUARDRAIL = (
@@ -82,7 +82,7 @@ OVERCONFIDENT = (
 SYSTEM_PRESETS: dict[str, str] = {
     "🎛️ Front counter (the guardrail)": GUARDRAIL,
     "🤖 No system prompt at all": "",
-    "🏛️ The Section 4 expert": OVERCONFIDENT,
+    "🏛️ The Section 5 expert": OVERCONFIDENT,
 }
 
 DEFAULT_PRESET = "🎛️ Front counter (the guardrail)"
@@ -141,14 +141,20 @@ def gpu_status() -> tuple[float, float] | None:
     return free / 1024**3, total / 1024**3
 
 
-def run_agent(graph, responder, question: str, system: str,
-              tool_names: list[str], slot) -> None:
+def run_agent(question: str, system: str, tool_names: list[str], slot,
+              *, model_key: str) -> None:
     """Run one question, drawing each step of the loop as it lands.
 
     The graph is streamed rather than awaited so the audience watches Reason,
     then Act, then Observe appear one at a time. Waiting seven seconds and then
     showing a finished diagram teaches much less.
+
+    The graph is built in here rather than passed in so that no variable in the
+    script's own namespace ends up holding the model -- which matters for
+    releasing it on a switch. See the comment at the bottom of this file.
     """
+    graph, responder = build(model_key, tuple(tool_names))
+
     messages: list[dict] = []
     if system.strip():
         messages.append({"role": "system", "content": system})
@@ -200,7 +206,7 @@ st.session_state.setdefault("last_offered", [])
 
 with st.sidebar:
     st.markdown("## 🛹 The Office Assistant")
-    st.caption("Sections 6 & 8 — tools, and then RAG as one more tool")
+    st.caption("Sections 7 & 8 — tools, and then RAG as one more tool")
     st.divider()
 
     keys = models.selectable()
@@ -224,6 +230,23 @@ with st.sidebar:
     # reason it is not here is worth more than the entry would have been.
     for missing in models.blocked():
         st.caption(f"⚠️ **{missing.label}** is not offered — {missing.blocked_reason}")
+
+    # ── Switching models: let go of the old one first ───────────────────────
+    #
+    # Three separate things hold a loaded model, and all three have to let go
+    # or nothing is freed and the card fills up after two or three switches:
+    #
+    #   1. Streamlit's @st.cache_resource    ->  load_model.clear()
+    #      ...and `build`, whose compiled graph closes over the same weights
+    #   2. delorean's own cache, llm._CACHE  ->  llm.unload()
+    #   3. this script's own variables       ->  dropped at the BOTTOM of this
+    #      file, where the comment explains why it cannot be done here
+    previous = st.session_state.get("loaded_model")
+    if previous is not None and previous != choice:
+        load_model.clear()      # 1
+        build.clear()           # 1 — the graph holds the responder holds the model
+        llm.unload()            # 2 — also collects garbage, empties the CUDA cache
+    st.session_state["loaded_model"] = choice
 
     st.divider()
 
@@ -269,7 +292,7 @@ with st.sidebar:
 
     st.divider()
     st.caption(
-        "The notebook versions (`04_hoverboard`, `06_almanac`) build the tool "
+        "The notebook versions (`07_hoverboard`, `08_almanac`) build the tool "
         "up from a plain Python function and go deeper."
     )
 
@@ -279,7 +302,7 @@ with st.sidebar:
 
 st.title("🛹 Give it a tool and it stops guessing")
 st.markdown(
-    "In Section 4 we asked this model about a parcel it had never seen, and it "
+    "In Section 5 we asked this model about a parcel it had never seen, and it "
     "**invented a zoning ordinance**. Nothing about the model has changed since "
     "then. The only difference now is that it is allowed to go and look."
 )
@@ -288,7 +311,7 @@ with st.spinner(f"Loading {spec.label} …"):
     load_model(choice)
 data.check()
 
-# ── The system prompt panel — Section 3, still earning its keep ──────────────
+# ── The system prompt panel — Section 4, still earning its keep ──────────────
 
 n_tokens = len(llm.load_tokenizer(choice).encode(st.session_state["system_text"])) \
     if st.session_state["system_text"].strip() else 0
@@ -299,7 +322,7 @@ with st.expander(
     expanded=False,
 ):
     st.markdown(
-        "Section 3 showed that a system prompt changes how a model **sounds**. "
+        "Section 4 showed that a system prompt changes how a model **sounds**. "
         "Here it does something harder: it decides **when the agent reaches for "
         "a tool** and when it should simply answer.\n\n"
         "That is measured, not asserted. With three tools available and no "
@@ -335,13 +358,13 @@ with st.expander(
     )
 
 tab_hover, tab_almanac = st.tabs([
-    "🛹  §6 · The Hoverboard",
+    "🛹  §7 · The Hoverboard",
     "📖  §8 · Grays Sports Almanac",
 ])
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  Tab 1 — Section 6. One tool.
+#  Tab 1 — Section 7. One tool.
 # ─────────────────────────────────────────────────────────────────────────────
 
 with tab_hover:
@@ -364,10 +387,10 @@ with tab_hover:
 
     if st.button("🛹 Ask", type="primary", use_container_width=True,
                  key="hover_go"):
-        graph, responder = build(choice, tuple(HOVER_TOOLS))
         slot = st.empty()
-        run_agent(graph, responder, st.session_state["hover_q"],
-                  st.session_state["system_text"], HOVER_TOOLS, slot)
+        run_agent(st.session_state["hover_q"],
+                  st.session_state["system_text"], HOVER_TOOLS, slot,
+                  model_key=choice)
 
         if st.session_state["last_raw"]:
             with st.expander("🔍 What the model **literally** wrote"):
@@ -418,16 +441,16 @@ with tab_almanac:
 
     if st.button("📖 Ask", type="primary", use_container_width=True,
                  key="almanac_go"):
-        graph, responder = build(choice, tuple(ALMANAC_TOOLS))
         slot = st.empty()
-        run_agent(graph, responder, st.session_state["almanac_q"],
-                  st.session_state["system_text"], ALMANAC_TOOLS, slot)
+        run_agent(st.session_state["almanac_q"],
+                  st.session_state["system_text"], ALMANAC_TOOLS, slot,
+                  model_key=choice)
 
         used = st.session_state["last_used"]
         if "search_policy" in used:
             st.success(
                 "It read the manual and told you which section it came from. "
-                "In Section 4 the same model answered this from memory and "
+                "In Section 5 the same model answered this from memory and "
                 "invented an ordinance — and cited a Planning Commission that "
                 "does not exist. **This answer you can go and check.**",
                 icon="📖",
@@ -449,3 +472,25 @@ with tab_almanac:
             "the rule from this manual *plus* facts from three different county "
             "offices that do not talk to each other. That is what MCP is for."
         )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Reference 3 of 3 — let go of the weights before this run ends
+#
+#  Streamlit runs this script again on every click, in a brand new namespace
+#  each time, so you would expect the previous run's variables to vanish with
+#  it. They do not: Streamlit keeps THIS run's widget callbacks alive into the
+#  NEXT run, and a Python function carries its whole module namespace with it
+#  in `__globals__`. Every `on_click=` above is therefore still holding this
+#  script -- and the model with it -- at the moment the next run tries to free
+#  the memory. Nothing can release a model that is still reachable.
+#
+#  This is also why `run_agent()` builds its own graph instead of taking one:
+#  a `graph, responder = build(...)` line out here would leave the model
+#  reachable in exactly the same way, and only on the runs where somebody had
+#  pressed Ask -- which is the worst kind of bug to find on stage.
+#
+#  Full measurements: Plans/vram_model_switching.md.
+# ─────────────────────────────────────────────────────────────────────────────
+
+del loaded_model, _tokenizer
