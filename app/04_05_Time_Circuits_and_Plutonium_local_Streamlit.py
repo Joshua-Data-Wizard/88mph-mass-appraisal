@@ -1,13 +1,13 @@
 """
-02_03_Time_Circuits_and_Plutonium_local_Streamlit.py
+04_05_Time_Circuits_and_Plutonium_local_Streamlit.py
 ====================================================
 
-Sections 3 and 4, in one app.
+Sections 4 and 5, in one app.
 
-    uv run streamlit run app/02_03_Time_Circuits_and_Plutonium_local_Streamlit.py
+    uv run streamlit run app/04_05_Time_Circuits_and_Plutonium_local_Streamlit.py
 
-    Section 3  "Setting the Time Circuits"    -> tabs 1 and 2
-    Section 4  "Running out of Plutonium"     -> tab 3
+    Section 4  "Setting the Time Circuits"    -> tabs 1 and 2
+    Section 5  "Running out of Plutonium"     -> tab 3
 
 Everything runs on your own machine. No API key, nothing leaves the building.
 
@@ -15,13 +15,13 @@ Why these two sections share one app
 ------------------------------------
 They are not merely adjacent in the outline. They are cause and effect.
 
-Section 3 shows that a system prompt turns a vague, generic model into
+Section 4 shows that a system prompt turns a vague, generic model into
 something that sounds like a 25-year appraiser. That is the good news, and it
 is genuinely useful.
 
-Section 4 shows the bill for it. Asked a question it cannot possibly know, a
+Section 5 shows the bill for it. Asked a question it cannot possibly know, a
 model with NO persona will politely tell you it does not know. Give it the
-confident expert persona from Section 3 and it will invent a specific,
+confident expert persona from Section 4 and it will invent a specific,
 plausible, completely fictional answer instead -- and cite an ordinance that
 does not exist while doing it.
 
@@ -64,7 +64,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# The default model. Section 3 needs a model that can actually hold a character;
+# The default model. Section 4 needs a model that can actually hold a character;
 # the 0.8B one cannot, which is a finding in itself but a poor default.
 DEFAULT_MODEL = "qwen"
 
@@ -87,7 +87,7 @@ TOKENS_PER_SEC_FALLBACK = 14.0
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  The personas — Section 3's destinations
+#  The personas — Section 4's destinations
 #
 #  Punch one of these into the time circuits and the same question comes back
 #  a completely different answer. That IS the demo.
@@ -134,7 +134,7 @@ DEFAULT_QUESTION = QUESTIONS[0]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  The probes — Section 4's questions it cannot possibly know
+#  The probes — Section 5's questions it cannot possibly know
 #
 #  Each of these was tested against this model before it went in here. The
 #  `truth` is not an opinion: it comes out of data/policy/ or out of one of the
@@ -180,11 +180,11 @@ PROBES: dict[str, dict] = {
         # ⚠️ 1.043 on purpose, and it must stay matched to §7.
         #
         # Hilldale has two true PRDs depending on how you stratify:
-        #   all arms-length sales (50)  -> 1.043   <- what §7's agent computes
+        #   all arms-length sales (50)  -> 1.043   <- what §9's agent computes
         #   residential R01/R02 (47)    -> 1.042   <- IAAO's stratification
-        # Both are correct. §7 does not filter by property class, so 1.043 is
-        # the figure the room sees later, and this probe says §7 will find it.
-        # Do not "correct" this to 1.042 without changing §7 too. It read
+        # Both are correct. §9 does not filter by property class, so 1.043 is
+        # the figure the room sees later, and this probe says §9 will find it.
+        # Do not "correct" this to 1.042 without changing §9 too. It read
         # 1.041 until 2026-10-04, which matched neither -- it was a figure that
         # moved when the data was last regenerated and never got re-read.
         "question": (
@@ -195,7 +195,7 @@ PROBES: dict[str, dict] = {
             "Price Related Differential. Above 1.03 is regressive: lower-value "
             "properties are assessed at a higher percentage of value than "
             "higher-value ones. 1.043 fails the IAAO standard — and it is "
-            "Hilldale's actual figure, which Section 7 finds for itself."
+            "Hilldale's actual figure, which Section 9 finds for itself."
         ),
         "source": "data/policy/ratio_study_standards.md — Policy 9.4",
         "consequence": (
@@ -231,7 +231,7 @@ PROBES: dict[str, dict] = {
         "consequence": (
             "Here the model behaves <b>well</b>: it tells you it cannot know. That "
             "is the honest failure, and it is still a failure — a polite refusal "
-            "gets an appraiser exactly as far as a wrong answer does. Section 6 "
+            "gets an appraiser exactly as far as a wrong answer does. Section 7 "
             "hands it its first real tool, and questions it refused here start "
             "coming back answered."
         ),
@@ -481,7 +481,7 @@ st.session_state.setdefault("probe_results", None)
 
 with st.sidebar:
     st.markdown("## 🎛️ Time Circuits")
-    st.caption("Sections 3 & 4 — prompting, and where it breaks")
+    st.caption("Sections 4 & 5 — prompting, and where it breaks")
     st.divider()
 
     keys = models.selectable()
@@ -548,7 +548,7 @@ with st.sidebar:
     st.divider()
     st.caption(
         "Notebook versions of both demos are in `notebooks/` "
-        "(`02_time_circuits`, `03_plutonium`) and go deeper."
+        "(`04_time_circuits`, `05_plutonium`) and go deeper."
     )
 
 
@@ -620,9 +620,9 @@ st.html(
 )
 
 tab1, tab2, tab3 = st.tabs([
-    "🎛️  §3 · Punch In a Destination",
-    "⚖️  §3 · Side by Side",
-    "🔋  §4 · Running Out of Plutonium",
+    "🎛️  §4 · Punch In a Destination",
+    "⚖️  §4 · Side by Side",
+    "🔋  §5 · Running Out of Plutonium",
 ])
 
 
@@ -823,7 +823,7 @@ with tab2:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  Tab 3 — Section 4, where it runs out of plutonium
+#  Tab 3 — Section 5, where it runs out of plutonium
 # ─────────────────────────────────────────────────────────────────────────────
 
 with tab3:
@@ -835,7 +835,7 @@ with tab3:
         "Here is the part that surprises people. Ask a bare model a question "
         "outside what it was trained on and it will usually **tell you it does "
         "not know** — which is correct, honest, and useless.\n\n"
-        "Then give it the confident expert persona from Section 3 and ask the "
+        "Then give it the confident expert persona from Section 4 and ask the "
         "**same question again.**"
     )
 
@@ -914,9 +914,9 @@ with tab3:
         )
 
         st.success(
-            "**That is the whole problem, and it is fixable.** Section 5 explains "
-            "how an agent reasons about what it needs. Section 6 hands it real "
-            "tools. Section 7 points those tools at this county's actual data — "
+            "**That is the whole problem, and it is fixable.** Section 6 explains "
+            "how an agent reasons about what it needs. Section 7 hands it real "
+            "tools. Section 9 points those tools at this county's actual data — "
             "and this question gets a real answer.",
             icon="⏭️",
         )
@@ -947,26 +947,26 @@ with tab3:
             "If it failed every time, you could plan around it."
         )
 
-    # ── The wrap-up, and the hand-off to Section 5 ──────────────────────────
+    # ── The wrap-up, and the hand-off to Section 6 ──────────────────────────
     #
     # INSIDE tab 3, not under the whole app. The app covers two sections in
     # sequence, so a footer below the tab strip would sit there announcing
-    # §4's punchline while the room is still watching §3 build up to it. It
+    # §5's punchline while the room is still watching §4 build up to it. It
     # belongs at the end of the story, which is the end of this tab.
     st.divider()
     st.markdown(
-        "#### 🎬 That's Sections 3 and 4\n"
-        "**Section 3 — the good news.** A system prompt is not a setting or a "
+        "#### 🎬 That's Sections 4 and 5\n"
+        "**Section 4 — the good news.** A system prompt is not a setting or a "
         "configuration screen. It is **text, glued to the front of your "
         "question**, and it turns the same weights into a different colleague. "
         "That is most of what people mean by *customising* an assistant.\n\n"
-        "**Section 4 — the bill.** The same confident persona will invent an "
+        "**Section 5 — the bill.** The same confident persona will invent an "
         "ordinance, a filing deadline, or three comparable sales with closing "
         "dates — and none of it will look like a mistake. **A plausible answer "
         "and a correct one are indistinguishable from the outside.**\n\n"
         "The model is not short of intelligence here. It is short of "
         "**access** — to your roll, your sales file, your policy manual, "
-        "today's date. **That is what Section 5 starts to fix.**"
+        "today's date. **That is what Section 6 starts to fix.**"
     )
     st.caption(
         "🕰️ *“Roads? Where we're going, we don't need roads.”* — Dr. Emmett "

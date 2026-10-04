@@ -10,7 +10,7 @@ WHY THIS SERVER CARRIES THE SECOND DEMO
 ---------------------------------------
 The Appraiser's office does not work from the Clerk's live records. It works
 from a **feed** — a file of recorded sales sent over periodically and loaded
-into the CAMA system. Every ratio study in Section 7 was run against that
+into the CAMA system. Every ratio study in Section 9 was run against that
 feed, pulled on 2026-01-15.
 
 Feeds go stale, and worse than that, feeds go stale *silently*. A deed gets
@@ -24,7 +24,7 @@ gets around to asking: **is my copy still true?**
 The answer, for this county, is no. One deed in Courthouse Square was
 recorded as a $647,000 arm's-length Warranty Deed and later reclassified a
 QUIT CLAIM, which under IAAO standards must be excluded from a ratio study
-altogether. Section 7 studied it as a valid sale.
+altogether. Section 9 studied it as a valid sale.
 
 As with the other two servers: **the docstring under each @mcp.tool() is the
 text the model reads.** It is prompt engineering wearing a lab coat.

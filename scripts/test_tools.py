@@ -177,7 +177,7 @@ all_schemas = tools.schemas()
 one = tools.schemas(["lookup_parcel"])
 check(f"{len(all_schemas)} tools registered", len(all_schemas) >= 2,
       ", ".join(sorted(tools.REGISTRY)))
-check("schemas() can expose a single tool for Section 6",
+check("schemas() can expose a single tool for Section 7",
       len(one) == 1 and one[0]["function"]["name"] == "lookup_parcel")
 check("every schema has the shape apply_chat_template wants",
       all(s.get("type") == "function" and "parameters" in s["function"]
@@ -283,7 +283,7 @@ check("Shape C ignores well-formed JSON naming no real tool",
 
 # Shape D has explicit delimiters, so an unknown NAME is a genuine call to a
 # tool that does not exist -- parsed on purpose, so dispatch() can hand the
-# model back the list of tools it really has. See section 5 above.
+# model back the list of tools it really has. See section 6 above.
 unknown = tools.parse_tool_calls(
     '<|tool_call>call:launch_missiles{x:<|"|>1<|"|>}<tool_call|>')
 check("Shape D parses an unknown tool rather than silently dropping it",

@@ -1,14 +1,14 @@
 """
-The Universal Adapter   ·   Section 10, Live Demos 8 and 9
+The Universal Adapter   ·   Section 10, Live Demos 7 and 8
 
-    uv run streamlit run app/08_09_Universal_Adapter_local_Streamlit.py
+    uv run streamlit run app/10_Universal_Adapter_local_Streamlit.py
 
 The finale. Three county offices, three separate programs, one question that
 none of them can answer alone.
 
 WHAT MAKES THIS DIFFERENT FROM EVERY APP BEFORE IT
 --------------------------------------------------
-Section 6 built a tool: we wrote a Python function, hand-wrote a JSON schema
+Section 7 built a tool: we wrote a Python function, hand-wrote a JSON schema
 describing it, and handed both to the model. Two pieces of code per tool,
 every time, forever.
 
@@ -16,7 +16,7 @@ Here we wrote neither. Three servers start up, the agent asks each one what it
 can do, and the answers become its toolbelt. Add a fourth office next year and
 nothing in this file changes.
 
-    Section 6    a tool is a function YOU wrote
+    Section 7    a tool is a function YOU wrote
     Section 10   an MCP server is a program SOMEBODY ELSE published
 
 That is the difference between a charger built for one phone and a USB-C
@@ -31,7 +31,7 @@ THE TWO DEMOS
 
     9   "Is our sales file still true?"
         The Appraiser works from a feed pulled on one date. The Clerk kept
-        correcting deeds afterwards. Nobody sends a note. Section 7's ratio
+        correcting deeds afterwards. Nobody sends a note. Section 9's ratio
         study was run on a sale that had already been reclassified.
 
 EVERYTHING HERE IS SYNTHETIC. See data/README.md.
@@ -160,7 +160,7 @@ def render_sync_impact(rows: list[dict]) -> None:
     """What the correction actually costs the ratio study.
 
     The agent finds the problem; this panel measures it. That split is
-    deliberate and it is the same rule Section 7 runs on -- the agent decides
+    deliberate and it is the same rule Section 9 runs on -- the agent decides
     what to ask, and the arithmetic lives somewhere it cannot be got wrong.
     """
     feed = data.sales_feed_df()
@@ -175,7 +175,7 @@ def render_sync_impact(rows: list[dict]) -> None:
         st.caption(
             f"Deed {row.get('instrument_number', '?')} on parcel {parcel} was "
             f"booked as a {row.get('deed_type', '?')} and corrected on "
-            f"{row.get('corrected_on', '?')}. Section 7 studied it as a valid "
+            f"{row.get('corrected_on', '?')}. Section 9 studied it as a valid "
             f"sale. These are the same statistics with and without it."
         )
         stale = feed[feed.neighborhood == hood]

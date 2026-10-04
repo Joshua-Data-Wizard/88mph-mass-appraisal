@@ -4,7 +4,7 @@
 >
 > No real parcel, owner, address, sale, or tax account appears anywhere in this
 > repository. The names are drawn from a fictional town in a 1985 film. The
-> coordinates are real Calgary-area coordinates — chosen so the maps in Section 7
+> coordinates are real Calgary-area coordinates — chosen so the maps in Section 9
 > render over actual streets — but **every property sitting on them is fictional**.
 >
 > This is a public repository about property records. It is treated accordingly.
@@ -57,7 +57,7 @@ on GitHub without opening SQLite.
 
 ## 🎯 The flaws are on purpose
 
-**A dataset with no problems in it makes Section 7 pointless.** If every
+**A dataset with no problems in it makes Section 9 pointless.** If every
 neighborhood were assessed perfectly, the ratio study would find nothing and
 there would be no reason for an appraiser to want an assistant.
 
@@ -78,9 +78,9 @@ numbers the generator actually produces — not targets, measured output.
 | **Hilldale** | 47 | 0.930 | 13.59 | **1.042** | ❌ **EQUITY** — regressive, PRD over 1.03 |
 | **COUNTYWIDE** | 202 | 0.927 | 12.37 | 1.027 | ⚠️ **every measure passes** |
 
-> ### ⚠️ Section 7 shows slightly different figures, and both are right
+> ### ⚠️ Section 9 shows slightly different figures, and both are right
 >
-> The §7 agent writes its own SQL and **does not filter by property class** —
+> The §9 agent writes its own SQL and **does not filter by property class** —
 > it is handed the sales feed and asked a question. Across all classes every
 > verdict is identical and the numbers move in the third decimal:
 >
@@ -116,7 +116,7 @@ Three of its six neighborhoods have real, actionable problems. The errors
 offset each other in aggregate and vanish.
 
 **This is why stratification is mandatory** (Policy 9.5), and it is the finding
-the Section 7 agent is built to surface.
+the Section 9 agent is built to surface.
 
 ### Each failure is a genuinely different problem
 
@@ -136,7 +136,7 @@ the Section 7 agent is built to surface.
 
 | What | How much | Why it is there |
 |---|---|---|
-| Non-arm's-length deeds | 35 of 244 | Quit claims, sheriff's deeds, estate transfers, $1 interfamily gifts. **Section 7 must filter these** before computing anything — Policy 7.3. |
+| Non-arm's-length deeds | 35 of 244 | Quit claims, sheriff's deeds, estate transfers, $1 interfamily gifts. **Section 9 must filter these** before computing anything — Policy 7.3. |
 | Delinquent tax accounts | 37 of 1,200 (3.1%) | Section 10 needs real delinquencies, not just the one hero parcel. |
 | Partial payments | ~3.4% | `status = 'PARTIAL'` — a balance that is not zero but not a full delinquency either. An agent that only checks `status = 'DELINQUENT'` gets the wrong answer. |
 | Commercial + vacant parcels | 91 of 1,200 (7.6%) | A ratio study is residential-improved only. Mixing classes is a classic beginner error, so the data makes it possible to commit. |
@@ -212,8 +212,8 @@ office would write them:
 | Document | Contains | Used by |
 |---|---|---|
 | [`parcel_split_and_combination.md`](policy/parcel_split_and_combination.md) | **Policy 4.2 — the tax balance rule that blocks Biff's split**, minimum lot sizes, effective dates | §8, §10 |
-| [`sales_qualification.md`](policy/sales_qualification.md) | Which deed types count as arm's length, disqualifying conditions, minimum sample size | §7, §8 |
-| [`ratio_study_standards.md`](policy/ratio_study_standards.md) | COD, PRD and median ratio standards; why stratification is mandatory; corrective action | §7, §8 |
+| [`sales_qualification.md`](policy/sales_qualification.md) | Which deed types count as arm's length, disqualifying conditions, minimum sample size | §9, §8 |
+| [`ratio_study_standards.md`](policy/ratio_study_standards.md) | COD, PRD and median ratio standards; why stratification is mandatory; corrective action | §9, §8 |
 | [`assessment_calendar.md`](policy/assessment_calendar.md) | Assessment date, notice mailing, **the July 25 appeal deadline**, roll certification | §8 |
 
 **Markdown, not PDF** — deliberately. Markdown renders on GitHub, so an attendee

@@ -265,7 +265,7 @@ def stage_3_tiny_model() -> bool:
 
 def stage_4_workhorse(total_vram_gb: float) -> bool:
     header(4, f"Workhorse model — {WORKHORSE_MODEL} in 4-bit")
-    print("  This is the model the agent demos use in Sections 6 through 11.")
+    print("  This is the model the agent demos use in Sections 7 through 11.")
     print("  First run downloads roughly 8 GB. Use --quick to skip.\n")
     try:
         peak_gb = load_and_generate(WORKHORSE_MODEL, quantize=True)

@@ -120,6 +120,15 @@ FINDINGS.md
 Tracking/
 Plans/
 
+# ── The original session brief ───────────────────────────────
+# Unshipped for the same reason as CLAUDE.md: a clone should show somebody the
+# demos, not the paperwork behind them. It is also superseded -- it carries the
+# pre-2026-10-04 running order, so it disagrees with the repo on purpose.
+# The running order of record is CLAUDE.md's demo map, with DEMOS.md as the
+# presentation-facing companion.
+#     git log --all --oneline -- Presentation_Material/
+Presentation_Material/
+
 # ── Scratch & backups ────────────────────────────────────────
 scratchpad/
 notes/

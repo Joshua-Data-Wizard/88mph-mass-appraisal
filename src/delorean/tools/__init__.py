@@ -14,9 +14,9 @@ a parameter under the wrong name, a tool name it half remembered -- it comes
 back as a JSON string the agent can read and act on. See `base.py` for why that
 matters more than it sounds.
 
-Section 6 defines its tool inline in the notebook, on purpose: watching a plain
+Section 7 defines its tool inline in the notebook, on purpose: watching a plain
 function become something a model can call IS the lesson there. This package is
-the hardened version of the same idea, and Section 6 finishes by showing the
+the hardened version of the same idea, and Section 7 finishes by showing the
 difference between the two.
 """
 
@@ -28,8 +28,8 @@ from .base import (REGISTRY, Tool, ToolCall, attempted_tool_call, dispatch,
 # means adding a line here.
 from . import parcel   # noqa: F401,E402  (imported for its side effect)
 from . import policy   # noqa: F401,E402
-from . import query    # noqa: F401,E402  (Section 7)
-from . import review   # noqa: F401,E402  (Section 7)
+from . import query    # noqa: F401,E402  (Section 9)
+from . import review   # noqa: F401,E402  (Section 9)
 
 __all__ = [
     "REGISTRY", "Tool", "ToolCall", "attempted_tool_call", "dispatch", "fail",

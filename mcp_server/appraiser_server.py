@@ -10,7 +10,7 @@ it is the whole reason this section exists.
 
 WHAT MCP ACTUALLY IS, IN ONE PARAGRAPH
 --------------------------------------
-A tool (Section 6) is a Python function *you* wrote, living inside *your*
+A tool (Section 7) is a Python function *you* wrote, living inside *your*
 program. An MCP server is a separate program, owned by somebody else, that
 publishes a list of things it can do. Your agent asks it "what have you got?"
 and it answers. You never write a line of code describing its tools, because

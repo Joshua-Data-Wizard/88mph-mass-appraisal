@@ -1,12 +1,12 @@
 """
-04_06_Office_Assistant_local_Streamlit.py
+07_08_Office_Assistant_local_Streamlit.py
 =========================================
 
-Sections 6 and 8, in one app.
+Sections 7 and 8, in one app.
 
-    uv run streamlit run app/04_06_Office_Assistant_local_Streamlit.py
+    uv run streamlit run app/07_08_Office_Assistant_local_Streamlit.py
 
-    Section 6  "The Hoverboard"          -> tab 1, ONE tool
+    Section 7  "The Hoverboard"          -> tab 1, ONE tool
     Section 8  "Grays Sports Almanac"    -> tab 2, the SAME agent, one more tool
 
 Everything runs on your own machine. No API key, nothing leaves the building.
@@ -16,12 +16,12 @@ Why these two sections share one app
 Because the point of Section 8 is that RAG is **not** a different kind of magic.
 It is a tool. Same agent, same Reason -> Act -> Observe loop, same code path --
 one more entry in a list. Building it as a second tab on the same agent makes
-that argument visible instead of asserting it from a slide. Section 7 sits
+that argument visible instead of asserting it from a slide. Section 9 sits
 between them in the talk, so you will reopen this app after it.
 
 The system prompt is the third demo hiding in here
 --------------------------------------------------
-Section 3 taught that a system prompt changes how a model *sounds*. Here it does
+Section 4 taught that a system prompt changes how a model *sounds*. Here it does
 something harder: it decides when the agent should reach for a tool and when it
 should just answer. That is not a stylistic claim, it is measured. With three
 tools offered and no guardrail, this model searched the policy manual to answer
@@ -56,7 +56,7 @@ st.set_page_config(page_title="The Office Assistant", page_icon="🛹",
 DEFAULT_MODEL = "qwen"
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  The system prompts — Section 3's lesson, doing real work
+#  The system prompts — Section 4's lesson, doing real work
 # ─────────────────────────────────────────────────────────────────────────────
 
 GUARDRAIL = (
@@ -82,7 +82,7 @@ OVERCONFIDENT = (
 SYSTEM_PRESETS: dict[str, str] = {
     "🎛️ Front counter (the guardrail)": GUARDRAIL,
     "🤖 No system prompt at all": "",
-    "🏛️ The Section 4 expert": OVERCONFIDENT,
+    "🏛️ The Section 5 expert": OVERCONFIDENT,
 }
 
 DEFAULT_PRESET = "🎛️ Front counter (the guardrail)"
@@ -206,7 +206,7 @@ st.session_state.setdefault("last_offered", [])
 
 with st.sidebar:
     st.markdown("## 🛹 The Office Assistant")
-    st.caption("Sections 6 & 8 — tools, and then RAG as one more tool")
+    st.caption("Sections 7 & 8 — tools, and then RAG as one more tool")
     st.divider()
 
     keys = models.selectable()
@@ -292,7 +292,7 @@ with st.sidebar:
 
     st.divider()
     st.caption(
-        "The notebook versions (`04_hoverboard`, `06_almanac`) build the tool "
+        "The notebook versions (`07_hoverboard`, `08_almanac`) build the tool "
         "up from a plain Python function and go deeper."
     )
 
@@ -302,7 +302,7 @@ with st.sidebar:
 
 st.title("🛹 Give it a tool and it stops guessing")
 st.markdown(
-    "In Section 4 we asked this model about a parcel it had never seen, and it "
+    "In Section 5 we asked this model about a parcel it had never seen, and it "
     "**invented a zoning ordinance**. Nothing about the model has changed since "
     "then. The only difference now is that it is allowed to go and look."
 )
@@ -311,7 +311,7 @@ with st.spinner(f"Loading {spec.label} …"):
     load_model(choice)
 data.check()
 
-# ── The system prompt panel — Section 3, still earning its keep ──────────────
+# ── The system prompt panel — Section 4, still earning its keep ──────────────
 
 n_tokens = len(llm.load_tokenizer(choice).encode(st.session_state["system_text"])) \
     if st.session_state["system_text"].strip() else 0
@@ -322,7 +322,7 @@ with st.expander(
     expanded=False,
 ):
     st.markdown(
-        "Section 3 showed that a system prompt changes how a model **sounds**. "
+        "Section 4 showed that a system prompt changes how a model **sounds**. "
         "Here it does something harder: it decides **when the agent reaches for "
         "a tool** and when it should simply answer.\n\n"
         "That is measured, not asserted. With three tools available and no "
@@ -358,7 +358,7 @@ with st.expander(
     )
 
 tab_hover, tab_almanac = st.tabs([
-    "🛹  §6 · The Hoverboard",
+    "🛹  §7 · The Hoverboard",
     "📖  §8 · Grays Sports Almanac",
 ])
 
@@ -450,7 +450,7 @@ with tab_almanac:
         if "search_policy" in used:
             st.success(
                 "It read the manual and told you which section it came from. "
-                "In Section 4 the same model answered this from memory and "
+                "In Section 5 the same model answered this from memory and "
                 "invented an ordinance — and cited a Planning Commission that "
                 "does not exist. **This answer you can go and check.**",
                 icon="📖",

@@ -5,7 +5,7 @@ This is Section 8, and the point it has to land is this:
 
     RAG is not a different kind of magic. It is a TOOL.
 
-Section 6 gave the agent `lookup_parcel` and it went and read a database.
+Section 7 gave the agent `lookup_parcel` and it went and read a database.
 Section 8 gives the same agent `search_policy` and it goes and reads a filing
 cabinet. Same loop, same agent, one more entry in the tool list. That is the
 whole idea, and building it as an ordinary tool alongside the others is what

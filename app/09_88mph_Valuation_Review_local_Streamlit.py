@@ -1,7 +1,7 @@
 """
-88 MPH — The Valuation Review Assistant   ·   Section 7, Live Demo 5
+88 MPH — The Valuation Review Assistant   ·   Section 9, Live Demo 6
 
-    uv run streamlit run app/05_88mph_Valuation_Review_local_Streamlit.py
+    uv run streamlit run app/09_88mph_Valuation_Review_local_Streamlit.py
 
 The core IAAO payload, and the longest slot in the talk. An appraiser asks the
 questions they would actually ask on a Monday morning, and an agent running
@@ -11,12 +11,12 @@ WHAT MAKES THIS APP DIFFERENT FROM THE OTHER TWO
 ------------------------------------------------
 Each app in this repository shows a different thing on purpose:
 
-    Section 6/8   the LOOP is the show      -- the trace fills the screen
-    Section 7     the FINDING is the show   -- results fill the screen,
+    Section 7/8   the LOOP is the show      -- the trace fills the screen
+    Section 9     the FINDING is the show   -- results fill the screen,
                   (this one)                   the loop is one click below
     Section 11    only the ANSWER           -- the machinery is gone
 
-By Section 7 the audience has already watched Reason -> Act -> Observe turn.
+By Section 9 the audience has already watched Reason -> Act -> Observe turn.
 Showing it again competes with the thing they came for, which is what the
 agent actually found. So the trace runs live while it works and folds itself
 away when the answer lands.
@@ -64,7 +64,7 @@ st.set_page_config(page_title="88 MPH — Valuation Review",
 DEFAULT_MODEL = "qwen"
 
 #: The live toolbelt. Three, which is the size we have actually measured, and
-#: Section 6's two parcel tools are deliberately NOT here -- `run_sql` does
+#: Section 7's two parcel tools are deliberately NOT here -- `run_sql` does
 #: everything they did. Swap a tool out rather than pile another on.
 TOOLBELT = ("run_sql", "ratio_study", "map_parcels")
 
@@ -276,7 +276,7 @@ st.session_state.setdefault("dial", None)
 
 with st.sidebar:
     st.markdown("## ⚡ 88 MPH")
-    st.caption("Section 7 — the valuation review assistant")
+    st.caption("Section 9 — the valuation review assistant")
     st.divider()
 
     keys = models.selectable()
@@ -324,7 +324,7 @@ with st.sidebar:
             "switch back.", icon="⚠️")
 
     # This app is where a blocked model would have done the most damage --
-    # Section 7's prompt is about 1,600 tokens, which is past where Nemotron
+    # Section 9's prompt is about 1,600 tokens, which is past where Nemotron
     # runs out of memory. Explain the absence rather than leaving a gap.
     for missing in models.blocked():
         st.caption(f"⚠️ **{missing.label}** is not offered — {missing.blocked_reason}")

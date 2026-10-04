@@ -287,7 +287,7 @@ def note(title: str, body: str, *, kind: str = "info") -> None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  Section 3 — the time circuits
+#  Section 4 — the time circuits
 #
 #  The DeLorean's dashboard has three rows of LEDs: where you are going, when
 #  you are now, and where you were last. It maps onto a chat call almost
@@ -383,7 +383,7 @@ def show_time_circuits(destination: str, present: str = "",
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  Section 3 — one persona's answer
+#  Section 4 — one persona's answer
 # ─────────────────────────────────────────────────────────────────────────────
 
 #: Accent colours for personas shown side by side. Picked to stay
@@ -440,9 +440,9 @@ def persona_card_html(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  Section 4 — what it said, against what is true
+#  Section 5 — what it said, against what is true
 #
-#  This is the component the whole of Section 4 rests on. A hallucination is
+#  This is the component the whole of Section 5 rests on. A hallucination is
 #  only alarming once you put the real record beside it, because on its own an
 #  invented answer looks exactly like a correct one. That is the point.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -516,9 +516,9 @@ def show_verification(claim: str, truth: str, *, source: str,
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  Sections 6-8 — watching the agent think
+#  Sections 7-8 — watching the agent think
 #
-#  Section 5 draws Reason -> Act -> Observe on a slide. These functions draw the
+#  Section 6 draws Reason -> Act -> Observe on a slide. These functions draw the
 #  same three boxes from a real run, so the concept and the machinery are
 #  visibly the same thing.
 #
@@ -824,7 +824,7 @@ def show_trace(trace: Sequence[dict], *, answer: str = "",
 
 
 # ═════════════════════════════════════════════════════════════════════════
-#  Section 7 — the valuation review
+#  Section 9 — the valuation review
 # ═════════════════════════════════════════════════════════════════════════
 #
 # The colours below are measured, not chosen by eye, and one of them is a
@@ -835,7 +835,7 @@ def show_trace(trace: Sequence[dict], *, answer: str = "",
 # (#b91c1c) through a deuteranopia simulation and they land 4.2 apart in
 # OKLab -- which is to say a red-green colourblind reader, roughly one man in
 # twelve in that Calgary audience, cannot tell PASS from FAIL. On the one
-# visual Section 7 rests on.
+# visual Section 9 rests on.
 #
 # Swapping the green for teal takes that separation to 11.9, comfortably past
 # the 8.0 target, and costs nothing an appraiser would notice.
@@ -947,7 +947,7 @@ def _dial_angle(value: float) -> float:
 
 #: How wide the dial is allowed to get. Fixed rather than fluid because
 #: Streamlit has to be told the exact height of the frame it goes in -- see
-#: `svg_card()` in the Section 7 app.
+#: `svg_card()` in the Section 9 app.
 SPEEDOMETER_MAX_WIDTH = 430
 
 # Wide enough for the dial, tall enough for the reading to sit UNDERNEATH it.
@@ -1180,7 +1180,7 @@ def show_scorecard(result: dict, **kwargs) -> None:
 
 
 # ─────────────────────────────────────────────────────────────────────────
-#  The neighborhood table — Section 7's whole argument, in one picture
+#  The neighborhood table — Section 9's whole argument, in one picture
 # ─────────────────────────────────────────────────────────────────────────
 
 def ratio_table_html(groups: Sequence[dict], *, group_by: str = "neighborhood",

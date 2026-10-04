@@ -1,11 +1,11 @@
 """
-01_Flux_Capacitor_local_Streamlit.py
+02_Flux_Capacitor_local_Streamlit.py
 ====================================
 
 The Section 2 demo — "What *is* a Large Language Model?" — as a clickable app
 instead of a notebook.
 
-    uv run streamlit run app/01_Flux_Capacitor_local_Streamlit.py
+    uv run streamlit run app/02_Flux_Capacitor_local_Streamlit.py
 
 Everything runs on your own machine. No API key, nothing leaves the building.
 
@@ -146,7 +146,7 @@ with st.sidebar:
     if spec.role != "tiny":
         st.info(
             f"{spec.label} is a bigger download (several GB) and is meant for the "
-            "agent demos in Sections 6-11. The small model is plenty for this one.",
+            "agent demos in Sections 7-11. The small model is plenty for this one.",
             icon="ℹ️",
         )
 
@@ -291,7 +291,7 @@ with tab_tokens:
                 f"it sees {len(ids)} unrelated fragments in a row.\n\n"
                 f"**Remember this.** It is why language models fumble parcel numbers, "
                 f"account numbers and arithmetic. The fix is not a smarter model — it "
-                f"is giving it a calculator, which is what a *tool* is (Section 6).",
+                f"is giving it a calculator, which is what a *tool* is (Section 7).",
                 icon="⚠️",
             )
 
@@ -535,7 +535,7 @@ with tab_stream:
                 f"⚡ The DeLorean needed 1.21 gigawatts to make **one** jump. This "
                 f"made **{len(pieces)} complete passes** through all {spec.params} "
                 f"of the model's numbers to write one paragraph — which is why "
-                f"Section 9 cares so much about how big the model is."
+                f"Section 3 cares so much about how big the model is."
             )
     else:
         st.info("Press **⚡ Generate** to watch it happen.", icon="👆")
@@ -551,7 +551,7 @@ st.markdown(
     "A language model is a **next-token guesser** — a very sophisticated one, "
     "but a guesser. Two things to carry forward:\n\n"
     "1. **It sees tokens, not words**, which is why identifiers and arithmetic "
-    "are a weak spot *(Section 4)*\n"
+    "are a weak spot *(Section 5)*\n"
     "2. **Every answer is a chain of bets**, which is why *confident* does not "
     "mean *correct*\n\n"
     "And notice what it never did: it had no idea who it was, or that it was "

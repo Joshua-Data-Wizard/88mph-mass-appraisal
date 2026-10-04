@@ -1,7 +1,7 @@
 """
 agent.py — the Reason → Act → Observe loop, built by hand.
 
-Section 5 puts this on a slide. Section 7 runs it. They are the same three
+Section 6 puts this on a slide. Section 9 runs it. They are the same three
 boxes, and that is the entire reason we do not use a prebuilt agent:
 
     ┌──────────┐  wants a tool   ┌──────────┐
@@ -210,7 +210,7 @@ def local_responder(model: Any, tokenizer: Any, *, max_new_tokens: int = 320,
         raw_full = tokenizer.decode(generated, skip_special_tokens=False)
         raw = tokenizer.decode(generated, skip_special_tokens=True)
 
-        # Keep the FULL output -- special tokens and all -- because Section 6
+        # Keep the FULL output -- special tokens and all -- because Section 7
         # shows this verbatim to make the point that a "tool call" is just text
         # the model wrote. Reconstructing it from the parsed result would look
         # the same and quietly be a lie.

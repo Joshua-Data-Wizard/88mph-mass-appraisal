@@ -30,7 +30,7 @@ from streamlit.testing.v1 import AppTest
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 REPO = Path(__file__).resolve().parent.parent
-APP = str(REPO / "app" / "08_09_Universal_Adapter_local_Streamlit.py")
+APP = str(REPO / "app" / "10_Universal_Adapter_local_Streamlit.py")
 TIMEOUT = 400
 
 

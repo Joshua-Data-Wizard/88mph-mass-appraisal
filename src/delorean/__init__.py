@@ -4,7 +4,7 @@ delorean — the shared engine behind the 88mph mass-appraisal demos.
 Everything in this package is imported by the notebooks in ../notebooks/.
 The point of putting it here instead of copy-pasting into each notebook is
 simple: the parcel lookup, ratio-study, and mapping tools get reused across
-Sections 7 through 11. Six copies of the same function would drift apart
+Sections 9 through 11. Six copies of the same function would drift apart
 within a week.
 
 Layout
@@ -14,7 +14,7 @@ Layout
     tools/         the functions we hand to the agent
     rag/           document indexing and retrieval (Section 8)
 
-Section 6 ("The Hoverboard") deliberately does NOT import from here.
+Section 7 ("The Hoverboard") deliberately does NOT import from here.
 There, the tool *is* the lesson, so the code stays inline in the notebook
 where the audience can watch a plain Python function become something the
 model is allowed to call.

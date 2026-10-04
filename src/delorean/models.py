@@ -31,7 +31,7 @@ class ModelSpec:
     claims. Where we have not measured a model ourselves, the field is None.
 
     ⚠️ `measured_vram_gb` is **peak VRAM during real agent work** — the
-    Section 7 toolbelt, via scripts/compare_models.py — and not the weight
+    Section 9 toolbelt, via scripts/compare_models.py — and not the weight
     footprint. Weights are the smaller, friendlier number and the wrong one to
     plan with: Qwen3.5-4B holds 2.90 GB of weights and peaks at 4.00 GB once
     the KV cache fills. Quote the peak, or somebody runs out of memory on
@@ -97,7 +97,7 @@ class ModelSpec:
     #: A blocked model is NOT deleted from the registry, for two reasons.
     #:
     #: The first is that *why* a model will not run is the single most useful
-    #: page in Section 9, and you cannot teach it from an empty space. The
+    #: page in Section 3, and you cannot teach it from an empty space. The
     #: second is honesty: "does not run here" is not "does not run". Nemotron
     #: needs the mamba-ssm / causal-conv1d / triton CUDA kernels, and those
     #: build cleanly on Linux — it is a platform limit, not a bad model. An
@@ -165,7 +165,7 @@ REGISTRY: dict[str, ModelSpec] = {
             "Thinking mode is ON by default and adds a pause before answering",
         ),
         measured_vram_gb=4.00,
-        measured_speed="8.7s per agent question (Section 7 toolbelt)",
+        measured_speed="8.7s per agent question (Section 9 toolbelt)",
     ),
     "smol": ModelSpec(
         key="smol",
@@ -178,9 +178,9 @@ REGISTRY: dict[str, ModelSpec] = {
         quantize=True,
         good_at=(
             "The smallest model here that can still do real agent work",
-            "Ran Section 7 perfectly: 6/6 tools, 4/4 restraint, 6/6 SQL",
+            "Ran Section 9 perfectly: 6/6 tools, 4/4 restraint, 6/6 SQL",
             "The fastest of the three at 6.7s a question, on 1.85 GB",
-            "The best 'look how little this needs' story for Section 9",
+            "The best 'look how little this needs' story for Section 3",
         ),
         watch_out_for=(
             "Writes its tool calls as BARE JSON with no <tool_call> tags, "
@@ -190,7 +190,7 @@ REGISTRY: dict[str, ModelSpec] = {
             "which our own measurements do not support",
         ),
         measured_vram_gb=2.77,
-        measured_speed="6.7s per agent question (Section 7 toolbelt)",
+        measured_speed="6.7s per agent question (Section 9 toolbelt)",
     ),
     "phi": ModelSpec(
         key="phi",
@@ -205,7 +205,7 @@ REGISTRY: dict[str, ModelSpec] = {
             "A name every county IT department already trusts",
             "MIT licence — the most permissive here, and ungated",
             "The smallest download of the agent-capable models (7.2 GB)",
-            "Section 7 toolbelt: recall 5/6, restraint 4/4, 7.0s a question, "
+            "Section 9 toolbelt: recall 5/6, restraint 4/4, 7.0s a question, "
             "2.70 GB of weights and a 4.15 GB peak",
         ),
         watch_out_for=(
@@ -223,7 +223,7 @@ REGISTRY: dict[str, ModelSpec] = {
             "Released February 2025, the oldest model in this registry",
         ),
         measured_vram_gb=4.15,
-        measured_speed="7.0s per agent question (Section 7 toolbelt)",
+        measured_speed="7.0s per agent question (Section 9 toolbelt)",
     ),
     "gemma": ModelSpec(
         key="gemma",
@@ -237,7 +237,7 @@ REGISTRY: dict[str, ModelSpec] = {
         good_at=(
             "Another name nobody has to be talked into",
             "Gemma 4 is ungated — Gemma 3 required accepting a licence first",
-            "Section 7 toolbelt: recall 5/6, restraint 4/4, and 5/5 SQL "
+            "Section 9 toolbelt: recall 5/6, restraint 4/4, and 5/5 SQL "
             "queries that ran — the cleanest SQL record after Qwen",
             "The fastest of the four at 5.7s a question",
             "The most downloaded model here by a wide margin",
@@ -285,7 +285,7 @@ REGISTRY: dict[str, ModelSpec] = {
             "cleanly here. The PyTorch fallback costs about 12 MB of VRAM PER "
             "PROMPT TOKEN — roughly 100x a normal transformer.",
             "Measured on a 10 GB card: 1,024-token prompt peaks at 15.6 GB "
-            "and 1,280 tokens runs out of memory. Section 7's prompt is 1,600 "
+            "and 1,280 tokens runs out of memory. Section 9's prompt is 1,600 "
             "tokens, so it never gets started.",
             "Its license is NVIDIA's own, not Apache 2.0",
         ),
@@ -296,7 +296,7 @@ REGISTRY: dict[str, ModelSpec] = {
             "Needs the mamba-ssm / causal-conv1d / triton CUDA kernels, which "
             "do not build cleanly on Windows. Without them it costs about "
             "12 MB of VRAM per prompt token and runs out of memory partway "
-            "through Section 7's prompt. Expected to be fine on Linux with "
+            "through Section 9's prompt. Expected to be fine on Linux with "
             "those kernels installed — this is a platform limit, not a "
             "verdict on the model."
         ),
@@ -326,7 +326,7 @@ def tiny() -> ModelSpec:
 
 
 def default_local() -> ModelSpec:
-    """The workhorse behind the agent demos, Sections 6 through 11."""
+    """The workhorse behind the agent demos, Sections 7 through 11."""
     return REGISTRY["qwen"]
 
 
@@ -428,7 +428,7 @@ def selectable() -> list[str]:
     before it matters.
 
     Blocked models stay in the registry and stay loadable by key, so
-    `compare()`, `scripts/compare_models.py` and Section 9's notebook all still
+    `compare()`, `scripts/compare_models.py` and Section 3's notebook all still
     tell the whole story.
     """
     return [key for key, spec in REGISTRY.items() if spec.runs_here]

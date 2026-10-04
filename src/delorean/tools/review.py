@@ -1,7 +1,7 @@
 """
 review.py — the two tools that turn rows into appraisal work.
 
-Section 7 gives the agent three tools and they compose deliberately:
+Section 9 gives the agent three tools and they compose deliberately:
 
     run_sql       chooses WHICH properties we are talking about
     ratio_study   judges them against the IAAO standards
@@ -212,7 +212,7 @@ def ratio_study(sql: str, group_by: str = "") -> dict | str:
 
 def _grouped_summary(group_by: str, groups: list[dict],
                      failing: list[dict]) -> str:
-    """The sentence Section 7 is built to produce."""
+    """The sentence Section 9 is built to produce."""
     if not failing:
         return f"All {len(groups)} {group_by}s meet the IAAO standards."
 
@@ -333,7 +333,7 @@ def _coordinates_for(parcel_ids):
     """Fetch what it takes to draw a parcel: where it is, and how it is doing.
 
     Coordinates live on `parcels` and the ratio lives on `sales_feed`, so this
-    is the one place in Section 7 that genuinely needs both. It is a LEFT join
+    is the one place in Section 9 that genuinely needs both. It is a LEFT join
     on purpose -- a parcel with no sale still belongs on the map, it just has
     no ratio to colour it by.
     """

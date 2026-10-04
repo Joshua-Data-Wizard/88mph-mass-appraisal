@@ -1,4 +1,4 @@
-"""Run Section 7's toolbelt against every local model in the registry.
+"""Run Section 9's toolbelt against every local model in the registry.
 
     uv run python scripts/compare_models.py qwen smol
     uv run python scripts/compare_models.py            # all of them

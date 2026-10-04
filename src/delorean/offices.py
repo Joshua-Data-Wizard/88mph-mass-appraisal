@@ -12,7 +12,7 @@ Section 10. This is the client side: the agent's end of the wire.
 
 WHAT IS ACTUALLY DIFFERENT FROM SECTION 6
 -----------------------------------------
-In Section 6 we wrote a Python function, wrote a JSON schema describing it by
+In Section 7 we wrote a Python function, wrote a JSON schema describing it by
 hand, and handed both to the model. Every tool cost us two pieces of code.
 
 Here we write **neither**. `Offices` starts three programs it did not write,
@@ -26,7 +26,7 @@ rather than asserted.
 WHY THERE IS A THREAD IN HERE
 -----------------------------
 The MCP SDK is async. Our agent graph is synchronous, and deliberately so —
-Section 5 puts Reason → Act → Observe on a slide and the code has to match it.
+Section 6 puts Reason → Act → Observe on a slide and the code has to match it.
 Rather than colour the whole repository async for one section, `Offices` owns
 a background thread running an event loop, and hands the rest of the codebase
 ordinary blocking methods.

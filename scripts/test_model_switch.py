@@ -61,13 +61,13 @@ CEILING_SLACK_GB = 0.25
 CANDIDATES = ("qwen", "tiny", "smol")
 
 APPS = [
-    "01_Flux_Capacitor_local_Streamlit.py",
-    "02_03_Time_Circuits_and_Plutonium_local_Streamlit.py",
-    "04_06_Office_Assistant_local_Streamlit.py",
-    "05_88mph_Valuation_Review_local_Streamlit.py",
+    "02_Flux_Capacitor_local_Streamlit.py",
+    "04_05_Time_Circuits_and_Plutonium_local_Streamlit.py",
+    "07_08_Office_Assistant_local_Streamlit.py",
+    "09_88mph_Valuation_Review_local_Streamlit.py",
     # §10 last on purpose: it starts three MCP subprocesses, and `Offices`
     # closes them itself at interpreter exit.
-    "08_09_Universal_Adapter_local_Streamlit.py",
+    "10_Universal_Adapter_local_Streamlit.py",
 ]
 
 
