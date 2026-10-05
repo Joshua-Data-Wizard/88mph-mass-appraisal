@@ -11,15 +11,35 @@ WHAT MAKES THIS APP DIFFERENT FROM THE OTHER TWO
 ------------------------------------------------
 Each app in this repository shows a different thing on purpose:
 
-    Section 7/8   the LOOP is the show      -- the trace fills the screen
-    Section 9     the FINDING is the show   -- results fill the screen,
-                  (this one)                   the loop is one click below
+    Section 7/8   the LOOP is the LESSON    -- this is what a tool *is*
+    Section 9     the LOOP is the EVIDENCE  -- this is why you may believe
+                  (this one)                   the number
     Section 11    only the ANSWER           -- the machinery is gone
 
-By Section 9 the audience has already watched Reason -> Act -> Observe turn.
-Showing it again competes with the thing they came for, which is what the
-agent actually found. So the trace runs live while it works and folds itself
-away when the answer lands.
+ORDER ON SCREEN, AND IT IS DELIBERATE
+-------------------------------------
+    1. how it got there      the trace, VISIBLE -- the SQL it wrote and
+                             exactly what came back
+    2. what it concluded     the rendered answer
+    3. now check it yourself the dial, then the figures, laid out to audit
+
+🩹 **This file used to argue the opposite, and the old reasoning is worth
+keeping so nobody restores it.** It said: "by Section 9 the audience has
+already watched Reason -> Act -> Observe turn. Showing it again competes with
+the thing they came for." So the trace folded itself away when the answer
+landed and sat one click below the results.
+
+That is wrong. **Hiding the steps turns a demonstration into an assertion.**
+Section 7 shows the loop to teach what a tool is; Section 9 shows it because
+it is the *evidence*. This room is being asked whether a machine can be
+trusted with an assessment roll, and the only thing that earns that is
+watching it write the SQL itself and reading what the tool handed back. Fold
+that away and all the audience has left is a confident number -- which is
+precisely what Section 5 spent three minutes warning them about.
+
+So the trace stays open after the run, the SQL is quoted above it, and the
+figures come last under a heading that invites checking rather than
+believing. **Do not collapse it again.**
 
 THE STORY, IN THREE QUESTIONS
 -----------------------------
@@ -180,6 +200,34 @@ def cached(model_key: str) -> bool:
 
 
 @st.cache_data(show_spinner=False)
+def prompt_size(model_key: str) -> int:
+    """How many tokens this section's prompt costs on THIS model's tokenizer.
+
+    Counted, never written down. The sidebar used to say "about 1,600 tokens"
+    as a literal, and the picker offers five tokenizers that disagree by
+    around 250 tokens on this exact text -- measured through
+    `agent.render_prompt()`: Qwen 1,556, SmolLM3 1,451, Gemma 1,347,
+    Phi-4-mini 1,293. Same class of bug as printing a vocabulary size.
+
+    ⚠️ It goes through `agent.render_prompt()` rather than
+    `apply_chat_template(tools=...)`, because that is what the app actually
+    sends. Measured the naive way, Phi-4-mini reports **203** tokens -- its
+    template silently drops the tool list, which is the input-side failure
+    `render_prompt()` exists to absorb. A count taken the wrong way would
+    have quietly advertised the bug as a feature.
+
+    Returns an int, so nothing here keeps a reference to a model or a
+    tokenizer once Streamlit has cached the answer.
+    """
+    tok = llm.load_tokenizer(model_key)
+    return len(tok.encode(agent.render_prompt(
+        tok,
+        [{"role": "system", "content": prompts.REVIEW_ASSISTANT},
+         {"role": "user", "content": REVIEW_QUESTIONS[0][2]}],
+        tools.schemas(list(TOOLBELT)))))
+
+
+@st.cache_data(show_spinner=False)
 def county_parcels():
     """Every parcel, for drawing the county underneath a selection."""
     return data.parcels_df()
@@ -222,15 +270,52 @@ def last_call(trace: list[dict], name: str) -> dict | None:
 
 
 def render_findings(state: dict) -> None:
-    """Draw whatever the agent actually produced.
+    """Draw whatever the agent actually produced, under its own heading.
 
     The app does not guess what the question was about -- it reads the trace
     and shows what the tools returned. Ask something that needs no tool and
     nothing is drawn, which is the restraint case working, not a bug.
+
+    **The heading lives in here, not at the call site**, because this function
+    is the only thing that knows whether it has anything to draw. A
+    "now check it yourself" heading standing over empty space reads as a
+    broken app, and the restraint question draws nothing at all.
     """
     trace = state.get("trace", [])
 
     ratio_step = last_call(trace, "ratio_study")
+    map_step = last_call(trace, "map_parcels")
+    sql_step = last_call(trace, "run_sql")
+
+    frame = review_tool.last_map() if map_step else None
+    draw_map = frame is not None and len(frame) > 0
+    rows = (sql_step["result"]["data"].get("rows", [])
+            if sql_step and not ratio_step and not map_step else [])
+
+    if not (ratio_step or draw_map or rows):
+        return
+
+    st.markdown("##### 📊 Now check it yourself")
+    st.caption(
+        "The same figures the agent read, laid out so an appraiser can audit "
+        "them. **If the prose above and the numbers below ever disagree, "
+        "believe the numbers** — `ratio.py` computes these and no language "
+        "model goes anywhere near them."
+    )
+
+    # The dial, with the figures it belongs to rather than up in the header.
+    #
+    # One guard, not two: `dial` is set in the run block above if and only if
+    # this run produced a single honest median, and cleared otherwise. A
+    # needle left glowing from an earlier question is worse than no needle,
+    # because it looks like it belongs to whatever is on screen now.
+    if st.session_state["dial"] is not None:
+        svg_card(viz.speedometer_html(
+            st.session_state["dial"],
+            caption="Median assessment ratio",
+            subtitle=st.session_state["dial_note"]),
+            height=viz.speedometer_frame_height())
+
     if ratio_step:
         payload = ratio_step["result"]["data"]
         if payload.get("results"):
@@ -242,22 +327,16 @@ def render_findings(state: dict) -> None:
         else:
             st.html(viz.scorecard_html(payload, title="IAAO ratio study"))
 
-    map_step = last_call(trace, "map_parcels")
-    if map_step:
-        frame = review_tool.last_map()
-        if frame is not None and len(frame):
-            markup = viz.parcel_map_html(
-                frame,
-                color_by=map_step["result"]["data"].get("coloured_by", "ratio"),
-                context=county_parcels(),
-                title="Hill Valley County")
-            svg_card(markup, height=viz.map_frame_height(markup))
+    if draw_map:
+        markup = viz.parcel_map_html(
+            frame,
+            color_by=map_step["result"]["data"].get("coloured_by", "ratio"),
+            context=county_parcels(),
+            title="Hill Valley County")
+        svg_card(markup, height=viz.map_frame_height(markup))
 
-    sql_step = last_call(trace, "run_sql")
-    if sql_step and not ratio_step and not map_step:
-        rows = sql_step["result"]["data"].get("rows", [])
-        if rows:
-            st.dataframe(rows, width="stretch", hide_index=True)
+    if rows:
+        st.dataframe(rows, width="stretch", hide_index=True)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -268,7 +347,12 @@ st.session_state.setdefault("question", REVIEW_QUESTIONS[0][2])
 st.session_state.setdefault("pending", "")
 st.session_state.setdefault("use_ratio_tool", True)
 st.session_state.setdefault("state", None)
+# `dial` and `dial_note` always move together -- the needle and the words
+# under it -- so they are initialised together. `dial_note` was missing
+# here and only worked because one read site happened to use
+# `.get(..., "")`; the other indexes directly.
 st.session_state.setdefault("dial", None)
+st.session_state.setdefault("dial_note", "")
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  Sidebar
@@ -324,10 +408,16 @@ with st.sidebar:
             "switch back.", icon="⚠️")
 
     # This app is where a blocked model would have done the most damage --
-    # Section 9's prompt is about 1,600 tokens, which is past where Nemotron
+    # the prompt here is the largest in the talk, and past where Nemotron
     # runs out of memory. Explain the absence rather than leaving a gap.
     for missing in models.blocked():
         st.caption(f"⚠️ **{missing.label}** is not offered — {missing.blocked_reason}")
+
+    st.caption(
+        f"For scale: this section's prompt is **{prompt_size(model_key):,} "
+        f"tokens** on {spec.label} — the system prompt plus three tool "
+        f"schemas, re-sent on *every* step of the loop."
+    )
 
     st.divider()
     st.markdown("**The toolbelt**")
@@ -350,9 +440,10 @@ with st.sidebar:
     with st.expander("What the model can see"):
         st.caption(
             "The whole schema, exactly as it is handed to the model. Two "
-            "tables, eleven columns each, curated — `parcels` really has "
-            "sixteen. Every extra column is one more thing to reach for and "
-            "get wrong."
+            "tables, **23 columns between them** — curated down from the 29 "
+            "the database really holds (`parcels` has 16, and the model is "
+            "shown 11). Every extra column is one more thing to reach for "
+            "and get wrong."
         )
         st.code(query_tool.SCHEMA_HELP, language="text")
         st.caption(
@@ -385,23 +476,20 @@ with st.sidebar:
 #  Header
 # ─────────────────────────────────────────────────────────────────────────────
 
-left, right = st.columns([3, 2], gap="large")
+st.title("⚡ 88 MPH — The Valuation Review Assistant")
+st.markdown(
+    "*Where we're going, we don't need spreadsheets.*  \n"
+    "Ask the questions you would actually ask on a Monday morning. "
+    "The agent writes its own SQL, runs the IAAO statistics, and draws "
+    "the map — and you watch every step it takes to get there."
+)
 
-with left:
-    st.title("⚡ 88 MPH — The Valuation Review Assistant")
-    st.markdown(
-        "*Where we're going, we don't need spreadsheets.*  \n"
-        "Ask the questions you would actually ask on a Monday morning. "
-        "The agent writes its own SQL, runs the IAAO statistics, and draws "
-        "the map."
-    )
-
-with right:
-    svg_card(viz.speedometer_html(
-        st.session_state["dial"],
-        caption="Median assessment ratio",
-        subtitle=st.session_state.get("dial_note", "")),
-        height=viz.speedometer_frame_height())
+# The speedometer used to live up here, beside the title, lit from the moment
+# the app opened. It now sits with the figures it belongs to, because a needle
+# in the header keeps its last reading no matter what is asked next -- so a
+# definition question left a stale median glowing above an answer that had
+# nothing to do with it. Drawn by `render_findings()` only when the run on
+# screen actually produced one.
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  Ask
@@ -455,17 +543,36 @@ if pending:
         state = run_agent(pending, with_ratio_tool=with_ratio,
                           model_key=model_key, system=system, slot=slot)
         used = [s["tool"] for s in state["trace"] if s["step"] == "act"]
+        # `expanded=True`, deliberately. With `expanded=False` the trace
+        # visibly folded shut at the exact moment the answer arrived, which
+        # is the worst possible timing: the room watched the evidence
+        # disappear as the claim appeared. It stays open, and the rerun below
+        # replaces it with the same trace rendered as a permanent section.
         status.update(
             label=(f"{state['elapsed']:.1f}s · "
                    + (" → ".join(used) if used
                       else "answered directly, no tool needed")),
-            state="complete", expanded=False)
+            state="complete", expanded=True)
 
     st.session_state["state"] = state
 
-    # Move the needle only when a single (ungrouped) study just ran. A grouped
-    # study has six medians and no honest one-needle answer -- the table says
-    # it better.
+    # ── The needle: one reading, or none ───────────────────────────────────
+    #
+    # ONE needle can only honestly carry ONE median, so it is set only when a
+    # single ungrouped study just ran. A by-neighborhood study has six, and a
+    # question that needed no study at all has none.
+    #
+    # ⚠️ **Cleared first, every time.** The earlier version left a stale value
+    # in place for the grouped case and explained it away in the subtitle --
+    # "still the countywide figure". That was defensible while the dial lived
+    # in the HEADER as a standing instrument. It is not defensible now that it
+    # is drawn WITH this run's figures, because a retained countywide needle
+    # sitting above a table of six neighborhood medians is indistinguishable
+    # from a needle that belongs to that table. Reported from the screen on
+    # question 2, which is exactly where it looked wrong.
+    st.session_state["dial"] = None
+    st.session_state["dial_note"] = ""
+
     step = last_call(state["trace"], "ratio_study")
     if step:
         payload = step["result"]["data"]
@@ -475,22 +582,54 @@ if pending:
                     st.session_state["dial"] = test["value"]
                     st.session_state["dial_note"] = (
                         f"{payload.get('sales_used', 0)} qualified sales")
-        else:
-            # A grouped study has one median per group and no honest way to
-            # put six of them on one needle, so the dial keeps whatever it
-            # last showed -- and says so, rather than letting the reading look
-            # like it belongs to the table underneath it.
-            st.session_state["dial_note"] = (
-                "still the countywide figure — the table below has one per "
-                f"{payload.get('grouped_by', 'group')}"
-                if st.session_state.get("dial") is not None
-                else f"one per {payload.get('grouped_by', 'group')} "
-                     "in the table below")
     st.rerun()
 
 state = st.session_state.get("state")
 
 if state:
+    # ── 1. How it got there ─────────────────────────────────────────────────
+    #
+    # NOT an expander, and NOT collapsed. This is the evidence for everything
+    # below it. See this file's docstring: the version that folded the trace
+    # away left the room with nothing but a confident number, which is exactly
+    # what Section 5 spends three minutes warning them about.
+    st.markdown("##### 🔁 How it got there")
+    st.caption(
+        "Every step, in the order it happened — including the SQL the agent "
+        "wrote itself and exactly what came back. Nothing is summarised and "
+        "nothing is hidden."
+    )
+
+    for step in state["trace"]:
+        if step.get("step") == "act" and step["args"].get("sql"):
+            st.caption(f"`{step['tool']}` wrote this query itself:")
+            st.code(step["args"]["sql"], language="sql")
+
+    st.html(viz.trace_html(state["trace"], answer=state.get("answer", ""),
+                           question=None))
+    st.caption(
+        f"Toolbelt for this run: "
+        f"{', '.join('`' + t + '`' for t in state.get('toolbelt', []))}"
+        f" · {state['elapsed']:.1f}s")
+
+    # ── 2. What it concluded ────────────────────────────────────────────────
+    #
+    # ⚠️ `st.markdown`, never interpolated into an HTML string. The model
+    # writes markdown -- given no ratio tool it returns a full markdown TABLE
+    # -- which inside a <div> shows up as raw pipes and dashes. And model
+    # output is untrusted text that does not belong concatenated into markup,
+    # in a repository other offices are meant to copy from. The trace above
+    # holds this identical text exactly as the model emitted it, escaped.
+    if state.get("answer"):
+        st.markdown("##### 🏁 What it concluded")
+        with st.container(border=True):
+            st.markdown(state["answer"])
+        st.caption(
+            "Rendered from the identical characters the last step of the "
+            "trace shows raw — the model produced a **string**, not a "
+            "formatted document."
+        )
+
     # This banner has to survive the rerun and sit WITH the results. Shown
     # only during the run it flashes past, and the audience is then looking
     # at a table of numbers with no idea why it is different.
@@ -501,30 +640,10 @@ if state:
             "Compare what came back with question 2, which had the tool.",
             icon="🔧")
 
-    if state.get("answer"):
-        # Rendered as markdown in a plain bordered container rather than
-        # pasted into an HTML string. Two reasons, and the second is the one
-        # that bites: the model writes markdown -- given no ratio tool it
-        # returns a full markdown TABLE -- which inside a <div> would show up
-        # as raw pipes and dashes. And model output is untrusted text; it does
-        # not belong concatenated into markup, in a repository other offices
-        # are meant to copy from.
-        with st.container(border=True):
-            st.markdown(state["answer"])
-
+    # ── 3. Now check it yourself ────────────────────────────────────────────
+    # Draws its own heading, and only when it has something to draw.
     render_findings(state)
 
-    with st.expander("How it got there — the loop, and the SQL it wrote"):
-        for step in state["trace"]:
-            if step.get("step") == "act" and step["args"].get("sql"):
-                st.caption(f"`{step['tool']}` wrote this query itself:")
-                st.code(step["args"]["sql"], language="sql")
-        st.html(viz.trace_html(state["trace"], answer=state.get("answer", ""),
-                               question=None))
-        st.caption(
-            f"Toolbelt for this run: "
-            f"{', '.join('`' + t + '`' for t in state.get('toolbelt', []))}"
-            f" · {state['elapsed']:.1f}s")
 else:
     st.info(
         "Press **1️⃣ How did the county do?** to begin. The agent will write "

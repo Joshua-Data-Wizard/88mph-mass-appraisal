@@ -22,14 +22,35 @@ nothing in this file changes.
 That is the difference between a charger built for one phone and a USB-C
 socket, and it is the whole of this section.
 
+ORDER ON SCREEN, AND IT IS DELIBERATE
+-------------------------------------
+    1. how it got there      the trace, VISIBLE -- every office it asked,
+                             every call, and what came back
+    2. the decision          the rendered answer
+    3. what that costs you   the sync impact, when a deed was corrected
+
+This section has the strongest claim on an open trace of any app here. The
+question is whether a machine may tell a man he cannot split his own land,
+and the only thing that makes that answer inspectable is watching it ask four
+separate programs and reading what each one said. Fold the trace away and a
+county official is being asked to take a confident paragraph on trust.
+
+🩹 **Two earlier versions of this were wrong in opposite directions.** The
+first rendered the answer at the very TOP, which gave away the verdict before
+the room had seen which offices were asked. The second moved it last but left
+the trace in a collapsed expander -- still hiding the evidence, just further
+down the page. **The trace is not supporting material. It is the argument.**
+`scripts/test_app_adapter.py` compares caption positions and will fail if the
+order moves. **Do not collapse it again.**
+
 THE TWO DEMOS
 -------------
-    8   "May Biff Tannen split his lot?"
+    7   "May Biff Tannen split his lot?"
         Lot size lives with the Appraiser. Ownership lives with the Clerk.
         The tax balance lives with the Tax Collector. The rule lives in our
         own policy manual. Today that is three phone calls and a week.
 
-    9   "Is our sales file still true?"
+    8   "Is our sales file still true?"
         The Appraiser works from a feed pulled on one date. The Clerk kept
         correcting deeds afterwards. Nobody sends a note. Section 9's ratio
         study was run on a sale that had already been reclassified.
@@ -65,10 +86,10 @@ LOCAL_TOOLS = ["search_policy"]
 # Keys are written out rather than derived from the label: a key built from
 # display text throws away widget state the moment somebody renames a button.
 QUESTIONS = [
-    ("q_split", "8️⃣ May Biff split his lot?",
+    ("q_split", "7️⃣ May Biff split his lot?",
      "Biff Tannen wants to split parcel 04-127-3891 into two lots. May he? "
      "Check everything the county requires."),
-    ("q_sync", "9️⃣ Is our sales file still true?",
+    ("q_sync", "8️⃣ Is our sales file still true?",
      "Our sales file was pulled from the Clerk on {pulled}. Has the Clerk "
      "corrected any deeds since then that we would still be using?"),
 ]
@@ -81,16 +102,6 @@ ALSO_TRY = [
     ("q_cure", "What would Biff have to do?",
      "What exactly would Biff Tannen have to do to get his split approved?"),
 ]
-
-
-def set_field(key: str, value: str) -> None:
-    """Change a text box from a button press.
-
-    Streamlit forbids writing to `st.session_state[key]` once the widget with
-    that key exists in the same run. An `on_click` callback runs before the
-    next run, while the write is still allowed.
-    """
-    st.session_state[key] = value
 
 
 def ask_this(question: str) -> None:
@@ -171,7 +182,9 @@ def render_sync_impact(rows: list[dict]) -> None:
             continue
         hood = match.iloc[0]["neighborhood"]
 
-        st.markdown(f"#### What that one deed does to **{hood}**")
+        # `######`, not `####`. The section heading above this is `#####`,
+        # and a bigger heading underneath it reads as a new section starting.
+        st.markdown(f"###### What that one deed does to **{hood}**")
         st.caption(
             f"Deed {row.get('instrument_number', '?')} on parcel {parcel} was "
             f"booked as a {row.get('deed_type', '?')} and corrected on "
@@ -365,10 +378,15 @@ if pending:
         run_state["elapsed"] = time.time() - started
         run_state["answer"] = agent.final_answer(run_state)
         asked = [s["tool"] for s in run_state["trace"] if s["step"] == "act"]
+        # `expanded=True`, deliberately. With `expanded=False` the trace
+        # folded shut at the exact moment the answer arrived -- the room
+        # watched four offices' worth of evidence vanish as the verdict
+        # appeared. The rerun below replaces it with the same trace rendered
+        # as a permanent section.
         status.update(
             label=(f"{run_state['elapsed']:.0f}s · "
                    + (" → ".join(asked) if asked else "answered directly")),
-            state="complete", expanded=False)
+            state="complete", expanded=True)
 
     st.session_state["state"] = run_state
     st.rerun()
@@ -376,31 +394,83 @@ if pending:
 state = st.session_state.get("state")
 
 if state:
+    # ── 1. How it got there ─────────────────────────────────────────────────
+    #
+    # NOT an expander, and NOT collapsed. See this file's docstring: this is
+    # the section where a machine tells somebody they may not split their own
+    # land, and the trace is the only thing that makes that inspectable.
+    st.markdown("##### 🔁 How it got there")
+
+    acts = [s for s in state["trace"] if s.get("step") == "act"]
+    places = {(offices.owner_of(s["tool"]).label
+               if offices.owner_of(s["tool"]) else "this office")
+              for s in acts}
+    if acts:
+        st.caption(
+            f"**{len(acts)} tool calls across {len(places)} separate "
+            f"programs** to answer one question — and which building each one "
+            f"went to. Not four functions over one database: four *programs*, "
+            f"three of them belonging to somebody else."
+        )
+
+    for step in acts:
+        owner = offices.owner_of(step["tool"])
+        where = (f"{owner.icon} {owner.label}" if owner
+                 else "📖 this office")
+        st.caption(f"**{where}** · `{step['tool']}` · "
+                   f"`{json.dumps(step['args'])}`")
+
+    st.html(viz.trace_html(state["trace"],
+                           answer=state.get("answer", ""), question=None))
+    st.caption(f"{state['elapsed']:.0f}s · {state['steps']} reasoning steps")
+
+    # ── 2. The decision ────────────────────────────────────────────────────
+    #
+    # ⚠️ `st.markdown`, never interpolated into an HTML string: the model
+    # writes markdown, and model output is untrusted text that does not belong
+    # concatenated into markup. The trace above holds this identical text
+    # exactly as the model emitted it, escaped.
     if state.get("answer"):
-        # Rendered as markdown in a plain container rather than pasted into an
-        # HTML string: the model writes markdown, and model output is
-        # untrusted text that does not belong concatenated into markup.
+        st.markdown("##### 🏁 The decision, with every office consulted")
         with st.container(border=True):
             st.markdown(state["answer"])
+        st.caption(
+            "Rendered from the identical characters the trace above shows raw "
+            "— the model produced a **string**, not a formatted document."
+        )
 
+    # ── 3. What that costs you ─────────────────────────────────────────────
+    #
+    # Only the sync question produces these. The agent finds the problem; the
+    # arithmetic lives where a model cannot get it wrong, which is the same
+    # rule Section 9 runs on.
     corrections = corrected_parcels(state["trace"])
     if corrections:
-        render_sync_impact(corrections)
+        st.markdown("##### 📊 What that costs you")
 
-    with st.expander("How it got there — every office it asked"):
-        for step in state["trace"]:
-            if step.get("step") == "act":
-                owner = offices.owner_of(step["tool"])
-                where = (f"{owner.icon} {owner.label}" if owner
-                         else "📖 this office")
-                st.caption(f"**{where}** · `{step['tool']}` · "
-                           f"`{json.dumps(step['args'])}`")
-        st.html(viz.trace_html(state["trace"],
-                               answer=state.get("answer", ""), question=None))
-        st.caption(f"{state['elapsed']:.0f}s · {state['steps']} reasoning steps")
+        # The only theme reference in this app, and it is here because it is
+        # the mechanism rather than a decoration: a stale snapshot of a record
+        # that has been edited behind you is precisely Marty's photograph.
+        st.info(
+            f"📸 **Marty carried a photograph of his brother and sister, and "
+            f"watched them fade out of it one at a time.** The photograph was "
+            f"true when it was taken. What changed was the past behind it — "
+            f"and nothing about the photograph told him so.\n\n"
+            f"**Your sales file is that photograph.** It was pulled from the "
+            f"Clerk on **{pulled}**, it was correct that morning, and the "
+            f"Clerk has gone on correcting deeds ever since. Nobody sends a "
+            f"note.",
+            icon="🕰️")
+
+        st.caption(
+            "Below: the same IAAO statistics with and without the corrected "
+            "deed. **`ratio.py` computes both and no language model goes "
+            "anywhere near them.**"
+        )
+        render_sync_impact(corrections)
 else:
     st.info(
-        "Press **8️⃣ May Biff split his lot?** to begin. The agent will ask "
+        "Press **7️⃣ May Biff split his lot?** to begin. The agent will ask "
         "the Appraiser, the Clerk of Courts and the Tax Collector, then read "
         "our own policy manual before it answers.",
         icon="🔌")

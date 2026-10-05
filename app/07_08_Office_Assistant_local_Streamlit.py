@@ -16,24 +16,50 @@ Why these two sections share one app
 Because the point of Section 8 is that RAG is **not** a different kind of magic.
 It is a tool. Same agent, same Reason -> Act -> Observe loop, same code path --
 one more entry in a list. Building it as a second tab on the same agent makes
-that argument visible instead of asserting it from a slide. Section 9 sits
-between them in the talk, so you will reopen this app after it.
+that argument visible instead of asserting it from a slide. The two tabs run
+back to back, so the toolbelt grows from one tool to two without the audience
+losing the thread.
 
 The system prompt is the third demo hiding in here
 --------------------------------------------------
 Section 4 taught that a system prompt changes how a model *sounds*. Here it does
 something harder: it decides when the agent should reach for a tool and when it
-should just answer. That is not a stylistic claim, it is measured. With three
-tools offered and no guardrail, this model searched the policy manual to answer
-"what is the difference between market value and assessed value?". With the
-guardrail prompt it answers directly -- and still calls the right tool every
-time it genuinely needs one.
+should just answer. That is not a stylistic claim, it is measured -- by
+`scripts/eval_restraint.py`, on the belts this app actually offers:
 
-    toolbelt          restraint     recall
-    1 tool            6/6           1/1
-    2 tools           6/6           2/2
-    3 tools           5/6  <- slips 4/4
-    3 tools + guard   6/6           4/4
+    toolbelt                                 restraint   recall
+    1 tool   [lookup]                              5/5      2/2
+    2 tools  [lookup, policy]   <- TAB 2           4/5      4/4
+    3 tools  [lookup, policy, parcels]             5/5      6/6
+    3 tools  [lookup, parcels, policy]             4/5      6/6
+    1 tool   [lookup]                 + guard      5/5      2/2
+    2 tools  [lookup, policy]         + guard      5/5      4/4   <- fixed
+    3 tools  [lookup, policy, parcels] + guard     5/5      6/6
+    3 tools  [lookup, parcels, policy] + guard     4/5      6/6   <- NOT fixed
+
+**The slip lands on the Almanac tab, which is the point.** Two tools and no
+guardrail is exactly tab 2, and in that configuration the model searched the
+policy manual to answer "what is the difference between market value and
+assessed value?" -- a definition it knew perfectly well. Loading the guardrail
+fixes it, at no cost to recall. That is the stage move, and it is measured.
+
+⚠️ **Three corrections, because this table was wrong in an instructive way.**
+
+1. **The slip is at two tools, not three.** The old table said three, and showed
+   two as clean -- which quietly contradicted the stage move printed directly
+   beneath it, because tab 2 *is* two tools.
+2. **Belt LENGTH is not the variable; belt ORDER is.** The two three-tool rows
+   hold the same three tools and differ only in the sequence they are declared
+   in. `tools.schemas()` passes that order through untouched, so this is the
+   model being swayed by position in a list.
+3. **And the guardrail does not always rescue it.** On this app's belts it does,
+   cleanly. On `[lookup, parcels, policy]` the slip survives the prompt. **A
+   system prompt is a strong lever, not a guarantee** -- so a configuration
+   nobody has measured has not been established, however well its neighbour
+   scored.
+
+Every slip, in every configuration, is that same one question.
+`scripts/eval_tools.py` finds it independently: 28/29, and that is the 1.
 
 So the system prompt panel is not decoration. Open it, switch it off, and watch
 the agent get worse.
@@ -104,6 +130,21 @@ ALMANAC_QUESTIONS = [
 ]
 
 
+def shorten(text: str, width: int = 46) -> str:
+    """Label text for a button, with an ellipsis ONLY if something was cut.
+
+    `f"{q[:30]}…"` put a trailing ellipsis on every label whether it had been
+    truncated or not, so the 19-character *"Pull up 4-127-3891."* rendered as
+    "Pull up 4-127-3891.…" — a full stop followed by three dots, on a
+    projector. It also cut at the nearest character rather than the nearest
+    word, which removed the parcel number from the one button whose whole
+    point is the parcel number.
+    """
+    if len(text) <= width:
+        return text
+    return text[:width].rsplit(" ", 1)[0] + "…"
+
+
 def set_field(key: str, value: str) -> None:
     """Change a text box from a button press.
 
@@ -130,15 +171,6 @@ def build(model_key: str, tool_names: tuple[str, ...]):
     model, tokenizer = load_model(model_key)
     responder = agent.local_responder(model, tokenizer)
     return agent.build_agent(responder, list(tool_names)), responder
-
-
-def gpu_status() -> tuple[float, float] | None:
-    import torch
-
-    if not torch.cuda.is_available():
-        return None
-    free, total = torch.cuda.mem_get_info()
-    return free / 1024**3, total / 1024**3
 
 
 def run_agent(question: str, system: str, tool_names: list[str], slot,
@@ -180,11 +212,52 @@ def run_agent(question: str, system: str, tool_names: list[str], slot,
     answer = agent.final_answer(state)
     slot.html(viz.trace_html(state["trace"], answer=answer, question=question))
 
+    # ── The same answer, rendered ────────────────────────────────────────────
+    #
+    # The trace above shows the answer EXACTLY as the model emitted it, because
+    # that is the honest picture: it produced characters. Markdown markers show
+    # as literal `**` and `*` up there, and that is not a bug to hide -- it is
+    # the evidence for everything Section 7 claims. Nothing behind the curtain.
+    #
+    # This box is the SAME TEXT through `st.markdown()`: what an office would
+    # actually ship. Both, on purpose.
+    #
+    # ⚠️ It must be `st.markdown`, never interpolated into HTML. The model
+    # writes markdown -- given a policy question it returns bold section
+    # numbers, and given the Section 9 toolbelt it returns whole tables -- and
+    # inside a <div> those render as raw pipes and dashes. Model output is also
+    # untrusted text that does not belong concatenated into markup in a
+    # repository other offices are told to copy from.
+    if answer.strip():
+        st.markdown("##### 📄 The same answer, rendered")
+        with st.container(border=True):
+            st.markdown(answer)
+        st.caption(
+            "**Identical text, twice.** Step 4 of the trace is the raw "
+            "characters the model wrote — `**bold**`, bullet markers and all. "
+            "This box is those same characters handed to a markdown renderer. "
+            "**The model did not produce a formatted document; it produced a "
+            "string.** Markdown is just a convention it learned to write, the "
+            "same way it learned everything else in Section 2."
+        )
+
     used = [e["tool"] for e in state["trace"] if e["step"] == "act"]
+    # `last_answer` is a test seam, like `last_offered` below. Nothing on
+    # screen reads it; `scripts/test_app_office.py` matches it EXACTLY against
+    # the rendered st.markdown elements, which is the only way to prove the
+    # answer got its own element rather than being spotted inside some other
+    # block of the page. A looser "does this text appear anywhere" check
+    # passed with the box deleted, because a static expander elsewhere in the
+    # app happens to mention the same parcel and the same owner.
+    st.session_state["last_answer"] = answer
     # Fall back to the last output when nothing asked for a tool -- then the
     # plain answer IS what the model literally wrote.
     st.session_state["last_raw"] = raw_with_call or getattr(responder, "last_raw", "")
     st.session_state["last_used"] = used
+    # Nothing on screen reads `last_offered` -- `scripts/test_app_office.py`
+    # does, to assert the belt actually grew from one tool to two between the
+    # tabs. That is Section 8's entire claim, so it is worth a test seam.
+    # ⚠️ It looks unused if you only grep this file. It is not. Keep it.
     st.session_state["last_offered"] = tool_names
 
 
@@ -199,6 +272,7 @@ st.session_state.setdefault("almanac_q", ALMANAC_QUESTIONS[0])
 st.session_state.setdefault("last_raw", "")
 st.session_state.setdefault("last_used", [])
 st.session_state.setdefault("last_offered", [])
+st.session_state.setdefault("last_answer", "")
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  Sidebar
@@ -280,9 +354,10 @@ with st.sidebar:
             "token, which is ordinary for generating a word at a time.\n\n"
             "Two other things here are on the CPU **on purpose**:\n\n"
             "- **The embedding model** for `search_policy` (`bge-small`, 33M "
-            "parameters). It runs in about a second and leaves the VRAM free "
-            "for the language model — and it means an office with no graphics "
-            "card can still do retrieval.\n"
+            "parameters). A search takes **10–20 ms**; building the whole index "
+            "from the policy documents takes about a second. It leaves the "
+            "VRAM free for the language model — and it means an office with "
+            "no graphics card can still do retrieval.\n"
             "- Tokenizing your question, which is pure text handling.\n\n"
             "`.streamlit/config.toml` also switches off Streamlit's file "
             "watcher. Without that it walked ~5,500 `transformers` submodules "
@@ -313,8 +388,17 @@ data.check()
 
 # ── The system prompt panel — Section 4, still earning its keep ──────────────
 
-n_tokens = len(llm.load_tokenizer(choice).encode(st.session_state["system_text"])) \
+_tok = llm.load_tokenizer(choice)
+n_tokens = len(_tok.encode(st.session_state["system_text"])) \
     if st.session_state["system_text"].strip() else 0
+
+# Never print a token count as a literal. This app's picker offers five models
+# and their tokenizers disagree sharply: `4-127-3891` is 10 pieces to Qwen and
+# Gemma but 6 to SmolLM3 and Phi-4-mini. This read "thirteen" for a while,
+# which was the count for a different string entirely (`parcel 04-127-3891`,
+# the preset Section 2 puts on screen) and wrong for every model here.
+MANGLED = "4-127-3891"
+n_mangled = len(_tok.encode(MANGLED))
 
 with st.expander(
     f"🎛️  **The system prompt driving this agent**  ·  "
@@ -325,11 +409,12 @@ with st.expander(
         "Section 4 showed that a system prompt changes how a model **sounds**. "
         "Here it does something harder: it decides **when the agent reaches for "
         "a tool** and when it should simply answer.\n\n"
-        "That is measured, not asserted. With three tools available and no "
-        "guardrail, this model searched the policy manual to answer *“what is "
-        "the difference between market value and assessed value?”* — a question "
-        "it knew perfectly well. Restraint came back the moment the prompt told "
-        "it when not to look."
+        "That is measured, not asserted — and the failure is on **this app's "
+        "Almanac tab**. With those two tools and no guardrail, this model "
+        "searched the policy manual to answer *“what is the difference between "
+        "market value and assessed value?”* — a definition it knew perfectly "
+        "well. Restraint came back the moment the prompt told it when not to "
+        "look."
     )
 
     cols = st.columns(len(SYSTEM_PRESETS))
@@ -344,17 +429,31 @@ with st.expander(
 
     st.caption(
         "**Try this on stage:** load *No system prompt at all*, go to the "
-        "Almanac tab, and ask a general question. Then put the guardrail back."
+        "Almanac tab, and ask *“what is the difference between market value "
+        "and assessed value?”* — it reaches for the policy manual. Then put "
+        "the guardrail back and ask again."
     )
     st.markdown(
-        "| toolbelt | restraint | recall |\n|---|---|---|\n"
-        "| 1 tool | 6/6 | 1/1 |\n| 2 tools | 6/6 | 2/2 |\n"
-        "| **3 tools** | **5/6** ❌ | 4/4 |\n"
-        "| **3 tools + guardrail** | **6/6** ✅ | **4/4** ✅ |"
+        "| toolbelt | no prompt | + guardrail |\n|---|---|---|\n"
+        "| 1 tool · `lookup` | 5/5 | 5/5 |\n"
+        "| **2 tools · `lookup, policy`** ← *this app's Almanac tab* "
+        "| **4/5** ❌ | **5/5** ✅ |\n"
+        "| 3 tools · `lookup, policy, parcels` | 5/5 | 5/5 |\n"
+        "| 3 tools · `lookup, parcels, policy` | 4/5 ❌ | 4/5 ❌ |"
     )
     st.caption(
-        "*restraint* = answered directly when it should have. "
-        "*recall* = called the right tool when it genuinely needed one."
+        "*restraint, out of 5 questions that should need no tool at all.* "
+        "Recall stayed perfect in every row — the guardrail costs "
+        "nothing. Qwen3.5-4B, greedy decoding · reproduce with "
+        "`uv run python scripts/eval_restraint.py`."
+    )
+    st.caption(
+        "📌 **Look at the last two rows.** They hold the **same "
+        "three tools** and differ only in the order they are listed in "
+        "— and they do not score the same. In that last ordering the "
+        "guardrail does not fix it either. **A system prompt is a strong "
+        "lever, not a guarantee** — so for your own office, a setup "
+        "nobody has measured has not been established."
     )
 
 tab_hover, tab_almanac = st.tabs([
@@ -373,6 +472,20 @@ with tab_hover:
     st.subheader("A tool is a Python function you gave it permission to call")
     st.html(viz.toolbelt_html(HOVER_TOOLS))
 
+    # Section 7 is called The Hoverboard and, until now, nothing but the tab
+    # label said so. It is the one object in these films that is precisely a
+    # BORROWED capability -- which is the technical point of this whole
+    # section, so it is worth two sentences.
+    st.markdown(
+        "🛹 **Marty could not outrun Griff Tannen's gang on foot, so he "
+        "borrowed a board off a kid in the square.** The board did not make "
+        "him faster, or cleverer, or braver. It gave him *something he did "
+        "not have.*\n\n"
+        "**That is all a tool is.** Nothing about the model has changed — same "
+        "weights, same next-token guessing, same everything from Section 2. "
+        "It has simply been handed a way to reach the records room."
+    )
+
     st.markdown(
         "`lookup_parcel` reads one row out of the Appraiser's database. That is "
         "all it is. The model cannot see the database — it can only ask for a "
@@ -380,10 +493,11 @@ with tab_hover:
     )
 
     st.text_input("Ask the assistant", key="hover_q")
-    cols = st.columns(len(HOVERBOARD_QUESTIONS))
-    for n, (col, q) in enumerate(zip(cols, HOVERBOARD_QUESTIONS)):
-        col.button(f"❓ {q[:30]}…", use_container_width=True, key=f"hq{n}",
-                   on_click=set_field, args=("hover_q", q))
+    cols = st.columns(2)
+    for n, q in enumerate(HOVERBOARD_QUESTIONS):
+        cols[n % 2].button(f"❓ {shorten(q)}", use_container_width=True,
+                           key=f"hq{n}", on_click=set_field,
+                           args=("hover_q", q))
 
     if st.button("🛹 Ask", type="primary", use_container_width=True,
                  key="hover_go"):
@@ -404,11 +518,12 @@ with tab_hover:
 
     with st.expander("💡 Two things to try"):
         st.markdown(
-            "**Give it a mangled parcel number.** *Pull up 4-127-3891* — with "
-            "the leading zero missing. The model passes it through exactly as "
-            "you typed it, and the tool repairs it. That is Section 2's lesson "
-            "collecting its debt: the model sees that number as thirteen "
-            "fragments, so it cannot be trusted to reassemble it.\n\n"
+            f"**Give it a mangled parcel number.** *Pull up {MANGLED}* — with "
+            f"the leading zero missing. The model passes it through exactly as "
+            f"you typed it, and the tool repairs it. That is Section 2's lesson "
+            f"collecting its debt: **{spec.label} sees `{MANGLED}` as "
+            f"{n_mangled} separate fragments**, so it cannot be trusted to "
+            f"reassemble it.\n\n"
             "**Ask something it should not need a tool for.** *What is the "
             "difference between market value and assessed value?* A good "
             "assistant answers that one itself."
@@ -435,7 +550,7 @@ with tab_almanac:
     st.text_input("Ask the assistant", key="almanac_q")
     cols = st.columns(2)
     for n, q in enumerate(ALMANAC_QUESTIONS):
-        cols[n % 2].button(f"❓ {q[:44]}…", use_container_width=True,
+        cols[n % 2].button(f"❓ {shorten(q)}", use_container_width=True,
                            key=f"aq{n}", on_click=set_field,
                            args=("almanac_q", q))
 
@@ -462,6 +577,18 @@ with tab_almanac:
                 "controls — open it and see what it was told.",
                 icon="🎛️",
             )
+        else:
+            # The third case, which used to fall through in silence: it reached
+            # for a tool, but the wrong one for a policy question. Saying so is
+            # worth more than saying nothing -- an unexplained screen in front
+            # of a room reads as the app being broken.
+            st.warning(
+                f"It reached for **{'**, **'.join(used)}** rather than the "
+                f"policy manual. That is the tool-choice judgement the system "
+                f"prompt above controls, and it is measured — open the panel "
+                f"and look at the table.",
+                icon="🧰",
+            )
 
     with st.expander("💡 The question this is really setting up"):
         st.markdown(
@@ -472,6 +599,40 @@ with tab_almanac:
             "the rule from this manual *plus* facts from three different county "
             "offices that do not talk to each other. That is what MCP is for."
         )
+
+    # ── The wrap-up, and the hand-off to Section 9 ──────────────────────────
+    #
+    # INSIDE tab 2, not under the tab strip. This app covers two sections in
+    # sequence, so a footer below the strip would announce "that's Sections 7
+    # and 8" while the room is still on tab 1 watching the agent use its first
+    # tool -- the conclusion arriving before the argument. It belongs at the
+    # end of the story, which is the end of the last tab.
+    st.divider()
+    st.markdown(
+        "#### 🎬 That's Sections 7 and 8\n"
+        "**Section 7 — the fix.** A tool is a plain Python function plus a "
+        "description good enough that the model can work out when to call it. "
+        "No vendor feature, no new model. The thing that stopped it inventing "
+        "comparable sales was **fifteen lines of our own code** noticing some "
+        "text and running a function.\n\n"
+        "**Section 8 — the same trick, one more entry.** RAG is not a "
+        "different kind of magic. You watched the visible tool list grow from "
+        "one chip to two, and the agent, the loop and the code path never "
+        "changed. *Find the right page, hand it to the model, ask it to "
+        "read.*\n\n"
+        "And the quiet lesson sitting above both tabs: **the system prompt "
+        "decides when it reaches for the filing cabinet and when it just "
+        "answers** — and that is measured, not asserted.\n\n"
+        "But notice what nobody has asked yet. Every question here has been "
+        "about **one parcel, or one rule.** Nothing has asked whether this "
+        "county's assessments are any *good* — and you cannot answer that one "
+        "parcel at a time. **That's Section 9, and it needs the whole roll.**"
+    )
+    st.caption(
+        "🛹 *“Hey McFly! You bojo! Those boards don't work on water!”* — Griff "
+        "Tannen … he was wrong about the water, and he is about to be wrong "
+        "about the assessment roll too."
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -493,4 +654,4 @@ with tab_almanac:
 #  Full measurements: Plans/vram_model_switching.md.
 # ─────────────────────────────────────────────────────────────────────────────
 
-del loaded_model, _tokenizer
+del loaded_model, _tokenizer, _tok

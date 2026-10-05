@@ -1,18 +1,37 @@
-# 🎬 DEMOS.md — what each demo shows, and what the room takes away
+# 🎬 DEMOS.md — what each demo shows, what it proved, and what it cost
 
-**Purpose:** this is the bridge between the code and the script. Every demo is
-listed with what is on screen, the exact click order, the **specific numbers the
-audience will see**, and the one sentence they should leave with.
+**Three people open this file, and it is written for all of them.**
 
-If you are writing the talk, the quotes and figures in here are **measured, not
-predicted.** They came out of the actual models on the actual dev box, so a
-slide can quote them directly. Where a demo is not built yet it says so in the
-heading — do not write a script against those sections.
+| If you are… | Read it as… |
+|---|---|
+| 🎟️ **Someone who sat through the talk** — or who was handed this afterwards | **A record of what you saw.** Every figure and every model quote below is verbatim from a real run on a real machine. Nothing here is illustrative. The **🎯 takeaway** under each demo is the point in one sentence. |
+| 🏛️ **Appraisal or IT staff deciding whether to try this** | **A specification.** Each demo names the model that ran it, the seconds it took, the hardware it needed, and the exact file to open to reproduce it. Start with the [Quick reference](#quick-reference), then [Running these yourself](#running-these-yourself). |
+| 🎤 **Presenting it** | **The bridge between the code and the script** — click order, timings and fallbacks, marked as below. |
 
-> **The single most useful thing in this document** is [The Spine](#-the-spine)
-> at the bottom. One parcel — `04-127-3891` — runs through the entire 90
-> minutes, and every demo does something to it. Build the narration around that
-> and the talk holds together on its own.
+**The markers, so you can skip what is not yours:**
+
+| | |
+|---|---|
+| 🎯 | **the takeaway** — what this demo is for, in one sentence |
+| 🎤 | **a line worth saying out loud** — plain English for what just happened. Useful to anyone explaining this to a colleague, not only from a stage |
+| ⏱️ | **measured wall clock**, on the machine in §3's table — not an estimate |
+| 🖱️ | **the click order** — also the shortest route to reproducing a demo yourself |
+| 🚨 | **fallback** — what to do when a live demo fails. Presenter-only |
+
+> ### 📌 Everything quoted here is measured, not predicted.
+> Model outputs are verbatim, timings are wall clock, and the ratio statistics
+> were recomputed from the committed databases. **If a figure here ever
+> disagrees with the code, the code is right and this file has drifted** —
+> `uv run python scripts/check_doc_figures.py` is the check that catches it.
+
+> ### 🧵 If you only read one section, read [The Spine](#-the-spine).
+> One parcel — `04-127-3891` — runs through the entire 90 minutes, and every
+> demo does something to it. It is why the talk holds together, and it is the
+> fastest way to understand what these tools do and do not do.
+
+⚠️ **All the data is synthetic.** Hill Valley County does not exist, Biff
+Tannen owns nothing, and no real parcel, owner or address appears anywhere in
+this repository. See [data/README.md](data/README.md).
 
 ---
 
@@ -32,7 +51,7 @@ heading — do not write a script against those sections.
 | **10** | **The Universal Adapter** | **10** | `app/10_Universal_Adapter_local_Streamlit.py` + `mcp_server/` | ✅ built |
 | **11** | **🎈 Your Future Hasn't Been Written Yet** | **15** | no new artifact — **the repo itself**, then Q&A | ✅ decided |
 
-**Five apps cover §2, §4, §5, §7, §9, §8 and §10 — 58 minutes of stage time, and every demo in them is measured.**
+**Five apps cover §2, §4, §5, §7, §8, §9 and §10 — 58 minutes of stage time, and every demo in them is measured.**
 **All eight live demos are built.** §3 and §11 need no numbered demo; see their entries below.
 
 > ### ⏱️ Dry-run measured: **75–80 minutes**, several runs, against a 90:00 slot.
@@ -42,7 +61,11 @@ heading — do not write a script against those sections.
 
 ---
 
-## Before you present
+## Running these yourself
+
+**Each demo is one command.** Nothing is installed globally, nothing phones
+home, and every model runs on the machine in front of you. If you have not set
+the repository up yet, [README.md](README.md) is three commands.
 
 ```powershell
 uv run streamlit run app/02_Flux_Capacitor_local_Streamlit.py
@@ -54,8 +77,9 @@ uv run streamlit run app/10_Universal_Adapter_local_Streamlit.py
 
 ⚠️ **The last two cannot run at the same time.** Each loads its own copy of the
 4B model, and two will not fit on an 8 GB card. Stop one before starting the
-other — a cold start is about 15 seconds, so do it during the intro slides for
-whichever section is next. The §2 and §4/§5 apps are small enough to leave up.
+other — a cold start is about 15 seconds. **Presenting:** do it during the
+intro slides for whichever section is next. The §2 and §4/§5 apps are small
+enough to leave running.
 
 ### 🤖 The model picker — and a live moment worth having ready
 
@@ -386,7 +410,7 @@ Parcel 04-127-3891 — 1955 Hilldale Ct    15,800 sq ft → two lots of 7,900
   so you can say *"we will come back to this number in Section 9,"* and then do.
 - **🌦️ Weather** — the honest refusal. Useful contrast: it behaved *well* here.
 
-### ⚠️ Two things to say out loud
+### ⚠️ Two things worth spelling out
 
 1. **It is blind, not broken, and not lying.** Lying requires knowing the truth.
    It has no clock, no internet, no connection to your CAMA system.
@@ -440,9 +464,11 @@ here, it is short of **access**."* It closes on:
 · notebooks: [`07_hoverboard`](notebooks/07_hoverboard_local.ipynb) ·
 [`08_almanac`](notebooks/08_almanac_local.ipynb) *(both with `_api` twins)*
 
-**One app whose toolbelt grows.** §9 sits between the two tabs, so you reopen it.
+**One app whose toolbelt grows.** The two tabs run back to back — since the
+2026-10-04 reorder nothing sits between them, so the belt grows from one tool
+to two in a single sitting.
 
-### 🎛️ The system prompt panel — open it on stage
+### 🎛️ The system prompt panel — open it
 
 An expander above both tabs holds the agent's system prompt, live-editable, with
 three presets and its **token count** (a §4 callback: you re-send it every call).
@@ -450,12 +476,30 @@ three presets and its **token count** (a §4 callback: you re-send it every call
 This is not decoration. It is the third demo hiding in this app, and it is
 measured:
 
-| Toolbelt | Restraint | Recall |
+| Toolbelt | No prompt | + guardrail |
 |---|---|---|
-| 1 tool | 6/6 | 1/1 |
-| 2 tools | 6/6 | 2/2 |
-| **3 tools** | **5/6** ❌ | 4/4 |
-| **3 tools + guardrail** | **6/6** ✅ | **4/4** ✅ |
+| 1 tool · `lookup` | 5/5 | 5/5 |
+| **2 tools · `lookup, policy`** ← *the Almanac tab* | **4/5** ❌ | **5/5** ✅ |
+| 3 tools · `lookup, policy, parcels` | 5/5 | 5/5 |
+| 3 tools · `lookup, parcels, policy` | 4/5 ❌ | 4/5 ❌ |
+
+Restraint out of five questions that should need no tool at all. **Recall was
+perfect in every row** — the guardrail costs nothing. `Qwen3.5-4B`, greedy
+decoding · `uv run python scripts/eval_restraint.py`
+
+> 🎯 **What to say on stage:** *"Two tools and no instructions, and it goes to
+> the filing cabinet to define a word it already knew. One paragraph of English
+> and it stops — without ever failing to look something up it genuinely needed.
+> That paragraph is the cheapest engineering in this talk."*
+
+> 🩹 **Corrected 2026-10-04, three times over.** This table used to put the
+> failure at *three* tools and show two as clean — which contradicted the stage
+> move printed right below it, because the Almanac tab **is** two tools.
+> Re-measured: **(1)** the slip is at two; **(2)** the last two rows hold the
+> *same three tools* in a different order and score differently, so belt
+> **order** matters and length does not; **(3)** in that last ordering the
+> guardrail does **not** fix it. The prompt is a strong lever, not a guarantee.
+> Every slip in every row is the same one question.
 
 **The stage move**, verified working end to end:
 
@@ -497,7 +541,7 @@ seconds for a finished diagram.
 
 | Tab | § | Tools the agent has |
 |---|---|---|
-| 🛹 The Hoverboard | 6 | `[lookup_parcel]` |
+| 🛹 The Hoverboard | 7 | `[lookup_parcel]` |
 | 📖 Grays Sports Almanac | 8 | `[lookup_parcel, search_policy]` |
 
 **The visible tool list growing from one entry to two is the lesson.** RAG is
@@ -529,13 +573,20 @@ tool **10/10** but wrote the parcel number three different ways —
 `04-127-3891`, `04127-3891`, `4-127-3891`. A plain database lookup resolved
 **8 of 10**, failing *silently*. With the normalizer: **10/10**.
 
-On the full 24-question evaluation (`scripts/eval_tools.py`) Qwen3.5-4B scores
-**24/24**, including **6/6 on questions where the right move is to call no tool
-at all** — no reaching for the database because somebody said "good morning."
+On the full 29-question evaluation (`scripts/eval_tools.py`) Qwen3.5-4B scores
+**28/29 (97%)** at 3.6 s a question, with **zero parallel tool calls**. The one
+failure is a question where the right move was to call no tool at all — it
+searched the policy manual to define "market value", which is the restraint
+slip the system prompt panel exists to fix.
+
+> 🩹 **This read "24/24, including 6/6" until 2026-10-04.** The suite grew to 29
+> cases — category G, §8's six policy questions — and nobody re-ran the number
+> beside it. Re-measured against the committed script.
 
 > 🎯 **Worth saying out loud in §7:** the tool has to be forgiving *because* of
-> §2. The model sees that parcel number as thirteen fragments, so it cannot
-> reassemble it the same way twice. **The robustness is not defensive
+> §2. The model sees `parcel 04-127-3891` as thirteen fragments — eleven for
+> the bare number, ten for the mangled `4-127-3891` §7 actually sends — so it
+> cannot reassemble it the same way twice. **The robustness is not defensive
 > programming — it is the bill for how these things read.**
 
 ### §8 — measured retrieval
@@ -566,6 +617,90 @@ broke — but an agent that reaches for a filing cabinet to answer a definition 
 slower and looks less sure of itself. §9 offers five or six tools, so this is
 worth re-measuring before the dry run.
 
+### 🏁 Evidence, then mechanism, then conclusion — in all four apps
+
+Reordered 2026-10-04. §9 and §10 both **opened** with the model's polished
+answer and folded the trace into an expander below it, so the room was handed
+the verdict before it had seen the figures — or, in §10, before it had seen
+which offices were even asked, which is that section's whole argument.
+
+| | §9 Reaching 88 MPH | §10 The Universal Adapter |
+|---|---|---|
+| 1. the evidence | ratio table + IAAO scorecard | the sync-impact panel |
+| 2. the mechanism | the loop, and the SQL it wrote | every office it asked |
+| 3. the conclusion | *🏁 What it concluded*, then *📊 Now check it yourself* | *🏁 The decision*, then *📊 What that costs you* |
+
+> 🎯 **Why it reads better on stage:** the trace is the meat — it is the reason
+> anybody believes the number — and the polished answer is the finale. Opening
+> with the conclusion spends the surprise before the argument has been made.
+
+📌 **§9's findings still lead and still fill the screen**, which is what that
+app's docstring means by *"the FINDING is the show."* Only the prose answer
+moved. Both app tests compare caption positions, so the order cannot drift
+back.
+
+### 📄 The answer appears twice, and the contrast is the beat
+
+Added 2026-10-04, in both tabs, straight after the trace.
+
+**Step 4 of the trace** shows the answer *exactly* as the model emitted it —
+`**Owner:**`, bullet markers and all, as literal characters. **The box below
+it** is the same string handed to a markdown renderer.
+
+> 🎤 *"Look at step four, and then look at the box. Same text, twice. Up there
+> you can see the asterisks — because that is **all** the model produced: a
+> string of characters. It did not make a formatted document. Markdown is just
+> a convention it learned to write, the same way it learned everything else we
+> saw in Section 2. The box is what your office would actually ship."*
+
+⚠️ **Do not 'fix' the trace to render markdown.** The raw view is the evidence
+for everything §7 claims, and it is why the mechanics are not behind a curtain
+in the one app whose job is showing them. Both views, on purpose — CLAUDE.md's
+non-negotiables table carries the nuance.
+
+📌 §9 and §10 already worked this way: a bordered `st.markdown` answer with the
+trace in an expander. §7/§8 was the only app missing it, and because the trace
+*was* its only answer display, the room saw nothing but raw asterisks — on the
+hero parcel answer, which is the most-watched output in §7.
+
+### 🛹 The hoverboard beat — tab 1, under the toolbelt chip
+
+Added 2026-10-04. The section was *named* The Hoverboard and nothing but the
+tab label said so, in the app and both notebooks.
+
+> 🎤 *"Marty could not outrun Griff Tannen's gang on foot, so he borrowed a
+> board off a kid in the square. The board did not make him faster, or
+> cleverer, or braver. It gave him something he did not have. **That is all a
+> tool is** — nothing about the model has changed since Section 2. It has
+> simply been handed a way to reach the records room."*
+
+⚠️ **It is Griff Tannen's gang, not Biff's.** Griff — Biff's grandson — leads
+the 2015 hoverboard chase; Biff's gang is the 1955 **skateboard** scene that
+the hoverboard sequence deliberately mirrors. A test asserts this, because
+getting a Back to the Future detail backwards in a Back to the Future talk is
+exactly what the room will catch.
+
+### 🎬 The wrap-up — INSIDE tab 2, and it hands off to §9
+
+Added 2026-10-04; §2 and §4/§5 both had one and this app did not, so the demo
+block simply stopped. It closes §7 (the tool is fifteen lines of your own code
+noticing some text), closes §8 (one chip became two and nothing else changed),
+names the system-prompt lesson, and then opens the door to §9:
+
+> 🎤 *"Every question here has been about one parcel, or one rule. Nothing has
+> asked whether this county's assessments are any **good** — and you cannot
+> answer that one parcel at a time. That's Section 9, and it needs the whole
+> roll."*
+
+> 🛹 Closing caption: *"Hey McFly! You bojo! Those boards don't work on
+> water!"* — Griff Tannen … he was wrong about the water, and he is about to be
+> wrong about the assessment roll too.
+
+⚠️ **The footer sits inside tab 2, never under the tab strip.** Under the strip
+it renders below the whole app, announcing *"that's Sections 7 and 8"* while
+the room is still on tab 1 watching the agent use its first tool — the
+conclusion arriving before the argument.
+
 ### Takeaways
 > ### 🛹 §7: "A tool is just a Python function you gave it permission to call. Our imagination is the only bound."
 > ### 📖 §8: "RAG isn't magic. It's a tool that reads your filing cabinet — and it's the same agent, with one more tool."
@@ -588,7 +723,7 @@ are still talking, and it is warm by the time you turn to it.
 
 ---
 
-## 🎯 The one thing the room should take away
+## 🎯 The one thing to take away
 
 > ### The agent decides **what to ask**. The tool decides **what is correct**.
 
@@ -601,15 +736,29 @@ SQL — visibly, checkably. The statistics are never its job.
 
 | Where | What |
 |---|---|
-| **Header** | A **speedometer**. The needle is the median assessment ratio; the green arc is the IAAO acceptance range 0.90–1.10; **1.00 is marked "88"** — a perfect ratio is 88 miles per hour. |
-| **Middle** | The question box, then **three numbered buttons** for the story, then a separate *Also try* row. |
-| **Below** | The answer in plain English, then whatever the agent produced — scorecard, table, or map. |
-| **Bottom** | *"How it got there"* — collapsed. Opens to the full Reason → Act → Observe trace **and the SQL the model wrote**. |
-| **Sidebar** | The three tools, the system prompt, the whole schema the model is shown, and the GPU it is running on. |
+| **Header** | Title and the question box, then **three numbered buttons** for the story, then a separate *Also try* row. |
+| **1. 🔁 How it got there** | The SQL the model wrote, quoted as highlighted code, then the full Reason → Act → Observe → Answer trace. **Open, always** — not an expander. |
+| **2. 🏁 What it concluded** | The answer in plain English, rendered markdown in a bordered box. |
+| **3. 📊 Now check it yourself** | The **speedometer**, then whatever the agent produced — scorecard, table, or map. The needle is the median assessment ratio; the green arc is the IAAO range 0.90–1.10; **1.00 is marked "88"** — a perfect ratio is 88 miles per hour. |
+| **Sidebar** | The three tools, the system prompt, the whole schema the model is shown, the live prompt size, and the GPU it is running on. |
 
-**This app deliberately leads with the finding, not the machinery** — that is
-what separates it from §7/§8, where the loop *is* the show. The trace runs live
-while it works, then folds itself away when the answer lands.
+> 🩹 **Reversed 2026-10-04, and the old reasoning is worth keeping.** This app
+> used to lead with the answer and fold the trace away one click below it —
+> *"by §9 the audience has already watched the loop, so showing it again
+> competes with the finding."*
+>
+> **That was wrong. Hiding the steps turns a demonstration into an
+> assertion.** §7 shows the loop to teach what a tool *is*; §9 shows it
+> because it is the **evidence**. This room is deciding whether a machine can
+> be trusted with an assessment roll, and nothing earns that except watching
+> it write the SQL and reading what came back. Fold it away and all they have
+> left is a confident number — which is exactly what §5 spent three minutes
+> warning them about.
+
+⚠️ **The speedometer moved out of the header too**, and it now clears itself
+whenever the run has no single honest median. A needle is one reading: on
+*"2️⃣ By neighborhood"* it used to keep the countywide figure and glow above a
+table of six different ones.
 
 ---
 
@@ -690,7 +839,8 @@ somebody to look at how the low end is being valued."*
 
 ## ⚙️ It writes its own SQL, and you can read it
 
-Open *"How it got there"* and the query is right there:
+The query is on screen without opening anything — quoted as highlighted
+SQL above the trace, and again inside the trace's **Act** step:
 
 ```sql
 SELECT parcel_id FROM sales_feed WHERE neighborhood = 'Riverside Heights'
@@ -847,7 +997,7 @@ Two live demos live in this one app.
 
 ---
 
-## 🎯 The one thing the room should take away
+## 🎯 The one thing to take away
 
 > ### The tool did not get easier to write. It stopped being ours to write.
 
@@ -871,7 +1021,13 @@ and assessed value     who owns it, and how   what is still owed   ┆manual, no
 · find_parcels         · corrections_since                          ┆
 ```
 
-Under it: the question box, two numbered buttons, the answer, and *"How it got
+Under it: the question box and two numbered buttons, then the story in
+three parts — **🔁 How it got there** (every office it asked, every call, open
+and not an expander), **🏁 The decision**, and **📊 What that costs you** on
+the sync question. The old layout opened with the answer and shut the trace in
+an expander below it; see the 🩹 note in §9, which was the same mistake.
+
+Formerly: *"How it got
 there"* collapsed — which lists **every office it walked into**.
 
 > 🎤 *"Three separate programs. You can see them in Task Manager. I did not
@@ -881,7 +1037,7 @@ there"* collapsed — which lists **every office it walked into**.
 
 ## 🖱️ The click order — two buttons, about 40 seconds of machine time
 
-### 8️⃣ *"May Biff split his lot?"* — **26 s**
+### 7️⃣ *"May Biff split his lot?"* — **26 s**
 
 The panels light 🏛️ → 📜 → 💰 → 📖.
 
@@ -900,7 +1056,17 @@ calls and a week — and nobody would have written it down anywhere."*
 that Biff owns it, or estimate the balance. **The model chose the questions;
 the offices supplied the facts.**
 
-### 9️⃣ *"Is our sales file still true?"* — **15 s**  ← **the uncomfortable one**
+### 8️⃣ *"Is our sales file still true?"* — **15 s**  ← **the uncomfortable one**
+
+> 📸 **The photograph.** *"Marty carried a photograph of his brother and
+> sister, and watched them fade out of it one at a time. The photograph was
+> true when it was taken. What changed was the past behind it — and nothing
+> about the photograph told him so. **Your sales file is that photograph.**"*
+>
+> On screen in the app, above the before/after scorecards. It is the one theme
+> reference in §10 and it is there because it is the **mechanism**, not a
+> decoration: a stale snapshot of a record that has been edited behind you is
+> exactly what Marty is holding.
 
 > **Yes, the Clerk corrected one deed since 2026-01-15. The corrected deed is
 > instrument number 2025-000069 for parcel 12-393-7896, which was reclassified
@@ -1091,12 +1257,12 @@ matching their situation. Same lesson, one differs only in how the model is call
 | Notebook | § | Needs |
 |---|---|---|
 | `02_flux_capacitor_{local,api}` | 2 | GPU / API key |
-| `04_time_circuits_{local,api}` | 3 | GPU / API key |
-| `05_plutonium_{local,api}` | 4 | GPU / API key + the county data |
-| `07_hoverboard_{local,api}` | 6 | GPU / API key + the county data |
-| **`09_88mph_{local,api}`** | **7** | GPU / API key + the county data |
+| **`03_delorean_engine`** | **3** | GPU only — **1.86 GB** of weights, no API key, local only |
+| `04_time_circuits_{local,api}` | 4 | GPU / API key |
+| `05_plutonium_{local,api}` | 5 | GPU / API key + the county data |
+| `07_hoverboard_{local,api}` | 7 | GPU / API key + the county data |
 | `08_almanac_{local,api}` | 8 | GPU / API key + the policy corpus |
-| **`03_delorean_engine`** | **9** | GPU only — **1.86 GB** of weights, no API key, local only |
+| **`09_88mph_{local,api}`** | **9** | GPU / API key + the county data |
 | **`10_universal_adapter_{local,api}`** | **10** | GPU / API key + all three county databases |
 
 Point the audience here in §11. **This repo is the answer to "but how did you

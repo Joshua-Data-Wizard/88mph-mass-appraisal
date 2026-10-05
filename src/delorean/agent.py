@@ -129,10 +129,9 @@ def render_prompt(tokenizer: Any, messages: list[dict], schemas: list[dict],
     The model then never learns the tool exists, never calls one, and looks
     exactly like a model too small to use tools. **We have already lost an
     afternoon to this exact class of bug once** — SmolLM3 scored 0/6 because
-    its OUTPUT shape was unexpected (CLAUDE.md, Tool calling). This is the
-    # same mistake
-    at the input end, and it is worse, because there is no wrong-looking text
-    to notice.
+    its OUTPUT shape was unexpected (see FINDINGS.md, Tool calling). This is
+    the same mistake at the input end, and it is worse, because there is no
+    wrong-looking text to notice.
 
     So rather than keeping a list of which model needs which convention, we
     check: render the prompt with the tools and without them. If the two come

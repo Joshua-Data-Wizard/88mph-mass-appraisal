@@ -2,7 +2,7 @@
 
 # ⚡ 88mph-mass-appraisal 🚗💨
 
-### *Agentic AI, LLMs, and RAG for the Property Appraisal Office*
+### *LLMs, SLMs, Agents, and RAG for the Property Appraisal Office*
 
 **"Where we're going, we don't need spreadsheets."**
 
@@ -42,8 +42,8 @@ understanding of what Agentic LLMs are and how they can help us. 🏘️
 
 It's the companion code for the IAAO Calgary session
 **"Search, Extract & Value: The Lightning Fast Assistant"** — and it exists because
-a conference is about learning and collaborating these langauge models can be very useful and 
-we should all try to leverage them to help our offices keep up there amazing work with new found assitants🤩. 
+a conference is about learning and collaborating; these langauge models can be very useful and 
+we should all try to leverage them to help our offices keep up their amazing work with new found assitants🤩. 
 Everything demonstrated on stage is in here, commented, and meant to be
 taken back to your office. 📦
 
@@ -70,7 +70,34 @@ uv run jupyter lab                         # 📓  open the notebooks
 `check_setup.py` tells you plainly whether your machine can run the local models —
 and exactly what to do instead if it can't. No guessing. ✅
 
-> ### ⬇️ Do the model download in a terminal, not in an app
+> ### 🖥️ Heads up — the local road wants a reasonably recent NVIDIA card
+>
+> `uv sync` installs PyTorch built for **CUDA 13.0**, and the 4-bit squeeze
+> that makes these models fit needs **Turing or newer** — compute capability
+> **7.5+**, which in practice means **RTX 20-series or later**:
+>
+> | Generation | Cards you'd actually see |
+> |---|---|
+> | Turing · Ampere | RTX 20-series · RTX 30-series, A100 |
+> | Ada Lovelace · Hopper · Blackwell | RTX 40-series · H100 · RTX 50-series |
+>
+> Plus **8 GB of VRAM** once the agent demos start in §7.
+>
+> ⚠️ **The `CUDA Version:` that `nvidia-smi` prints is not something you have
+> to install.** It is the newest runtime your *driver* is willing to support.
+> If it reads 13.0 or higher, you are fine — nothing here needs a CUDA toolkit
+> on your PATH, because PyTorch ships its own.
+>
+> **Don't guess at any of it.** `check_setup.py` reads your actual card, checks
+> the generation, then compiles and runs a real 4-bit kernel — so it tells you
+> that this works on *your* hardware, not that it ought to.
+>
+> 🙅 **No NVIDIA GPU? Nothing is lost.** Every section except §3 ships an
+> `_api` twin that runs on a hosted model and needs no graphics card at all —
+> and **§2 runs locally on a plain CPU** regardless, because the 0.8B model is
+> small enough for an ordinary laptop.
+
+> ### ⬇️ Does the model download in a terminal, not in an app?
 >
 > **A model is only fetched the first time something asks for it.** If that
 > first time is you clicking around a Streamlit app, several gigabytes start
@@ -184,7 +211,7 @@ valueable time. **And it checks all three even after one fails** — because som
 only the first reason their application was refused has to come back again to
 hear the rest.
 
-Then ask it the critical question for the office: ***"is our sales file still true?"*** The Clerk
+Then ask it the critical question for the office: ***"Is our sales file still true?"*** The Clerk
 corrected a deed after your feed was pulled — and when you drop that one bad
 sale, the neighborhood turns out to fail **a second test the stale file was
 hiding.** 😬
@@ -419,7 +446,7 @@ models.compare()          # full strengths and weaknesses for each
 Copy `.env.example` → `.env` and fill in your keys.
 
 > ### ⚠️ Great Scott!
-> `.env` holds real API keys and is **git-ignored on purpose**. Never commit it.
+> `.env` holds real API keys and it is **git-ignored on purpose**. Never commit it.
 > Never paste it in a chat. Never email it. 🔐
 
 ---
@@ -477,8 +504,8 @@ Copy `.env.example` → `.env` and fill in your keys.
      clerk_server.py            📜 recorded deeds, and what has been corrected
      tax_server.py              💵 the ledger — what is still owed
 ✅ .streamlit/config.toml    ⚙️ shared app settings (see below)
-✅ DEMOS.md                  🎬 what each demo shows + the takeaway line
-✅ Presentation_Material/    🎤 the session outline (source of truth for scope)
+✅ DEMOS.md                  🎬 every demo: what it showed, what it proved,
+                               what it cost, and how to rerun it yourself
 ```
 
 > ### 🏘️ About that data — [read data/README.md](data/README.md)
