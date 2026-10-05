@@ -17,10 +17,20 @@ What it actually checks, beyond "does it render":
   * the mangled parcel id, which is §2's lesson collecting its debt
   * the system-prompt presets, which are click SEQUENCES through an on_click
     callback, and CLAUDE.md records that jumping to an end state hides bugs
+  * no token count printed as a LITERAL -- the panel said "thirteen fragments"
+    for a string that is 10 to Qwen and 6 to SmolLM3
+  * the theme and the close: the hoverboard metaphor, the wrap-up naming both
+    sections, and the hand-off to §9
 
 ⚠️ AppTest runs the script but not a browser, so it cannot see anything
 DOMPurify strips. See the §9 app's `svg_card` note. Nothing here draws SVG.
+
+⚠️ It also flattens tabs, so a footer assertion proves the footer EXISTS, not
+which tab it sits in. That placement is the whole point of the footer rule, and
+it is held by indentation in the app plus the comment beside it.
 """
+import html as html_mod
+import re
 import sys
 import time
 from pathlib import Path
@@ -99,6 +109,38 @@ def main():
         print("        XX  last_raw holds no tool-call markup at all")
         ok = False
 
+    # ── The answer appears TWICE, on purpose ────────────────────────────────
+    # The trace keeps the raw, escaped answer because that is the honest
+    # picture -- the model emitted characters, `**` and all, which is §7's
+    # whole argument. The box below it is the same text through st.markdown,
+    # which is what an office would ship. Losing EITHER is a regression:
+    #   * lose the box  -> `*   **Owner:** Biff Tannen` on the projector
+    #   * lose the trace-> the mechanics go behind a curtain
+    # ⚠️ EXACT match against `last_answer`, not "does this text appear
+    # somewhere". The loose version passed with the box deleted, because the
+    # §8 expander mentions the same parcel and the same owner in static copy.
+    # Watching the guard fail is what exposed that.
+    answer = at.session_state["last_answer"]
+    rendered = any(m.value == answer for m in at.markdown)
+    ok &= bool(answer) and rendered
+    print(f"  [{'OK ' if rendered else 'XX '}] the answer is its OWN "
+          f"st.markdown element, so markdown RENDERS  {answer[:44]!r}")
+
+    heading = any("The same answer, rendered" in m.value for m in at.markdown)
+    ok &= heading
+    print(f"  [{'OK ' if heading else 'XX '}] the box is labelled as the same "
+          f"text, not a second answer")
+
+    # The trace must still carry its own Answer step. Checked by looking for
+    # the answer's first words HTML-ESCAPED inside the markup, which is both
+    # "the step is there" and "it is escaped, not interpolated raw".
+    blob = markup(at)
+    probe = html_mod.escape(answer.strip()[:40]) if answer else ""
+    in_trace = bool(probe) and probe in blob
+    ok &= in_trace
+    print(f"  [{'OK ' if in_trace else 'XX '}] the trace still carries the raw "
+          f"Answer step, escaped — nothing went behind a curtain")
+
     print("\n=== 4. §7 — the mangled parcel id (Section 2 collecting its debt) ===")
     button(at, "hq1").click().run()          # "Pull up 4-127-3891."
     ok &= report(at, "preset button fills the box",
@@ -162,6 +204,82 @@ def main():
     button(at, "hover_go").click().run()
     ok &= report(at, f"runs with no system prompt ({time.time() - t0:.0f}s)",
                  f"tools={at.session_state['last_used'] or 'none'}")
+
+    print("\n=== 9. no token count is printed as a literal ===")
+    # §7's "two things to try" panel said the model sees the mangled parcel id
+    # as "thirteen fragments". Three separate problems in one word: 13 is the
+    # count for `parcel 04-127-3891` (a different string -- §2's preset, the
+    # word and space included), the bare id is 11, and the id this panel
+    # actually names is 10. Worse, it is tokenizer-dependent in a five-model
+    # picker: SmolLM3 and Phi-4-mini see 6. Same bug class as §2's hardcoded
+    # vocabulary size, and the repo's rule is to never print one as a literal.
+    at = fresh()
+    sys.path.insert(0, str(REPO / "src"))
+    from delorean import llm  # noqa: E402
+
+    blobs = [m.value for m in at.markdown]
+    panel = next((b for b in blobs if "mangled parcel number" in b), "")
+    ok &= bool(panel)
+    print(f"  [{'OK ' if panel else 'XX '}] found the panel")
+
+    # ⚠️ Word boundaries, not `in`. "ten" is a substring of "often",
+    # "written" and "listen", so a plain containment check would fail this
+    # test the first time somebody wrote a perfectly good sentence.
+    spelled_out = re.findall(
+        r"\b(?:thirteen|twelve|eleven|ten|nine|eight|six)\b", panel.lower())
+    ok &= not spelled_out
+    print(f"  [{'OK ' if not spelled_out else 'XX '}] no count spelled out in "
+          f"words{'  !! ' + ', '.join(spelled_out) if spelled_out else ''}")
+
+    for key, want in (("tiny", 10), ("smol", 6)):
+        if at.selectbox[0].value != key:
+            at.selectbox[0].set_value(key).run()
+        live = len(llm.load_tokenizer(key).encode("4-127-3891"))
+        blobs = [m.value for m in at.markdown]
+        panel = next((b for b in blobs if "mangled parcel number" in b), "")
+        good = live == want and f"{want} separate fragments" in panel
+        ok &= good
+        print(f"  [{'OK ' if good else 'XX '}] {key:5s} tokenizes "
+              f"'4-127-3891' as {live} and the panel says so")
+
+    print("\n=== 10. the theme lands, and the section closes ===")
+    # §7 is called The Hoverboard and for a long time nothing but the tab label
+    # said so. The metaphor is load-bearing, not decoration: the hoverboard is
+    # a BORROWED capability, which is the technical claim of the whole section.
+    #
+    # ⚠️ AppTest flattens tabs, so this asserts the footer EXISTS, not which
+    # tab it sits in. Placement is held by indentation in the app and by the
+    # comment beside it -- and it matters: a footer under the tab strip would
+    # announce "that's Sections 7 and 8" while the room is still on tab 1.
+    at = fresh()
+    blobs = [m.value for m in at.markdown]
+    caps = [c.value for c in at.caption]
+
+    for what, needle, where in (
+            ("the hoverboard is BORROWED, not faster",
+             "borrowed a board off a kid", blobs),
+            ("...and ties it back to §2's unchanged model",
+             "Nothing about the model has changed", blobs),
+            ("the wrap-up names both sections", "That's Sections 7 and 8", blobs),
+            ("§7's own §5 lie — the invented comps",
+             "inventing comparable sales", blobs),
+            ("§8's one-chip-to-two argument",
+             "grow from one chip to two", blobs),
+            ("the hand-off to §9", "That's Section 9", blobs),
+            ("a closing quote, like the other two apps",
+             "don't work on water", caps)):
+        good = any(needle in b for b in where)
+        ok &= good
+        print(f"  [{'OK ' if good else 'XX '}] {what}")
+
+    # Griff Tannen leads the 2015 hoverboard chase; Biff's gang is the 1955
+    # SKATEBOARD scene the hoverboard sequence mirrors. Getting this backwards
+    # in a Back to the Future themed talk is the kind of thing the room spots.
+    hover = next((b for b in blobs if "borrowed a board" in b), "")
+    good = "Griff" in hover and "Biff" not in hover
+    ok &= good
+    print(f"  [{'OK ' if good else 'XX '}] the hoverboard chase is Griff's "
+          f"gang, not Biff's")
 
     print("\n" + "=" * 60)
     print("RESULT:", "ALL PASS" if ok else "FAILURES ABOVE")

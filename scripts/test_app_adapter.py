@@ -93,7 +93,7 @@ def main():
         ok &= good
         print(f"  [{'OK ' if good else 'XX '}] discovered from a server: {tool}")
 
-    print("\n=== 2. DEMO 8 — may Biff split his lot? ===")
+    print("\n=== 2. DEMO 7 — may Biff split his lot? ===")
     t0 = time.time()
     button(at, "q_split").click().run()
     secs = time.time() - t0
@@ -118,7 +118,25 @@ def main():
         print("        XX  fewer than three offices answered")
         ok = False
 
-    print("\n=== 3. DEMO 9 — is our sales file still true? ===")
+    # §10's novelty is NOT "several tool calls" -- §9 already does that over
+    # one database. It is several calls to separate PROGRAMS, three of them
+    # somebody else's. The app states both numbers in a caption, so both are
+    # read off the trace rather than written into the source.
+    acts = [s for s in at.session_state["state"]["trace"]
+            if s.get("step") == "act"]
+    names = [s["tool"] for s in acts]
+    lead = next((c.value for c in at.caption
+                 if "separate programs" in c.value), "")
+    good = bool(lead) and f"{len(acts)} tool calls" in lead
+    ok &= good
+    print(f"  [{'OK ' if good else 'XX '}] the caption counts the real calls "
+          f"({len(acts)}), it does not claim a number")
+    good = len(acts) >= 4 and len(set(names)) >= 4
+    ok &= good
+    print(f"  [{'OK ' if good else 'XX '}] four distinct sources consulted "
+          f"{names}")
+
+    print("\n=== 3. DEMO 8 — is our sales file still true? ===")
     t0 = time.time()
     button(at, "q_sync").click().run()
     secs = time.time() - t0
@@ -132,6 +150,14 @@ def main():
             markup(at).lower().count("courthouse square") >= 2
             and "our sales file" in markup(at).lower()
             and "clerk's correction" in markup(at).lower()),
+        # The one theme reference in this app, and it earns its place: a
+        # stale snapshot of a record edited behind you IS the photograph.
+        "the photograph lands": any(
+            "fade out of it one at a time" in i.value for i in at.info),
+        "and it names the pull date": any(
+            "pulled from the Clerk on" in i.value for i in at.info),
+        "the cost section has its own heading": any(
+            "##### 📊 What that costs you" in m.value for m in at.markdown),
     }
     for label, good in checks.items():
         ok &= good
@@ -142,7 +168,7 @@ def main():
     print(f"  [{'OK ' if hidden else 'XX '}] calls out the hidden second failure")
     ok &= hidden
 
-    print("\n=== 4. back to demo 8 (does a repeat click still work?) ===")
+    print("\n=== 4. back to demo 7 (does a repeat click still work?) ===")
     t0 = time.time()
     button(at, "q_split").click().run()
     ok &= report(at, f"repeat click ({time.time() - t0:.0f}s)")
@@ -153,6 +179,48 @@ def main():
         "Who owns parcel 04-127-3891 and what did they pay for it?").run()
     button(at, "q_owner").click().run()
     ok &= report(at, f"also-try button runs ({time.time() - t0:.0f}s)")
+
+    print("\n=== 6. the story order, and the trace is OPEN ===")
+    # Two earlier versions were wrong in opposite directions: the answer at
+    # the very top, then the answer last but the trace still shut inside a
+    # collapsed expander. §10 is the section where a machine tells somebody
+    # they may not split their own land, so the evidence cannot sit behind a
+    # click. Order must be: how it got there -> the decision -> what it costs.
+    #
+    # AppTest exposes one flat list per element type, so an st.html cannot be
+    # compared against an st.markdown. Captions can: each section carries one,
+    # so their order inside at.caption IS document order.
+    caps = [c.value for c in at.caption]
+
+    def where(needle):
+        return next((i for i, c in enumerate(caps) if needle in c), None)
+
+    trace_at = where("separate programs")
+    answer_at = where("identical characters the trace above")
+    found = trace_at is not None and answer_at is not None
+    ok &= found
+    print(f"  [{'OK ' if found else 'XX '}] both sections present "
+          f"(trace #{trace_at}, decision #{answer_at})")
+    if found:
+        good = trace_at < answer_at
+        ok &= good
+        print(f"  [{'OK ' if good else 'XX '}] the trace comes BEFORE the "
+              f"decision")
+
+    for what, needle in (
+            ("the trace leads, and is not an expander",
+             "##### 🔁 How it got there"),
+            ("the decision is labelled, after the offices",
+             "##### 🏁 The decision, with every office consulted")):
+        good = any(needle in m.value for m in at.markdown)
+        ok &= good
+        print(f"  [{'OK ' if good else 'XX '}] {what}")
+
+    answer = at.session_state["state"]["answer"]
+    rendered = any(m.value == answer for m in at.markdown)
+    ok &= bool(answer) and rendered
+    print(f"  [{'OK ' if rendered else 'XX '}] the answer is its OWN "
+          f"st.markdown element, so markdown RENDERS")
 
     print("\n" + "=" * 60)
     print("RESULT:", "ALL PASS" if ok else "FAILURES ABOVE")

@@ -96,6 +96,103 @@ def main():
     button(at, "try_define").click().run()
     ok &= report(at, "answers directly, no tool")
 
+    print("\n=== 7. the story order — trace, then answer, then the figures ===")
+    # §9 used to open with the polished answer and fold the loop away below
+    # it. That is the conclusion arriving before the argument, and worse than
+    # untidy: hiding the steps turns a demonstration into an assertion, in
+    # the one section whose job is convincing a room that a machine can be
+    # trusted with an assessment roll. The trace is the EVIDENCE.
+    #
+    # AppTest gives one flat list per element type, so an st.html cannot be
+    # compared against an st.markdown. Captions can: the trace ends with
+    # "Toolbelt for this run" and the answer and findings each carry one, so
+    # their order inside at.caption IS document order.
+    button(at, "rev_county").click().run()
+    ok &= report(at, "county question re-run for the ordering check")
+
+    caps = [c.value for c in at.caption]
+    def where(needle):
+        return next((i for i, c in enumerate(caps) if needle in c), None)
+
+    spots = [("the trace", where("Every step, in the order")),
+             ("the answer", where("identical characters")),
+             ("the figures", where("believe the numbers"))]
+    missing = [name for name, i in spots if i is None]
+    ok &= not missing
+    print(f"  [{'OK ' if not missing else 'XX '}] all three sections present "
+          f"{ {n: i for n, i in spots} }")
+    if not missing:
+        order = [i for _, i in spots]
+        good = order == sorted(order)
+        ok &= good
+        print(f"  [{'OK ' if good else 'XX '}] trace → answer → figures, in "
+              f"that order")
+
+    for what, needle in (("the trace is NOT behind an expander",
+                          "##### 🔁 How it got there"),
+                         ("the answer is labelled plainly",
+                          "##### 🏁 What it concluded"),
+                         ("the figures invite checking, not believing",
+                          "##### 📊 Now check it yourself")):
+        good = any(needle in m.value for m in at.markdown)
+        ok &= good
+        print(f"  [{'OK ' if good else 'XX '}] {what}")
+
+    # The SQL is quoted above the trace as highlighted code, deliberately as
+    # well as inside the trace's Act step -- the presenter wants it readable.
+    good = len(at.code) >= 1
+    ok &= good
+    print(f"  [{'OK ' if good else 'XX '}] the SQL it wrote is quoted as code "
+          f"({len(at.code)} block(s))")
+
+    answer = at.session_state["state"]["answer"]
+    rendered = any(m.value == answer for m in at.markdown)
+    ok &= bool(answer) and rendered
+    print(f"  [{'OK ' if rendered else 'XX '}] the answer is its OWN "
+          f"st.markdown element, so markdown RENDERS")
+
+    print("\n=== 8. the needle: one median, or none at all ===")
+    # Reported from the screen: question 2 left the countywide median glowing
+    # above a table of six different ones. The old code kept the stale value
+    # on purpose and explained it in a subtitle, which was defensible while
+    # the dial lived in the HEADER as a standing instrument -- and is not,
+    # now that it is drawn with the figures for the run on screen.
+    #
+    # ⚠️ Counted as IFRAMES. The dial is SVG, and SVG through `st.html` is
+    # stripped by DOMPurify -- which is what `svg_card()` exists to avoid. A
+    # probe that looked in `get("html")` reported "not drawn" when it was.
+    #
+    # ⚠️ And it is a SEQUENCE, 1 -> 2 -> 1, not a jump to the end state.
+    # CLAUDE.md records a bug that slipped past exactly that shortcut.
+    def needle():
+        return at.session_state["dial"], len(at.get("iframe"))
+
+    button(at, "rev_county").click().run()
+    dial, frames = needle()
+    good = dial is not None and frames >= 1
+    ok &= good
+    print(f"  [{'OK ' if good else 'XX '}] Q1 countywide → needle shows "
+          f"{dial!r} ({frames} iframe)")
+
+    button(at, "rev_hoods").click().run()
+    dial, frames = needle()
+    good = dial is None and frames == 0
+    ok &= good
+    print(f"  [{'OK ' if good else 'XX '}] Q2 by neighborhood → needle "
+          f"CLEARED (dial={dial!r}, {frames} iframe)")
+    grouped = any("Ratio study by" in (getattr(b.proto, "body", "") or "")
+                  for b in at.get("html"))
+    ok &= grouped
+    print(f"  [{'OK ' if grouped else 'XX '}] …and the grouped table is still "
+          f"drawn")
+
+    button(at, "rev_county").click().run()
+    dial, frames = needle()
+    good = dial is not None and frames >= 1
+    ok &= good
+    print(f"  [{'OK ' if good else 'XX '}] back to Q1 → needle returns "
+          f"({dial!r})")
+
     print("\n" + "=" * 60)
     print("RESULT:", "ALL PASS" if ok else "FAILURES ABOVE")
     return 0 if ok else 1
