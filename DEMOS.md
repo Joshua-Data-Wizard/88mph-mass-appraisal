@@ -186,7 +186,7 @@ tokens, drawn as bars. Verified figures:
 | `An appraiser estimates the fair market` | **99.4%** ` value` — domain near-certainty |
 | `The homestead exemption reduces a homeowner's property` | ` tax` **52.7%** · ` value` **24.9%** · ` taxes` **10.4%** — genuinely torn |
 
-The **▶ Take the winner** button glues the top token onto the sentence and
+The **🥇 Take the winner** button glues the top token onto the sentence and
 predicts again, so you can walk the loop one step at a time. Clicking it four
 times from the default builds: *"An appraiser estimates the fair market* →
 **value** → **of** → **a** → **house**".
@@ -196,12 +196,12 @@ times from the default builds: *"An appraiser estimates the fair market* →
 
 ### 🎲 The second and third place buttons — a free run at *temperature*
 
-Next to the winner are **② Take 2nd place** and **③ Take 3rd place**. They are
+Next to the winner are **🥈 Take 2nd place** and **🥉 Take 3rd place**. They are
 the cheapest explanation of temperature in the whole talk, because the room
 watches *you* make the choice a sampler makes at random.
 
 From `Location, location,` the three candidates are ` location` **81.1%**,
-` and` **4.7%**, ` Location` **0.8%**. Press **②** and the sentence becomes
+` and` **4.7%**, ` Location` **0.8%**. Press **🥈** and the sentence becomes
 *"Location, location, **and**"*, which then continues *"and location"* — a
 visibly different road from the same weights.
 
@@ -883,7 +883,7 @@ instead of an average"*.
 ### ⏱️ The system prompt line worth stealing
 
 Adding one clause — *"keep every answer to three sentences; the figures are
-already on screen"* — took question ② from **39 seconds to 12**. Same tools,
+already on screen"* — took question 2️⃣ from **39 seconds to 12**. Same tools,
 same answer, same accuracy.
 
 🎤 *"Section 4 was not a party trick. That prompt is doing three jobs here: it
@@ -898,7 +898,7 @@ Sitting **off the story on purpose**, in the *Also try* row. Use it if the room
 asks *"why not just let it do the maths?"* — and frame it as **what the tool is
 doing for you**, never as *the model lies*.
 
-Clicking it re-runs question ② with `ratio_study` taken away. The model writes
+Clicking it re-runs question 2️⃣ with `ratio_study` taken away. The model writes
 `AVG(assessed_value / sale_price)`, SQLite integer division rounds every ratio
 to a whole number first, and it returns this — sorted, totalled, confident:
 
