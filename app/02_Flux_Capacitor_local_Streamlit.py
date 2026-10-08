@@ -368,8 +368,21 @@ with tab_predict:
         # same text (" Location" and "Location", say), and two buttons with the
         # same label and no key are the same widget as far as Streamlit is
         # concerned -- a DuplicateWidgetID error, mid-demo.
+        #
+        # ⚠️ Medals, not the ①②③ characters. Those are ordinary glyphs, so they
+        # take whatever antialiasing the font gives them and go FUZZY on a
+        # projector -- `09_88mph` wrote that rule down and this app, which is
+        # older, never got it. An emoji is rendered as an image and stays sharp
+        # at any size.
+        #
+        # Medals rather than keycaps (1️⃣2️⃣3️⃣) on purpose: keycaps mean a
+        # SEQUENCE in Sections 9 and 10, and these three are ALTERNATIVES --
+        # three ranked candidates for the same next token, where the whole
+        # lesson is that second and third are equally clickable. They are also
+        # told apart by colour and shape from the back of a room, which a small
+        # digit is not.
         st.markdown("**Take one step by hand — and notice you have a choice:**")
-        places = ("▶ Take the winner", "② Take 2nd place", "③ Take 3rd place")
+        places = ("🥇 Take the winner", "🥈 Take 2nd place", "🥉 Take 3rd place")
         for n, (col, (tok, prob)) in enumerate(zip(st.columns(3), pairs[:3])):
             col.button(
                 f"{places[n]}  ·  `{tok}`",
@@ -402,7 +415,7 @@ with tab_predict:
             )
 
         st.caption(
-            "**Press ▶ Take the winner a few times.** Each press glues that "
+            "**Press 🥇 Take the winner a few times.** Each press glues that "
             "token onto the sentence and asks again — which is exactly what "
             "generation is, one step at a time. Tab 3 does this a few hundred "
             "times a second."
@@ -419,7 +432,7 @@ with tab_predict:
                 "is to wander down the list is called **temperature**. Turn it up "
                 "and the writing feels less robotic. Turn it up too far and it "
                 "starts inventing.\n\n"
-                "**Pressing ② or ③ above is you doing by hand what temperature "
+                "**Pressing 🥈 or 🥉 above is you doing by hand what temperature "
                 "does with dice.** Try it a few times and watch the sentence go "
                 "somewhere the winning path would never have taken it — then "
                 "press ↺ and walk the greedy path instead. Same model, same "

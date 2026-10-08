@@ -251,13 +251,13 @@ Then a question where it is genuinely torn — `tax` **52.7%** / `value` **24.9%
 `taxes` **10.4%** — and you can *see* the doubt.
 
 **🖱️ And one thing only the app can do.** The prediction tab has three buttons —
-**▶ Take the winner**, **② Take 2nd place**, **③ Take 3rd place**. Press one and
+**🥇 Take the winner**, **🥈 Take 2nd place**, **🥉 Take 3rd place**. Press one and
 that token is glued onto the sentence and the model predicts *again*, so you
 walk the generation loop a single step at a time and watch the odds shift under
 you. Press the winner four times from `Location, location,` and you have built a
 sentence by hand, exactly the way the model does it a few hundred times a second.
 
-Press **②** instead and the sentence goes somewhere the winning path would never
+Press **🥈** instead and the sentence goes somewhere the winning path would never
 have taken it — `Location, location, and…` rather than `…location`. That choice,
 made with dice instead of by hand, is all **temperature** is. Every demo in this
 repo takes first place every time, on purpose, so that what you rehearse is what
